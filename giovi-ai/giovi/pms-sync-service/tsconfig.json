@@ -1,0 +1,21 @@
+// pms-sync-service/tsconfig.json
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "noImplicitReturns": true,
+    "noUnusedLocals": true, // Aiuta a trovare codice non usato
+    "noUnusedParameters": false, // Manteniamo false per flessibilità iniziale
+    "outDir": "lib",
+    "sourceMap": true,
+    "strict": true, // Abilita controlli strict
+    "target": "es2021", // Target moderno
+    "esModuleInterop": true, // Per compatibilità import
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true // Permette di importare JSON
+  },
+  "compileOnSave": true,
+  "include": [
+    "src" // Compila solo i file nella cartella src
+  ]
+}

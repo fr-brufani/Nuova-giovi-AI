@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "giovi-ai": "giovi-ai",
+    "default": "giovi-ai"
+  },
+  "targets": {},
+  "etags": {}
+}

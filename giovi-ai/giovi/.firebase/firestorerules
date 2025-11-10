@@ -1,0 +1,212 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- UTENTI (Host e Client) ---
+    match /users/{userId} {
+
+      // --- Regole per LETTURA Singolo Documento (`get`) ---
+      allow get: if request.auth != null &&
+                    (
+                      request.auth.uid == userId // L'utente può leggere il proprio profilo
+                    ) || (
+                      // Un host può leggere il profilo di un cliente a lui assegnato
+                      resource.data.role == 'client' && resource.data.assignedHostId == request.auth.uid
+                    );
+
+      // --- Regole per LETTURA Lista Documenti (`list`) ---
+      // Permette a utenti autenticati di listare utenti. Filtra lato client se necessario.
+      // Esempio: un host potrebbe voler listare solo i suoi clienti.
+      allow list: if request.auth != null;
+
+      // --- Regole per CREAZIONE (`create`) ---
+      allow create: if request.auth != null && (
+          // CASO A: Un utente (host o client) crea il proprio profilo (self-registration)
+          (
+              request.auth.uid == userId &&
+              request.resource.data.email == request.auth.token.email &&
+              request.resource.data.role in ['host', 'client'] &&
+              request.resource.data.name is string && request.resource.data.name.size() > 0 &&
+              request.resource.data.createdAt == request.time &&
+              // Per l'auto-registrazione di un HOST: nessun campo di assegnazione
+              (request.resource.data.role == 'host' && request.resource.data.keys().hasOnly(['email', 'name', 'role', 'createdAt'])) ||
+              // Per l'auto-registrazione di un CLIENTE: i campi di assegnazione possono essere assenti o null
+              (request.resource.data.role == 'client' &&
+                  (!request.resource.data.keys().hasAny(['assignedHostId', 'assignedPropertyId']) ||
+                   (request.resource.data.assignedHostId == null && request.resource.data.assignedPropertyId == null)
+                  ) &&
+                  request.resource.data.keys().hasOnly(['email', 'name', 'role', 'createdAt', 'assignedHostId', 'assignedPropertyId'])
+              )
+          ) ||
+          // CASO B: Un host (request.auth.uid) crea un documento per un nuovo cliente (userId è clientUid generato da Auth)
+          (
+              request.resource.data.assignedHostId == request.auth.uid &&
+              request.resource.data.role == 'client' &&
+              userId != request.auth.uid && // L'host non sta creando un altro suo profilo
+              request.resource.data.email is string && request.resource.data.email.matches('.+@.+\\..+') &&
+              request.resource.data.name is string && request.resource.data.name.size() > 0 &&
+              request.resource.data.assignedPropertyId is string &&
+              request.resource.data.createdAt == request.time &&
+              request.resource.data.keys().hasOnly(['email', 'name', 'role', 'createdAt', 'assignedHostId', 'assignedPropertyId'])
+          )
+      );
+
+      // --- Regole per AGGIORNAMENTO (`update`) ---
+      allow update: if request.auth != null && (
+          // L'utente aggiorna il proprio profilo (es. nome)
+          (request.auth.uid == userId &&
+           request.resource.data.role == resource.data.role && // Ruolo non modificabile
+           request.resource.data.email == resource.data.email && // Email non modificabile (gestire cambio email con verifica)
+           // Campi che l'utente può modificare (aggiungere se necessario)
+           request.resource.data.keys().hasOnly(['email', 'name', 'role', 'createdAt', 'assignedHostId', 'assignedPropertyId' /* eventuali altri campi utente */])
+          ) ||
+          // L'host aggiorna un cliente a lui assegnato (es. riassegnare proprietà, nome)
+          (resource.data.role == 'client' && resource.data.assignedHostId == request.auth.uid &&
+           request.resource.data.role == 'client' && // Il ruolo del cliente non cambia
+           request.resource.data.email == resource.data.email && // L'email del cliente non è modificabile dall'host
+           request.resource.data.assignedHostId == request.auth.uid && // L'host rimane lo stesso
+           request.resource.data.createdAt == resource.data.createdAt && // createdAt non modificabile
+           // Campi che l'host può modificare per il cliente
+           request.resource.data.keys().hasOnly(['email', 'name', 'role', 'createdAt', 'assignedHostId', 'assignedPropertyId'])
+          )
+      );
+
+      // --- Regole per CANCELLAZIONE (`delete`) ---
+      // Generalmente è meglio fare soft delete (es. flag 'deleted: true') o tramite Cloud Function
+      allow delete: if false;
+
+      // --- SOTTOCOLLEZIONE PROPERTIES (Alloggi dell'Host) ---
+      match /properties/{propertyId} {
+        function isClientAssignedToProperty(clientId, targetHostId, targetPropertyId) {
+          let clientDoc = get(/databases/$(database)/documents/users/$(clientId));
+          return clientDoc.data.role == 'client' &&
+                 clientDoc.data.assignedHostId == targetHostId &&
+                 clientDoc.data.assignedPropertyId == targetPropertyId;
+        }
+
+        allow read: if request.auth != null &&
+                       (
+                         request.auth.uid == userId // L'host legge le sue proprietà
+                       ) || (
+                         // Il cliente assegnato a questa proprietà (tramite l'host) può leggerla
+                         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'client' &&
+                         isClientAssignedToProperty(request.auth.uid, userId, propertyId)
+                       );
+
+        allow write: if request.auth != null && request.auth.uid == userId && // Solo l'host può scrivere le sue proprietà
+                        request.resource.data.name is string && request.resource.data.name.size() > 0;
+                        // Aggiungere altre validazioni per i campi della proprietà se necessario
+      }
+    }
+
+    // --- PRENOTAZIONI ---
+    match /reservations/{reservationId} {
+      function isHost() {
+        return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'host';
+      }
+      function isClient() {
+        return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'client';
+      }
+
+      // LETTURA SINGOLA: L'host della prenotazione o il cliente della prenotazione
+      allow get: if request.auth != null &&
+                    (request.auth.uid == resource.data.hostId || request.auth.uid == resource.data.clientId);
+
+      // LETTURA LISTA: Host o Client autenticati.
+      // Il client DEVE filtrare per hostId o clientId nella query.
+      allow list: if request.auth != null && (isHost() || isClient());
+
+      // CREAZIONE: Solo un host autenticato può creare una prenotazione.
+      allow create: if request.auth != null && isHost() &&
+                       request.resource.data.hostId == request.auth.uid && // L'host che crea è l'host della prenotazione
+                       // Verifica che il cliente esista e sia un cliente (opzionalmente: assegnato a questo host)
+                       exists(/databases/$(database)/documents/users/$(request.resource.data.clientId)) &&
+                       get(/databases/$(database)/documents/users/$(request.resource.data.clientId)).data.role == 'client' &&
+                       // (Opzionale ma consigliato) Verifica che il cliente sia assegnato a questo host specifico:
+                       // get(/databases/$(database)/documents/users/$(request.resource.data.clientId)).data.assignedHostId == request.auth.uid &&
+                       // Verifica che la proprietà esista e appartenga a questo host
+                       exists(/databases/$(database)/documents/users/$(request.auth.uid)/properties/$(request.resource.data.propertyId)) &&
+                       // Validazione dei campi dati (come da screenshot e logica)
+                       request.resource.data.clientName is string && request.resource.data.clientName.size() > 0 &&
+                       request.resource.data.propertyName is string && request.resource.data.propertyName.size() > 0 &&
+                       request.resource.data.startDate is timestamp &&
+                       request.resource.data.endDate is timestamp &&
+                       request.resource.data.startDate < request.resource.data.endDate && // Data inizio prima di data fine
+                       request.resource.data.status in ['pending', 'confirmed', 'active', 'completed', 'cancelled'] &&
+                       request.resource.data.createdAt == request.time &&
+                       // Controllo chiavi: permette solo i campi definiti
+                       request.resource.data.keys().hasAll([
+                         'hostId', 'clientId', 'clientName', 'propertyId', 'propertyName',
+                         'startDate', 'endDate', 'status', 'createdAt'
+                       ]) &&
+                       request.resource.data.keys().hasOnly([
+                         'hostId', 'clientId', 'clientName', 'propertyId', 'propertyName',
+                         'startDate', 'endDate', 'status', 'createdAt',
+                         'numeroConfermaBooking', 'importedFrom', 'notes' // Campi opzionali
+                       ]) &&
+                       // Validazione opzionale per i campi opzionali se presenti
+                       (!('numeroConfermaBooking' in request.resource.data) || request.resource.data.numeroConfermaBooking is string) &&
+                       (!('importedFrom' in request.resource.data) || request.resource.data.importedFrom is string) &&
+                       (!('notes' in request.resource.data) || request.resource.data.notes is string);
+
+
+      // AGGIORNAMENTO: Solo l'host della prenotazione può aggiornarla.
+      allow update: if request.auth != null && request.auth.uid == resource.data.hostId &&
+                       // Campi che NON devono cambiare con un semplice update
+                       request.resource.data.hostId == resource.data.hostId &&
+                       request.resource.data.clientId == resource.data.clientId &&
+                       request.resource.data.propertyId == resource.data.propertyId &&
+                       request.resource.data.createdAt == resource.data.createdAt &&
+                       // Validazioni come nella creazione
+                       request.resource.data.clientName is string && request.resource.data.clientName.size() > 0 &&
+                       request.resource.data.propertyName is string && request.resource.data.propertyName.size() > 0 &&
+                       request.resource.data.startDate is timestamp &&
+                       request.resource.data.endDate is timestamp &&
+                       request.resource.data.startDate < request.resource.data.endDate &&
+                       request.resource.data.status in ['pending', 'confirmed', 'active', 'completed', 'cancelled'] &&
+                       request.resource.data.keys().hasAll([
+                         'hostId', 'clientId', 'clientName', 'propertyId', 'propertyName',
+                         'startDate', 'endDate', 'status', 'createdAt'
+                       ]) &&
+                       request.resource.data.keys().hasOnly([
+                         'hostId', 'clientId', 'clientName', 'propertyId', 'propertyName',
+                         'startDate', 'endDate', 'status', 'createdAt',
+                         'numeroConfermaBooking', 'importedFrom', 'notes'
+                       ]) &&
+                       (!('numeroConfermaBooking' in request.resource.data) || request.resource.data.numeroConfermaBooking is string) &&
+                       (!('importedFrom' in request.resource.data) || request.resource.data.importedFrom is string) &&
+                       (!('notes' in request.resource.data) || request.resource.data.notes is string);
+
+      // CANCELLAZIONE: Solo l'host della prenotazione può cancellarla.
+      allow delete: if request.auth != null && request.auth.uid == resource.data.hostId;
+    }
+
+    // --- LOG CHAT (gioviAiChatDataset) ---
+    match /gioviAiChatDataset/{logId} {
+      allow get: if request.auth != null && request.auth.uid == resource.data.hostId;
+      allow list: if request.auth != null; // L'host filtra lato client per il suo hostId
+      allow create: if request.auth != null &&
+                       request.auth.uid == request.resource.data.hostId &&
+                       request.resource.data.channel == 'app_host_message' &&
+                       request.resource.data.userId is string &&
+                       request.resource.data.propertyId is string &&
+                       request.resource.data.aiResponse is string &&
+                       request.resource.data.userMessage == null &&
+                       request.resource.data.promptSent == null &&
+                       request.resource.data.wasBlocked == null &&
+                       request.resource.data.blockReason == null &&
+                       request.resource.data.processingError == null &&
+                       request.resource.data.timestamp == request.time;
+      allow update, delete: if false;
+    }
+
+    // Blocco default per altri path
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
