@@ -1,0 +1,2884 @@
+{
+  "gioviAiChatDataset": {
+    "auLHLqv4pCj43BarC632": {
+      "fields": [
+        "aiResponse",
+        "blockReason",
+        "channel",
+        "hostId",
+        "processingError",
+        "promptSent",
+        "propertyId",
+        "timestamp",
+        "toolCallPublished",
+        "userId",
+        "userMessage",
+        "wasBlocked"
+      ],
+      "subcollections": {}
+    }
+  },
+  "hostEmailAuthorizations": {
+    "JHOBRFDp9v0pXk2JXLpj": {
+      "fields": [
+        "createdAt",
+        "emailProvider",
+        "googleHistoryId",
+        "googleWatchSubscriptionExpiry",
+        "googleWatchSubscriptionId",
+        "hostEmailAddress",
+        "hostId",
+        "isEnabled",
+        "refreshToken",
+        "scopesGranted",
+        "status",
+        "updatedAt"
+      ],
+      "subcollections": {}
+    }
+  },
+  "hostEmailIntegrations": {
+    "francesco.brufani@decoratocasa.it": {
+      "fields": [
+        "createdAt",
+        "emailAddress",
+        "encryptedAccessToken",
+        "encryptedRefreshToken",
+        "hostId",
+        "lastHistoryIdProcessed",
+        "provider",
+        "scopes",
+        "status",
+        "tokenExpiryDate",
+        "updatedAt",
+        "watchSubscription"
+      ],
+      "subcollections": {
+        "processedMessageIds": {
+          "197a36ad851699ba": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a52d173d5bc67": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a653b628dcdfa": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a65e2d63ed2bf": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a79a7568e909b": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7a9c69fb37ff": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a81edc66b3537": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a9eaa057aef69": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197aafc1aa0c064d": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab0b90b630c16": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab62241e81a73": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab7a9174e0b83": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab7f103c28044": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab8e3a6a6fe7f": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab8f7fe2cdeb3": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab9227be6b52f": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197aba5e2ef39789": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197abb1af7fd994d": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197abc03dec309c6": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197abc3df005d1a3": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ac1a55f7a3c5c": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ac4938615e2dc": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197acc0d04ab9c74": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197acf8b72175bca": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ad1553812059c": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ad1ee50be8e47": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ad2fc4320816d": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ad3c5ba2d4b05": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b0674cb887807": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b0b6059b1d8ef": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b0d4fed247211": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b0d573f70341e": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b1273b2f44a88": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b144b84abe01f": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b40ed2ee396bf": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b6c3011e3eeed": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ba8c366ff1700": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bb02bead34394": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bf99f8346cee1": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bfda9ab604e8a": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c001d230c308b": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c09586ec48a89": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c15a6c34b1d63": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c15ac5f3c2eef": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c193aa71b5951": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c1c94765ad9dd": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c4937aebf44a2": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c50f76ba11b85": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5387333e53e0": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c58f85ab43796": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c59a9192df969": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5b22617a30ce": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5bbd726e2a8b": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5d98394dd2c5": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5d9d08ccde73": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5d9da60df01e": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5d9dbd5bc8c8": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5e6b6691062b": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5f9bf8dad6c1": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c624f00096ce3": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c6884acf42b91": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c6b2c1f6d9098": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          }
+        }
+      }
+    },
+    "shortdeseos@gmail.com": {
+      "fields": [
+        "createdAt",
+        "emailAddress",
+        "encryptedAccessToken",
+        "encryptedRefreshToken",
+        "hostId",
+        "lastHistoryIdProcessed",
+        "provider",
+        "scopes",
+        "status",
+        "tokenExpiryDate",
+        "updatedAt",
+        "watchSubscription"
+      ],
+      "subcollections": {
+        "processedMessageIds": {
+          "197a3b5a9f4ac591": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a3b87c0da68f9": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a3e8d5971f9a7": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a4363eb22cad2": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a436ea135bab1": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a438aab032d49": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a438ac7281b0f": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a446dced5f488": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a44a3beeced9a": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a4e4e03797e9b": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a4e4e4f279e47": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a536ff2d62397": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a570dde32d648": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a6205ae1ea323": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a6639d5b5a118": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a6adc7d5456bc": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a71a5adb617aa": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a72845850861c": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a75d41fee50d4": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a76f5834a4adf": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a77b1726b8107": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a77d726101fa9": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a77f3e849a4bc": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7ad7d21b49d4": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7af5cf224272": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7b6f40772738": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7c1bc948e5a9": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7c70301a30aa": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7c8a41bb19bc": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7d4e0347f48f": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7db2db835f6a": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7dca5ab3a434": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7dd4cd8fb556": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7de8a6c6c096": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7f7d7966784e": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7f92e5d8d66b": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7fa1cea2fe1f": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a7fca38adec04": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a8ce31c7aa516": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a95698640fcf0": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a95e2e6dca282": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a9622a60ff538": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a962c34675b55": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a964b95842c82": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197a9679b0320bde": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197aa6512052f508": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197aad803c566859": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197aaee76c042b03": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab129cd4533a7": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab39fcb34cb5b": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab421b20a81b8": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab5a438fe5ba7": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab5bb34c64718": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab71f8e33dcbc": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab76dded326b2": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab77fe826b016": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ab96d27fef9d1": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197abca8964460e2": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ac0cea94cf4ed": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ac679892e4795": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ac75965847073": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197aca1ef585a791": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ad3506e70425c": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197ae219416c81d0": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197aecc4dbdd535c": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197aecca070d0ef9": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197afbcfcd198db4": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197afd71679f8915": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197affacd2eea4cf": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b04b7a423f0b7": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b0db590d5a784": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b197ef4ae78e6": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b1a895a2eb8b8": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b1f09d0b3182d": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b228033ffeb7a": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b25ed9eb1eec4": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b25f28c041110": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b2d80d82ba778": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b5813ac75af27": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b5c4a458c4c7f": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b62e3ddbca4b1": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b657767a209d8": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b70040387102f": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197b99edf7334ed8": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bb71a0a404575": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bb90f574e63bc": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bb97391df75d9": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bb97b9db370bc": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bb987eb4972ce": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bb9b43a098e37": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bba1fdd906ce6": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bba279f72ac9a": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bba30e3904aeb": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bba765f973d1a": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bbaa5384eb04f": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bbb15dd714f2c": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bbb72d159e577": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bbb731ed9a1a7": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bc4c8f92fe293": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bc8dea2d31f1b": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bc8f15cb1f6b7": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197bca68653704a2": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197becf361ade5a0": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c09272d03af97": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c0ae013292e6f": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c1420b070d1a4": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c1c664203de49": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c1c664f146d44": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c1e3bb8194e52": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c20749358bba4": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c2089b6a8d7a0": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c220b30e143e8": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c23105bcce0fc": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c2595219db53d": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c2755257e1422": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c28553ccd0288": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c28625468ff40": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c28d243ba1c37": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c29c5558d036d": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c29ee5b1d17ed": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c33c542749bcb": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c33d13fe4fe47": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c33e9d102fa54": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c3beb200d989c": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c4a5497456e46": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c51c91a08a6de": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5332db9c97b2": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c539d6f76a457": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5b92001e0208": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5ba28016d54a": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5bb7f3fb2472": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c5d4254cdcbf4": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c604057653480": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c6049dab64e04": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c605c8a365768": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c62a51635768b": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c62b5a2a30765": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c6338f0331b31": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c6339d1d37148": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c63787166c432": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c64c0ac91d1d0": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c66d8b08032b9": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c6880365f7184": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c6aae55ea028f": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c6d69e4887af6": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          },
+          "197c6ed057330060": {
+            "fields": [
+              "historyId",
+              "processedAt"
+            ],
+            "subcollections": {}
+          }
+        }
+      }
+    }
+  },
+  "oauthStates": {
+    "gmail_oauth_state_491d3b503d23601dd8463a2888dd8896": {
+      "fields": [
+        "createdAt",
+        "expiresAt",
+        "hostUid"
+      ],
+      "subcollections": {}
+    },
+    "gmail_oauth_state_4fa6a786f8fa70650ff9d5a05311a44e": {
+      "fields": [
+        "createdAt",
+        "expiresAt",
+        "hostUid"
+      ],
+      "subcollections": {}
+    },
+    "gmail_oauth_state_531f57e28836500919e75359934b5ea0": {
+      "fields": [
+        "createdAt",
+        "expiresAt",
+        "hostUid"
+      ],
+      "subcollections": {}
+    },
+    "gmail_oauth_state_6e6c151a7e58642077e03c3b3baf1747": {
+      "fields": [
+        "createdAt",
+        "expiresAt",
+        "hostUid"
+      ],
+      "subcollections": {}
+    },
+    "gmail_oauth_state_95f466677896e15e70e47e37e006f89e": {
+      "fields": [
+        "createdAt",
+        "expiresAt",
+        "hostUid"
+      ],
+      "subcollections": {}
+    },
+    "gmail_oauth_state_9eb9ac756f0008d85c271cc11b548aff": {
+      "fields": [
+        "createdAt",
+        "expiresAt",
+        "hostUid"
+      ],
+      "subcollections": {}
+    },
+    "gmail_oauth_state_b47cd1085757f63df7cceba8ceab9f02": {
+      "fields": [
+        "createdAt",
+        "expiresAt",
+        "hostUid"
+      ],
+      "subcollections": {}
+    },
+    "gmail_oauth_state_c864a1f5b5ef889159ba0a9524cc963d": {
+      "fields": [
+        "createdAt",
+        "expiresAt",
+        "hostUid"
+      ],
+      "subcollections": {}
+    },
+    "gmail_oauth_state_c8694f0c283b182bc2fe48fcdf309462": {
+      "fields": [
+        "createdAt",
+        "expiresAt",
+        "hostUid"
+      ],
+      "subcollections": {}
+    },
+    "gmail_oauth_state_d97cc225674f91c58f3d1c210d4b4688": {
+      "fields": [
+        "createdAt",
+        "expiresAt",
+        "hostUid"
+      ],
+      "subcollections": {}
+    },
+    "gmail_oauth_state_dc95bddf795187855b7ec2118dcbef81": {
+      "fields": [
+        "createdAt",
+        "expiresAt",
+        "hostUid"
+      ],
+      "subcollections": {}
+    }
+  },
+  "propertyTasks": {
+    "3SMBiDMNcBCeLYDymb1w": {
+      "fields": [
+        "clientId",
+        "createdAt",
+        "details",
+        "hostId",
+        "originalChannel",
+        "propertyId",
+        "providerContactInfo",
+        "status",
+        "taskType",
+        "updatedAt"
+      ],
+      "subcollections": {}
+    },
+    "GI7hJOVCdoWhRP3d8kAq": {
+      "fields": [
+        "clientId",
+        "createdAt",
+        "details",
+        "hostId",
+        "originalChannel",
+        "propertyId",
+        "providerContactInfo",
+        "status",
+        "taskType",
+        "updatedAt"
+      ],
+      "subcollections": {}
+    },
+    "HsUkHGAs5DQBPkR40cr4": {
+      "fields": [
+        "clientId",
+        "createdAt",
+        "details",
+        "hostId",
+        "originalChannel",
+        "propertyId",
+        "providerContactInfo",
+        "status",
+        "taskType",
+        "updatedAt"
+      ],
+      "subcollections": {}
+    },
+    "OBxMhtrZu5RGT07p9QZ9": {
+      "fields": [
+        "clientId",
+        "createdAt",
+        "details",
+        "hostId",
+        "originalChannel",
+        "propertyId",
+        "providerContactInfo",
+        "status",
+        "taskType",
+        "updatedAt"
+      ],
+      "subcollections": {}
+    },
+    "UKFZeNn2Q2sI4SgKfrmR": {
+      "fields": [
+        "clientId",
+        "createdAt",
+        "details",
+        "hostId",
+        "originalChannel",
+        "propertyId",
+        "providerContactInfo",
+        "status",
+        "taskType",
+        "updatedAt"
+      ],
+      "subcollections": {}
+    },
+    "VzkD0VicCxPJFDC08wRf": {
+      "fields": [
+        "clientId",
+        "createdAt",
+        "details",
+        "hostId",
+        "originalChannel",
+        "propertyId",
+        "providerContactInfo",
+        "status",
+        "taskType",
+        "updatedAt"
+      ],
+      "subcollections": {}
+    },
+    "Wwwp5qji3Q8rwqLlAr5n": {
+      "fields": [
+        "clientId",
+        "createdAt",
+        "details",
+        "failureReason",
+        "hostId",
+        "originalChannel",
+        "propertyId",
+        "providerContactInfo",
+        "status",
+        "taskType",
+        "updatedAt"
+      ],
+      "subcollections": {}
+    },
+    "aE6OOF6mNsBGZVNaM8QC": {
+      "fields": [
+        "clientId",
+        "createdAt",
+        "details",
+        "hostId",
+        "originalChannel",
+        "propertyId",
+        "providerContactInfo",
+        "status",
+        "taskType",
+        "updatedAt"
+      ],
+      "subcollections": {}
+    },
+    "eLAwTwz9VqcuEgmZYNzM": {
+      "fields": [
+        "clientId",
+        "createdAt",
+        "details",
+        "hostId",
+        "originalChannel",
+        "propertyId",
+        "providerContactInfo",
+        "status",
+        "taskType",
+        "updatedAt"
+      ],
+      "subcollections": {}
+    },
+    "g2Ug4DHERIPRUOa2oDJZ": {
+      "fields": [
+        "clientId",
+        "createdAt",
+        "details",
+        "hostId",
+        "originalChannel",
+        "propertyId",
+        "providerContactInfo",
+        "status",
+        "taskType",
+        "updatedAt"
+      ],
+      "subcollections": {}
+    },
+    "rC3LSQG2mkbFlbVJ32aq": {
+      "fields": [
+        "clientId",
+        "createdAt",
+        "details",
+        "hostId",
+        "originalChannel",
+        "propertyId",
+        "providerContactInfo",
+        "status",
+        "taskType",
+        "updatedAt"
+      ],
+      "subcollections": {}
+    },
+    "tv5fI4oQJzx4LHp88TDX": {
+      "fields": [
+        "clientId",
+        "createdAt",
+        "details",
+        "hostId",
+        "originalChannel",
+        "propertyId",
+        "providerContactInfo",
+        "status",
+        "taskType",
+        "updatedAt"
+      ],
+      "subcollections": {}
+    }
+  },
+  "reservations": {
+    "2oBK5gUgLJbB2JvmD79l": {
+      "fields": [
+        "clientId",
+        "clientName",
+        "createdAt",
+        "endDate",
+        "hostId",
+        "numeroConfermaBooking",
+        "propertyId",
+        "propertyName",
+        "startDate",
+        "status"
+      ],
+      "subcollections": {}
+    },
+    "46dhyg8q9juxwwAWR6ZV": {
+      "fields": [
+        "clientId",
+        "clientName",
+        "createdAt",
+        "endDate",
+        "hostId",
+        "importedFrom",
+        "numeroConfermaBooking",
+        "propertyId",
+        "propertyName",
+        "startDate",
+        "status"
+      ],
+      "subcollections": {}
+    },
+    "EWkj1At2JCBdFEb7n9Ic": {
+      "fields": [
+        "clientId",
+        "clientName",
+        "createdAt",
+        "endDate",
+        "hostId",
+        "propertyId",
+        "propertyName",
+        "startDate",
+        "status"
+      ],
+      "subcollections": {}
+    },
+    "smoobu_102483793": {
+      "fields": [
+        "adults",
+        "children",
+        "clientId",
+        "clientName",
+        "createdAt",
+        "endDate",
+        "hostId",
+        "importedFrom",
+        "isBlockedBooking",
+        "language",
+        "lastUpdatedAt",
+        "notes",
+        "numeroConfermaBooking",
+        "propertyId",
+        "propertyName",
+        "smoobuChannelId",
+        "smoobuChannelName",
+        "smoobuRawPayloadType",
+        "smoobuReservationId",
+        "startDate",
+        "status",
+        "totalPrice"
+      ],
+      "subcollections": {}
+    },
+    "vuqWnHNjOJVHiJmpKVqI": {
+      "fields": [
+        "clientId",
+        "clientName",
+        "endDate",
+        "hostId",
+        "propertyId",
+        "propertyName",
+        "startDate",
+        "status"
+      ],
+      "subcollections": {}
+    },
+    "w5cpkfFKl60PN6VvQHm7": {
+      "fields": [
+        "clientId",
+        "clientName",
+        "createdAt",
+        "endDate",
+        "hostId",
+        "importedFrom",
+        "propertyId",
+        "propertyName",
+        "startDate",
+        "status"
+      ],
+      "subcollections": {}
+    }
+  },
+  "users": {
+    "FAXX5vAJdzUy9kALjL1QAYVsJgw1": {
+      "fields": [
+        "createdAt",
+        "email",
+        "lastLoginAt",
+        "name",
+        "role"
+      ],
+      "subcollections": {}
+    },
+    "Kgco0qCdLX53TvkqWKLZ": {
+      "fields": [
+        "assignedHostId",
+        "assignedPropertyId",
+        "createdAt",
+        "email",
+        "importedFrom",
+        "lastUpdatedAt",
+        "name",
+        "role",
+        "smoobuGuestId",
+        "whatsappPhoneNumber"
+      ],
+      "subcollections": {}
+    },
+    "MyVIEPAM98TvZt8wIEQvqlHv8CA3": {
+      "fields": [
+        "assignedHostId",
+        "assignedPropertyId",
+        "createdAt",
+        "email",
+        "name",
+        "role"
+      ],
+      "subcollections": {}
+    },
+    "NB5Rwy5MDZfJxEMGYU3g": {
+      "fields": [
+        "assignedHostId",
+        "assignedPropertyId",
+        "createdAt",
+        "email",
+        "importedFrom",
+        "lastUpdatedAt",
+        "name",
+        "role",
+        "smoobuGuestId",
+        "whatsappPhoneNumber"
+      ],
+      "subcollections": {}
+    },
+    "OOZdlkZVjlPAhcJeJYgs1Gx4COx2": {
+      "fields": [
+        "assignedHostId",
+        "assignedPropertyId",
+        "createdAt",
+        "email",
+        "name",
+        "role"
+      ],
+      "subcollections": {}
+    },
+    "SPYvQrqOnddzND3tLaHfcCBqdIi2": {
+      "fields": [
+        "assignedHostId",
+        "assignedPropertyId",
+        "createdAt",
+        "email",
+        "name",
+        "role"
+      ],
+      "subcollections": {
+        "propertyInteractions": {}
+      }
+    },
+    "W3LcH98T0jNYmnHIxJ7QdKpBxCi1": {
+      "fields": [
+        "createdAt",
+        "email",
+        "role"
+      ],
+      "subcollections": {
+        "properties": {
+          "X47nqpPEaTbtdBTpG7Gx": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          }
+        }
+      }
+    },
+    "Xtu2RUZc6iSKTTtA89g7Ywh4Jzz1": {
+      "fields": [
+        "assignedHostId",
+        "assignedPropertyId",
+        "createdAt",
+        "email",
+        "name",
+        "role"
+      ],
+      "subcollections": {
+        "propertyInteractions": {}
+      }
+    },
+    "YDgKEAFiwVWwBEoN06PYZ9T3ksS2": {
+      "fields": [
+        "createdAt",
+        "email",
+        "role"
+      ],
+      "subcollections": {
+        "properties": {
+          "rNhFF9t00sLgJLfBA0Wy": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "luggageDropOffInstructions",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          }
+        }
+      }
+    },
+    "cTpDlkj56SUccko4kwnkADOfXN02": {
+      "fields": [
+        "assignedHostId",
+        "assignedPropertyId",
+        "createdAt",
+        "email",
+        "name",
+        "role"
+      ],
+      "subcollections": {}
+    },
+    "fx06PMqb5eMsKoGsONFIz9Ky9F72": {
+      "fields": [
+        "assignedHostId",
+        "assignedPropertyId",
+        "createdAt",
+        "email",
+        "name",
+        "role"
+      ],
+      "subcollections": {}
+    },
+    "g0vQH0sjpCd0KGNh81iKKZnWVvz1": {
+      "fields": [
+        "assignedHostId",
+        "assignedPropertyId",
+        "createdAt",
+        "email",
+        "name",
+        "role"
+      ],
+      "subcollections": {}
+    },
+    "g27jLEwsj8UgNSF537wiHMcn2di1": {
+      "fields": [
+        "createdAt",
+        "email",
+        "lastSmoobuSync",
+        "lastUpdatedAt",
+        "role",
+        "smoobuApiKey",
+        "smoobuConfiguredAt",
+        "smoobuSyncStats",
+        "smoobuUserEmail",
+        "smoobuUserId",
+        "smoobuUserName"
+      ],
+      "subcollections": {
+        "properties": {
+          "0Hr1ZGzNfMqzMZ2C52aH": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "lastUpdatedAt",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "2BlzWsW34vVlLuc8htQg": {
+            "fields": [
+              "createdAt",
+              "importedFrom",
+              "lastUpdatedAt",
+              "name",
+              "smoobuApartmentId"
+            ],
+            "subcollections": {}
+          },
+          "7nhNHoLGBpNFEJlt7ue5": {
+            "fields": [
+              "createdAt",
+              "createdBy",
+              "name"
+            ],
+            "subcollections": {}
+          },
+          "7snlKIXHR5A4fq9A9bjq": {
+            "fields": [
+              "createdAt",
+              "importedFrom",
+              "lastSyncAt",
+              "lastUpdatedAt",
+              "name",
+              "smoobuApartmentId"
+            ],
+            "subcollections": {}
+          },
+          "Fo5iCfr0tBhH4OKzlod0": {
+            "fields": [
+              "createdAt",
+              "createdBy",
+              "name"
+            ],
+            "subcollections": {}
+          },
+          "GJT2dSf46OKI0dAvFOvS": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "lastUpdatedAt",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "HgYxjW8rP8lRaFPkFTTu": {
+            "fields": [
+              "createdAt",
+              "importedFrom",
+              "lastSyncAt",
+              "lastUpdatedAt",
+              "name",
+              "smoobuApartmentId"
+            ],
+            "subcollections": {}
+          },
+          "JbgNfALC4OX2mB2TH68O": {
+            "fields": [
+              "createdAt",
+              "createdBy",
+              "name"
+            ],
+            "subcollections": {}
+          },
+          "Qc1fQe8HowXelCD4J7us": {
+            "fields": [
+              "createdAt",
+              "createdBy",
+              "name"
+            ],
+            "subcollections": {}
+          },
+          "QqK2SUFrfJsDplbs6tkw": {
+            "fields": [
+              "createdAt",
+              "createdBy",
+              "name"
+            ],
+            "subcollections": {}
+          },
+          "UqI8y6nt5F1OjfsP7qZL": {
+            "fields": [
+              "createdAt",
+              "importedFrom",
+              "lastSyncAt",
+              "lastUpdatedAt",
+              "name",
+              "smoobuApartmentId"
+            ],
+            "subcollections": {}
+          },
+          "Vt1yCZMqtqBbtrEewWcm": {
+            "fields": [
+              "createdAt",
+              "importedFrom",
+              "lastSyncAt",
+              "lastUpdatedAt",
+              "name",
+              "smoobuApartmentId"
+            ],
+            "subcollections": {}
+          },
+          "WHDsT3cveemvgnDxxS1x": {
+            "fields": [
+              "createdAt",
+              "importedFrom",
+              "lastSyncAt",
+              "lastUpdatedAt",
+              "name",
+              "smoobuApartmentId"
+            ],
+            "subcollections": {}
+          },
+          "ZG3Y1O6DgDEObW1CZYNa": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "b2gaHM3N4YfgCrKPZMIi": {
+            "fields": [
+              "createdAt",
+              "createdBy",
+              "name"
+            ],
+            "subcollections": {}
+          },
+          "dU3neOmep6s0B6lspqcS": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "eRmJJyqLIBiX6ifhGjK7": {
+            "fields": [
+              "createdAt",
+              "importedFrom",
+              "lastSyncAt",
+              "lastUpdatedAt",
+              "name",
+              "smoobuApartmentId"
+            ],
+            "subcollections": {}
+          },
+          "ekcKHmtUkpJyEdcWHXOv": {
+            "fields": [
+              "createdAt",
+              "importedFrom",
+              "lastSyncAt",
+              "lastUpdatedAt",
+              "name",
+              "smoobuApartmentId"
+            ],
+            "subcollections": {}
+          },
+          "gW0EfHAe0rd0c78lex65": {
+            "fields": [
+              "createdAt",
+              "importedFrom",
+              "lastSyncAt",
+              "lastUpdatedAt",
+              "name",
+              "smoobuApartmentId"
+            ],
+            "subcollections": {}
+          },
+          "p7HZzn9kFpufPZOFQKtC": {
+            "fields": [
+              "createdAt",
+              "importedFrom",
+              "lastSyncAt",
+              "lastUpdatedAt",
+              "name",
+              "smoobuApartmentId"
+            ],
+            "subcollections": {}
+          },
+          "qV6M4Yqco6yrk01zQeRm": {
+            "fields": [
+              "createdAt",
+              "importedFrom",
+              "lastSyncAt",
+              "lastUpdatedAt",
+              "name",
+              "smoobuApartmentId"
+            ],
+            "subcollections": {}
+          },
+          "qazRS0Y98J20Vrj0SDbA": {
+            "fields": [
+              "createdAt",
+              "createdBy",
+              "name"
+            ],
+            "subcollections": {}
+          },
+          "rIiVBVkDm2hgQbKo3cce": {
+            "fields": [
+              "createdAt",
+              "createdBy",
+              "name"
+            ],
+            "subcollections": {}
+          },
+          "yl2r9i9PjHdsu3Jivt9c": {
+            "fields": [
+              "createdAt",
+              "createdBy",
+              "name"
+            ],
+            "subcollections": {}
+          }
+        }
+      }
+    },
+    "nn5YptFS3WcGL36eMaigNpfzUyh1": {
+      "fields": [
+        "assignedHostId",
+        "assignedPropertyId",
+        "createdAt",
+        "email",
+        "emailBooking",
+        "name",
+        "role",
+        "whatsappPhoneNumber"
+      ],
+      "subcollections": {
+        "propertyInteractions": {}
+      }
+    },
+    "ssL2Bs8SQlbGMZCN8hTmuViIMi72": {
+      "fields": [
+        "createdAt",
+        "email",
+        "role"
+      ],
+      "subcollections": {
+        "properties": {
+          "0l0WnfIdUfI3l3fDZdhC": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "lastUpdatedAt",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "59zSE6TNanPEiAhzMBFJ": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "lastUpdatedAt",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "Cna1WET3UH0JTNRA3KSI": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "lastUpdatedAt",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "QM4dUU8pPVuTATVuohUT": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "lastUpdatedAt",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "mSrlJFNV6zq40aYWBiyY": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "ntBQFmL0B6OIzT1D9dGT": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "lastUpdatedAt",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "pYCBXZIacFm4djVTNTEw": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          }
+        }
+      }
+    },
+    "wWs4mYTLdcNidEN343cVnKIQk5t2": {
+      "fields": [
+        "assignedHostId",
+        "assignedPropertyId",
+        "createdAt",
+        "email",
+        "name",
+        "role"
+      ],
+      "subcollections": {}
+    },
+    "xKr73CpjqfTjtKCDLABR9LTID2Y2": {
+      "fields": [
+        "createdAt",
+        "email",
+        "role"
+      ],
+      "subcollections": {
+        "properties": {
+          "1mbCGJg3EqnIa4Osl5OF": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "lastUpdatedAt",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "4UDJvN1udat62P5TbZvH": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "Okfo0QjHiy5U7Xs9qiHz": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "lastUpdatedAt",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "lGPYMEBwqqvl4InINWrw": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          },
+          "qakpuk1BVYf0nIdYF0jG": {
+            "fields": [
+              "accessCode",
+              "accessInstructions",
+              "address",
+              "allowEarlyCheckin",
+              "allowLateCheckout",
+              "areaServices",
+              "bathrooms",
+              "checkInTime",
+              "checkOutTime",
+              "cleaningAgencyName",
+              "cleaningContactName",
+              "cleaningContactPhone",
+              "cleaningSchedule",
+              "contacts",
+              "createdAt",
+              "instructions",
+              "items",
+              "lastUpdatedAt",
+              "luggageDropOffInstructions",
+              "mainPhotoUrl",
+              "name",
+              "parkingAvailable",
+              "parkingCost",
+              "parkingDistance",
+              "photos",
+              "propertyType",
+              "rooms"
+            ],
+            "subcollections": {}
+          }
+        }
+      }
+    }
+  }
+}
