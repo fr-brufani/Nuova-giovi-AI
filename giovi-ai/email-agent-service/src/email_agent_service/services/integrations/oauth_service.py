@@ -13,6 +13,7 @@ from ...repositories import HostEmailIntegrationRepository, OAuthStateRepository
 from ...repositories.host_email_integrations import HostEmailIntegrationRecord
 from ...repositories.oauth_states import OAuthStateRecord
 from ...utils.crypto import encrypt_text
+from firebase_admin import firestore
 
 
 class OAuthStateNotFoundError(Exception):
@@ -34,11 +35,13 @@ class GmailOAuthService:
         integration_repository: HostEmailIntegrationRepository,
         *,
         state_ttl_minutes: int = 10,
+        firestore_client: Optional[firestore.Client] = None,
     ) -> None:
         self._settings = get_settings()
         self._oauth_state_repository = oauth_state_repository
         self._integration_repository = integration_repository
         self._state_ttl = timedelta(minutes=state_ttl_minutes)
+        self._firestore_client = firestore_client
 
     def _build_flow(self, redirect_uri: Optional[str]) -> Flow:
         config = {
@@ -114,6 +117,21 @@ class GmailOAuthService:
             pms_provider=pms_provider,
         )
         self._integration_repository.upsert_integration(record)
+        
+        # Salva anche pmsProvider nel documento hosts
+        if pms_provider and self._firestore_client:
+            try:
+                host_doc_ref = self._firestore_client.collection("hosts").document(host_id)
+                host_doc_ref.set(
+                    {"pmsProvider": pms_provider},
+                    merge=True,
+                )
+            except Exception as e:
+                # Log errore ma non bloccare il flusso OAuth
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Errore salvataggio pmsProvider in hosts/{host_id}: {e}")
+        
         return record
 
     def handle_callback(
