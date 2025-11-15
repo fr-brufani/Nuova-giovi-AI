@@ -5,6 +5,8 @@ from .integrations.oauth_service import (
     OAuthTokenExchangeError,
 )
 from .persistence_service import PersistenceService
+from .guest_message_pipeline import GuestMessagePipelineService, GuestMessageContext
+from .gemini_service import GeminiService
 
 __all__ = [
     "GmailOAuthService",
@@ -12,5 +14,8 @@ __all__ = [
     "OAuthStateExpiredError",
     "OAuthTokenExchangeError",
     "PersistenceService",
+    "GuestMessagePipelineService",
+    "GuestMessageContext",
+    "GeminiService",
 ]
 

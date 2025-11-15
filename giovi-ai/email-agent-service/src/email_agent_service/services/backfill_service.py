@@ -89,9 +89,9 @@ class GmailBackfillService:
         other: List[tuple[str, ParsedEmail, dict]] = []
 
         for message_id, parsed, payload in all_parsed:
-            if parsed.kind == "scidoo_confirmation":
+            if parsed.kind in ["scidoo_confirmation", "airbnb_confirmation"]:
                 confirmations.append((message_id, parsed, payload))
-            elif parsed.kind == "scidoo_cancellation":
+            elif parsed.kind in ["scidoo_cancellation", "airbnb_cancellation"]:
                 cancellations.append((message_id, parsed, payload))
             else:
                 other.append((message_id, parsed, payload))
@@ -118,7 +118,7 @@ class GmailBackfillService:
             except Exception as e:
                 logger.error(f"[BACKFILL] ❌ Errore salvataggio email {message_id}: {e}", exc_info=True)
             
-            parsed_results.append(parsed)
+                parsed_results.append(parsed)
             self._processed_repository.mark_processed(
                 email,
                 message_id,
@@ -167,27 +167,40 @@ class GmailBackfillService:
         return parsed_results
 
     def _build_query(self, pms_provider: Optional[str] = None) -> str:
+        """
+        Costruisce la query Gmail per il backfill.
+        
+        Per pms_provider="scidoo":
+        - Booking: email da reservation@scidoo.com con subject che finisce con " - Booking"
+        - Airbnb: email da automated@airbnb.com con subject "Prenotazione confermata" o "Cancellazione effettuata"
+        """
         since = datetime.now(timezone.utc) - timedelta(days=self._lookback_days)
         date_string = since.strftime("%Y/%m/%d")
         
-        # Query specifica per gestionale
         if pms_provider == "scidoo":
-            # Per Scidoo: cerca email da reservation@scidoo.com
+            # Per Scidoo: cerca email Booking da reservation@scidoo.com
             # Subject Booking: "Confermata - Prenotazione ID 5150895143 - Booking"
-            # Subject Airbnb: "Confermata - Prenotazione ID HMMFYTC5TJ - Airbnb"
-            # Subject Cancellazione: "Cancellata - Prenotazione ID ... - Booking/Airbnb"
-            # Filtriamo per subject che finisce con " - Booking" o " - Airbnb" per distinguere meglio
-            return f"from:reservation@scidoo.com AND (subject:\"Confermata - Prenotazione\" OR subject:\"Cancellata - Prenotazione\") AND (subject:\" - Booking\" OR subject:\" - Airbnb\") AND after:{date_string}"
+            # Subject Cancellazione Booking: "Cancellata - Prenotazione ID ... - Booking"
+            # Usa subject:"Booking" invece di subject:" - Booking" per essere più flessibile
+            booking_query = f"from:reservation@scidoo.com AND (subject:\"Confermata - Prenotazione\" OR subject:\"Cancellata - Prenotazione\") AND subject:\"Booking\" AND after:{date_string}"
+            
+            # Per Airbnb: cerca email dirette da automated@airbnb.com
+            # Subject conferma: "Prenotazione confermata - ..."
+            # Subject cancellazione: "Cancellazione effettuata - ..." (nota: "Cancellazione" non "Cancellata")
+            airbnb_query = f"from:automated@airbnb.com AND (subject:\"Prenotazione confermata\" OR subject:\"Cancellazione effettuata\") AND after:{date_string}"
+            
+            # Combina le due query con parentesi esplicite per evitare ambiguità
+            return f"(({booking_query}) OR ({airbnb_query}))"
         elif pms_provider == "booking":
-            # Per Booking: cerca messaggi da @mchat.booking.com o @guest.booking.com
-            return f"(from:@mchat.booking.com OR from:@guest.booking.com) AND after:{date_string}"
+            # Per Booking: cerca messaggi da @guest.booking.com
+            return f"from:@guest.booking.com AND after:{date_string}"
         elif pms_provider == "airbnb":
             # Per Airbnb: cerca conferme e messaggi
             return f"(from:automated@airbnb.com OR from:express@airbnb.com) AND after:{date_string}"
         else:
             # Fallback: query generica (per retrocompatibilità o "other")
-            booking_query = "(from:@mchat.booking.com OR from:@guest.booking.com OR from:@scidoo.com)"
-            airbnb_query = "(from:@reply.airbnb.com OR from:automated@airbnb.com)"
+            booking_query = "(from:@guest.booking.com OR from:reservation@scidoo.com)"
+            airbnb_query = "(from:express@airbnb.com OR from:automated@airbnb.com)"
             return f"({booking_query} OR {airbnb_query}) AND after:{date_string}"
 
     def _load_integration(self, host_id: str, email: str) -> HostEmailIntegrationRecord:

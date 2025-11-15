@@ -59,8 +59,39 @@ class PersistenceService:
                 logger.warning(f"[PERSISTENCE] ⚠️ Prenotazione non trovata per cancellazione: voucher_id={voucher_id}")
                 return {"saved": False, "reason": "reservation_not_found", "voucher_id": voucher_id}
         
-        if parsed_email.kind != "scidoo_confirmation":
-            # Per ora gestiamo solo scidoo_confirmation e scidoo_cancellation
+        if parsed_email.kind == "airbnb_cancellation":
+            if not parsed_email.reservation:
+                logger.warning(f"[PERSISTENCE] Email cancellazione Airbnb senza reservation data")
+                return {"saved": False, "reason": "no_reservation_data"}
+            
+            reservation = parsed_email.reservation
+            reservation_id = reservation.reservation_id
+            thread_id = reservation.thread_id
+            
+            logger.info(f"[PERSISTENCE] Cerca prenotazione Airbnb da cancellare: reservationId={reservation_id}, threadId={thread_id}")
+            
+            # Cerca reservation per reservationId o threadId
+            cancelled = False
+            if reservation_id and reservation_id != "unknown":
+                cancelled = self._reservations_repo.cancel_reservation_by_reservation_id(
+                    reservation_id=reservation_id,
+                    host_id=host_id,
+                )
+            elif thread_id:
+                cancelled = self._reservations_repo.cancel_reservation_by_thread_id(
+                    thread_id=thread_id,
+                    host_id=host_id,
+                )
+            
+            if cancelled:
+                logger.info(f"[PERSISTENCE] ✅ Prenotazione Airbnb cancellata: reservationId={reservation_id}, threadId={thread_id}")
+                return {"saved": True, "cancelled": True, "reservation_id": reservation_id, "thread_id": thread_id}
+            else:
+                logger.warning(f"[PERSISTENCE] ⚠️ Prenotazione Airbnb non trovata per cancellazione: reservationId={reservation_id}, threadId={thread_id}")
+                return {"saved": False, "reason": "reservation_not_found", "reservation_id": reservation_id, "thread_id": thread_id}
+        
+        if parsed_email.kind not in ["scidoo_confirmation", "airbnb_confirmation"]:
+            # Gestiamo scidoo_confirmation, airbnb_confirmation e scidoo_cancellation
             logger.warning(f"[PERSISTENCE] Kind non supportato: {parsed_email.kind}")
             return {"saved": False, "reason": "kind_not_supported"}
 
@@ -81,6 +112,9 @@ class PersistenceService:
         try:
             logger.info(f"[PERSISTENCE] Reservation ID: {reservation.reservation_id}, Property: {reservation.property_name}, Guest: {reservation.guest_name}")
             
+            # Determina imported_from in base al tipo di email
+            imported_from = "airbnb_email" if parsed_email.kind == "airbnb_confirmation" else "scidoo_email"
+            
             # 1. Trova/crea property
             if reservation.property_name:
                 logger.info(f"[PERSISTENCE] Cerca/crea property: {reservation.property_name}")
@@ -88,7 +122,7 @@ class PersistenceService:
                     self._properties_repo.find_or_create_by_name(
                         host_id=host_id,
                         property_name=reservation.property_name,
-                        imported_from="scidoo_email",
+                        imported_from=imported_from,
                     )
                 )
                 result["property_id"] = property_id
@@ -113,14 +147,14 @@ class PersistenceService:
                 phone=reservation.guest_phone,
                 property_id=property_id,
                 reservation_id=reservation.reservation_id,
-                imported_from="scidoo_email",
+                imported_from=imported_from,
             )
             result["client_id"] = client_id
             result["client_created"] = client_created
             logger.info(f"[PERSISTENCE] Cliente: id={client_id}, created={client_created}")
 
             # 3. Salva prenotazione
-            logger.info(f"[PERSISTENCE] Salva prenotazione: reservation_id={reservation.reservation_id}, voucher_id={reservation.voucher_id}, source_channel={reservation.source_channel}")
+            logger.info(f"[PERSISTENCE] Salva prenotazione: reservation_id={reservation.reservation_id}, voucher_id={reservation.voucher_id}, source_channel={reservation.source_channel}, thread_id={reservation.thread_id}")
             self._reservations_repo.upsert_reservation(
                 reservation_id=reservation.reservation_id,
                 host_id=host_id,
@@ -135,7 +169,8 @@ class PersistenceService:
                 adults=reservation.adults,
                 voucher_id=reservation.voucher_id,  # ID Voucher estratto dalla email
                 source_channel=reservation.source_channel,  # "booking" o "airbnb" dal subject
-                imported_from="scidoo_email",
+                thread_id=reservation.thread_id,  # Thread ID per Airbnb (per matchare messaggi)
+                imported_from=imported_from,
             )
             result["reservation_saved"] = True
             result["saved"] = True

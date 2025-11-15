@@ -68,7 +68,14 @@ class HostEmailIntegrationRepository:
     ) -> None:
         """Aggiorna watch subscription in Firestore."""
         doc_ref = self._collection.document(email)
-        expiration_timestamp = firestore.Timestamp.from_millis(expiration_ms)
+        # Assicurati che expiration_ms sia int (può arrivare come stringa)
+        if isinstance(expiration_ms, str):
+            expiration_ms = int(expiration_ms)
+        elif not isinstance(expiration_ms, (int, float)):
+            expiration_ms = int(expiration_ms)
+        
+        # Converti millisecondi in datetime UTC (Firestore lo convertirà automaticamente in Timestamp)
+        expiration_timestamp = datetime.fromtimestamp(float(expiration_ms) / 1000.0, tz=timezone.utc)
         doc_ref.update(
             {
                 "watchSubscription": {
@@ -126,4 +133,9 @@ class HostEmailIntegrationRepository:
             watch_subscription=watch_subscription,
             pms_provider=data.get("pmsProvider"),
         )
+    
+    def delete_integration(self, email: str) -> None:
+        """Elimina un'integrazione Gmail da Firestore."""
+        doc_ref = self._collection.document(email)
+        doc_ref.delete()
 

@@ -17,6 +17,7 @@ from ...models import (
 from ...parsers import (
     ScidooCancellationParser,
     AirbnbConfirmationParser,
+    AirbnbCancellationParser,
     AirbnbMessageParser,
     BookingConfirmationParser,
     BookingMessageParser,
@@ -45,7 +46,7 @@ def get_oauth_service(
 ) -> GmailOAuthService:
     state_repo = OAuthStateRepository(firestore_client)
     integration_repo = HostEmailIntegrationRepository(firestore_client)
-    return GmailOAuthService(state_repo, integration_repo)
+    return GmailOAuthService(state_repo, integration_repo, firestore_client=firestore_client)
 
 
 def get_backfill_service(
@@ -61,9 +62,10 @@ def get_backfill_service(
             # perché BookingConfirmationParser matcha anche @scidoo.com
             ScidooCancellationParser(),
             ScidooConfirmationParser(),
+            AirbnbCancellationParser(),  # Prima di AirbnbConfirmationParser per matchare cancellazioni
+            AirbnbConfirmationParser(),
             BookingConfirmationParser(),
             BookingMessageParser(),
-            AirbnbConfirmationParser(),
             AirbnbMessageParser(),
         ]
     )
@@ -175,9 +177,10 @@ def get_watch_service(
         [
             ScidooCancellationParser(),
             ScidooConfirmationParser(),
+            AirbnbCancellationParser(),  # Prima di AirbnbConfirmationParser per matchare cancellazioni
+            AirbnbConfirmationParser(),
             BookingConfirmationParser(),
             BookingMessageParser(),
-            AirbnbConfirmationParser(),
             AirbnbMessageParser(),
         ]
     )
@@ -230,6 +233,12 @@ def setup_gmail_watch(
         watch_result = gmail_service.setup_watch(integration, topic_name)
         history_id = watch_result["historyId"]
         expiration_ms = watch_result["expiration"]
+        
+        # Converti expiration in int se necessario (Gmail API può restituire stringa)
+        if isinstance(expiration_ms, str):
+            expiration_ms = int(expiration_ms)
+        elif not isinstance(expiration_ms, int):
+            expiration_ms = int(expiration_ms)
 
         # Salva watch subscription in Firestore
         integration_repo.update_watch_subscription(
@@ -248,6 +257,37 @@ def setup_gmail_watch(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Errore durante setup Gmail Watch: {str(e)}",
         ) from e
+
+
+@router.delete(
+    "/gmail/{email}",
+    status_code=status.HTTP_200_OK,
+)
+def delete_gmail_integration(
+    email: str,
+    firestore_client: firestore.Client = Depends(get_firestore_client),
+) -> dict:
+    """
+    Elimina un'integrazione Gmail.
+    
+    Args:
+        email: Email dell'integrazione Gmail da eliminare
+    """
+    integration_repo = HostEmailIntegrationRepository(firestore_client)
+    integration = integration_repo.get_by_email(email)
+    
+    if not integration:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Integrazione Gmail non trovata per {email}",
+        )
+    
+    integration_repo.delete_integration(email)
+    
+    return {
+        "email": email,
+        "message": "Integrazione Gmail eliminata con successo",
+    }
 
 
 @router.post(
@@ -297,9 +337,10 @@ def handle_gmail_notifications(
             [
                 ScidooCancellationParser(),
                 ScidooConfirmationParser(),
+                AirbnbCancellationParser(),  # Prima di AirbnbConfirmationParser per matchare cancellazioni
+                AirbnbConfirmationParser(),
                 BookingConfirmationParser(),
                 BookingMessageParser(),
-                AirbnbConfirmationParser(),
                 AirbnbMessageParser(),
             ]
         )

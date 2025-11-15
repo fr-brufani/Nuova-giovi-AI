@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 from datetime import timezone
 from typing import Optional
 
@@ -122,4 +123,71 @@ class GmailService:
             historyTypes=["messageAdded"],
         )
         return request.execute()
+
+    def send_reply(
+        self,
+        integration: HostEmailIntegrationRecord,
+        to_email: str,
+        subject: str,
+        body: str,
+        reply_to: Optional[str] = None,
+        in_reply_to: Optional[str] = None,
+        references: Optional[str] = None,
+    ) -> dict:
+        """
+        Invia una risposta email tramite Gmail API con threading corretto.
+        
+        Args:
+            integration: Record integrazione Gmail
+            to_email: Indirizzo email destinatario
+            subject: Oggetto email (verrà aggiunto "Re: " se non presente)
+            body: Corpo del messaggio
+            reply_to: Indirizzo Reply-To (opzionale)
+            in_reply_to: Message-ID originale per threading (opzionale)
+            references: References header per threading (opzionale)
+        
+        Returns:
+            dict con messageId e threadId della risposta inviata
+        """
+        # Assicura che l'oggetto inizi con "Re: " se non presente
+        if not subject.lower().startswith("re:"):
+            subject = f"Re: {subject}"
+        
+        # Costruisci l'email in formato RFC822
+        email_lines = [
+            f"To: {to_email}",
+            f"Subject: {subject}",
+            "Content-Type: text/plain; charset=utf-8",
+        ]
+        
+        if reply_to:
+            email_lines.insert(1, f"Reply-To: {reply_to}")
+        
+        if in_reply_to:
+            email_lines.append(f"In-Reply-To: {in_reply_to}")
+        if references:
+            email_lines.append(f"References: {references}")
+        
+        email_lines.append("")  # Riga vuota obbligatoria prima del corpo
+        email_lines.append(body)
+        
+        email = "\r\n".join(email_lines)
+        
+        # Codifica l'email in base64url (richiesto da Gmail API)
+        email_bytes = email.encode("utf-8")
+        base64_encoded = base64.urlsafe_b64encode(email_bytes).decode("ascii")
+        base64_encoded = base64_encoded.rstrip("=")  # Rimuovi padding
+        
+        # Invia tramite Gmail API
+        gmail = self._gmail(integration)
+        request = gmail.users().messages().send(
+            userId="me",
+            body={"raw": base64_encoded},
+        )
+        response = request.execute()
+        
+        return {
+            "messageId": response.get("id"),
+            "threadId": response.get("threadId"),
+        }
 

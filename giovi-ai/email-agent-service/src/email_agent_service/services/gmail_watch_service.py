@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Optional
 
 from firebase_admin import firestore
 
@@ -10,6 +11,8 @@ from ..parsers.engine import decode_gmail_raw
 from ..repositories import HostEmailIntegrationRepository, ProcessedMessageRepository
 from ..services.gmail_service import GmailService
 from ..services.persistence_service import PersistenceService
+from ..services.guest_message_pipeline import GuestMessageContext, GuestMessagePipelineService
+from ..services.gemini_service import GeminiService
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +35,8 @@ class GmailWatchService:
         self._parsing_engine = parsing_engine
         self._persistence_service = persistence_service
         self._firestore_client = firestore_client
+        self._guest_pipeline = GuestMessagePipelineService(firestore_client)
+        self._gemini_service = GeminiService()
 
     def process_new_emails(self, email: str, notified_history_id: str) -> None:
         """
@@ -61,9 +66,28 @@ class GmailWatchService:
         )
         
         if not start_history_id:
-            logger.error(f"[WATCH] Missing startHistoryId per {email}")
-            self._update_integration_status(email, "error_missing_history_id")
-            return
+            # Fallback: usa notified_history_id come punto di partenza
+            # Questo può causare la perdita di alcune email, ma è meglio di non processare nulla
+            logger.warning(
+                f"[WATCH] Missing startHistoryId per {email}. "
+                f"Usando notified_history_id={notified_history_id} come fallback. "
+                f"Alcune email potrebbero essere perse. Si consiglia di riattivare il watch dal frontend."
+            )
+            start_history_id = notified_history_id
+            # Salva questo historyId come lastHistoryIdProcessed per evitare il problema in futuro
+            # Usiamo un expiration temporaneo (non verrà usato, ma serve per la struttura)
+            try:
+                from datetime import datetime, timezone
+                # Calcola expiration 7 giorni da ora in millisecondi
+                expiration_7days = int((datetime.now(timezone.utc).timestamp() + (7 * 24 * 60 * 60)) * 1000)
+                self._integration_repository.update_watch_subscription(
+                    email=email,
+                    history_id=notified_history_id,
+                    expiration_ms=expiration_7days,
+                )
+                logger.info(f"[WATCH] Salvato fallback historyId={notified_history_id} come lastHistoryIdProcessed")
+            except Exception as e:
+                logger.error(f"[WATCH] Errore salvataggio fallback historyId: {e}", exc_info=True)
 
         # Verifica che notified_history_id sia maggiore di start_history_id
         try:
@@ -148,6 +172,81 @@ class GmailWatchService:
                         else:
                             logger.warning(f"[WATCH] ⚠️ Salvataggio fallito: {save_result.get('reason')}")
 
+                    # Step 6: Processa messaggi guest per AI reply (se auto-reply abilitato)
+                    if parsed.kind in ["booking_message", "airbnb_message"]:
+                        should_process, client_id = self._guest_pipeline.should_process_message(
+                            parsed_email=parsed,
+                            host_id=host_id,
+                        )
+                        if should_process and client_id:
+                            context = self._guest_pipeline.extract_context(
+                                parsed_email=parsed,
+                                host_id=host_id,
+                                client_id=client_id,
+                            )
+                            if context:
+                                # Salva il messaggio nella conversazione
+                                self._guest_pipeline.save_guest_message(
+                                    context=context,
+                                    parsed_email=parsed,
+                                    gmail_message_id=message_id,
+                                )
+                                
+                                logger.info(
+                                    f"[WATCH] 📧 Messaggio guest pronto per AI reply: "
+                                    f"clientId={context.client_id}, reservationId={context.reservation_id}"
+                                )
+                                
+                                # Step 7: Chiamare Gemini AI con questo contesto
+                                if parsed.guest_message:
+                                    ai_reply = self._gemini_service.generate_reply(
+                                        context=context,
+                                        guest_message=parsed.guest_message.message,
+                                    )
+                                    
+                                    if ai_reply:
+                                        logger.info(f"[WATCH] ✅ Risposta AI generata ({len(ai_reply)} caratteri)")
+                                        
+                                        # Step 8: Inviare risposta email
+                                        try:
+                                            # Estrai informazioni per threading
+                                            reply_to = parsed.guest_message.reply_to
+                                            original_subject = parsed.metadata.subject or "Messaggio"
+                                            
+                                            # Estrai Message-ID originale se disponibile
+                                            original_message_id = parsed.metadata.gmail_message_id
+                                            
+                                            # Invia risposta
+                                            send_result = self._gmail_service.send_reply(
+                                                integration=integration,
+                                                to_email=reply_to or parsed.metadata.sender or "",
+                                                subject=original_subject,
+                                                body=ai_reply,
+                                                reply_to=reply_to,
+                                                in_reply_to=original_message_id,
+                                                references=original_message_id,
+                                            )
+                                            
+                                            logger.info(
+                                                f"[WATCH] ✅ Email risposta inviata: "
+                                                f"messageId={send_result.get('messageId')}, "
+                                                f"threadId={send_result.get('threadId')}"
+                                            )
+                                            
+                                            # Salva risposta AI in Firestore
+                                            self._save_ai_response(
+                                                context=context,
+                                                guest_message=parsed.guest_message.message,
+                                                ai_reply=ai_reply,
+                                                gmail_message_id=message_id,
+                                                reply_message_id=send_result.get("messageId"),
+                                            )
+                                            
+                                        except Exception as e:
+                                            logger.error(f"[WATCH] ❌ Errore invio email risposta: {e}", exc_info=True)
+                                    else:
+                                        logger.warning("[WATCH] ⚠️ Impossibile generare risposta AI")
+
                     # Marca come processata
                     self._processed_repository.mark_processed(
                         email,
@@ -188,7 +287,7 @@ class GmailWatchService:
         if kind in ["booking_message", "airbnb_message"]:
             return True
 
-        # Email conferme prenotazioni Scidoo: solo se pmsProvider == "scidoo"
+        # Email conferme/cancellazioni prenotazioni Scidoo: solo se pmsProvider == "scidoo"
         if kind in ["scidoo_confirmation", "scidoo_cancellation"]:
             if pms_provider == "scidoo":
                 return True
@@ -196,8 +295,8 @@ class GmailWatchService:
                 logger.debug(f"[WATCH] Email Scidoo ignorata: pmsProvider={pms_provider} != 'scidoo'")
                 return False
 
-        # Email conferme Booking/Airbnb: sempre rilevanti (non dipendono da pmsProvider)
-        if kind in ["booking_confirmation", "airbnb_confirmation"]:
+        # Email conferme/cancellazioni Booking/Airbnb: sempre rilevanti (non dipendono da pmsProvider)
+        if kind in ["booking_confirmation", "airbnb_confirmation", "airbnb_cancellation"]:
             return True
 
         # Email non gestite: non processate
@@ -233,4 +332,44 @@ class GmailWatchService:
             doc_ref.update({"status": status})
         except Exception as e:
             logger.error(f"[WATCH] Errore aggiornamento status per {email}: {e}")
+
+    def _save_ai_response(
+        self,
+        context: GuestMessageContext,
+        guest_message: str,
+        ai_reply: str,
+        gmail_message_id: str,
+        reply_message_id: Optional[str],
+    ) -> None:
+        """
+        Salva la risposta AI in Firestore.
+        
+        La risposta è salvata in: properties/{propertyId}/conversations/{clientId}/messages
+        """
+        try:
+            messages_ref = (
+                self._firestore_client
+                .collection("properties")
+                .document(context.property_id)
+                .collection("conversations")
+                .document(context.client_id)
+                .collection("messages")
+            )
+
+            # Salva la risposta AI
+            message_data = {
+                "sender": "host_ai",
+                "text": ai_reply,
+                "timestamp": firestore.SERVER_TIMESTAMP,
+                "source": "ai_reply",
+                "gmailMessageId": gmail_message_id,
+                "replyMessageId": reply_message_id,
+                "reservationId": context.reservation_id,
+                "guestMessage": guest_message,  # Salva anche il messaggio originale per contesto
+            }
+
+            messages_ref.add(message_data)
+            logger.info(f"[WATCH] Risposta AI salvata in conversazione: property={context.property_id}, client={context.client_id}")
+        except Exception as e:
+            logger.error(f"[WATCH] Errore salvataggio risposta AI: {e}", exc_info=True)
 

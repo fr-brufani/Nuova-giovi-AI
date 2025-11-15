@@ -8,8 +8,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copia pyproject.toml e installa dipendenze
+# Copia pyproject.toml e src per installare il package
 COPY pyproject.toml ./
+COPY src/ ./src/
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir build wheel && \
     pip install --no-cache-dir -e .
@@ -24,15 +25,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copia pyproject.toml
+# Copia pyproject.toml e src
 COPY pyproject.toml ./
+COPY src/ ./src/
 
 # Installa solo dipendenze di produzione
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -e .
 
-# Copia tutto il codice sorgente
-COPY . .
+# Copia il resto del codice (main.py, tests, etc.)
+COPY main.py ./
 
 # Esponi la porta (Cloud Run usa $PORT, default 8080)
 EXPOSE 8080
@@ -45,5 +47,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
 # Avvia l'applicazione (uvicorn leggerà PORT da env)
-CMD sh -c 'uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1'
+CMD sh -c 'python -m uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1'
 

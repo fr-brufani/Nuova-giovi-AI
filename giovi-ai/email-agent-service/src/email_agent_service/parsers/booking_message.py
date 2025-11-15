@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
+from email.header import decode_header
 from typing import Optional
 
 from dateutil import parser as date_parser
@@ -15,11 +16,14 @@ class BookingMessageParser(EmailParser):
 
     def matches(self, content: EmailContent) -> bool:
         sender = content.message.get("From")
-        subject = content.message.get("Subject", "")
+        subject_raw = content.message.get("Subject", "")
+        # Decodifica subject se codificato in RFC 2047 (base64 o quoted-printable)
+        subject = self._decode_header(subject_raw)
         return is_booking_sender(sender) and "messaggio" in subject.lower()
 
     def parse(self, content: EmailContent) -> ParsedEmail:
-        subject = content.message.get("Subject")
+        subject_raw = content.message.get("Subject")
+        subject = self._decode_header(subject_raw) if subject_raw else None
         sender = content.message.get("From")
         recipients = content.message.get_all("To")
         received = parse_date_header(content.message.get("Date"))
@@ -58,11 +62,30 @@ class BookingMessageParser(EmailParser):
         match = re.search(r"(\d{6,})-", sender)
         if match:
             return match.group(1)
-        subject = content.message.get("Subject", "")
+        subject_raw = content.message.get("Subject", "")
+        subject = self._decode_header(subject_raw)
         match = re.search(r"(\d{6,})", subject)
         if match:
             return match.group(1)
         return None
+
+    @staticmethod
+    def _decode_header(header_value: str) -> str:
+        """Decodifica header email codificato in RFC 2047 (base64 o quoted-printable)."""
+        if not header_value:
+            return ""
+        try:
+            decoded_parts = decode_header(header_value)
+            decoded_string = ""
+            for part, encoding in decoded_parts:
+                if isinstance(part, bytes):
+                    decoded_string += part.decode(encoding or "utf-8", errors="replace")
+                else:
+                    decoded_string += part
+            return decoded_string
+        except Exception:
+            # Se la decodifica fallisce, ritorna il valore originale
+            return header_value
 
 
 def normalize_text(text: str) -> str:

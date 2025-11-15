@@ -49,6 +49,11 @@ class AppSettings(BaseSettings):
         validation_alias="GMAIL_PUBSUB_TOPIC",
         description="Nome completo del topic Pub/Sub per Gmail Watch (es: projects/PROJECT_ID/topics/TOPIC_NAME)",
     )
+    gemini_api_key: Optional[str] = Field(
+        default=None,
+        validation_alias="GEMINI_API_KEY",
+        description="Chiave API per Google Gemini",
+    )
 
     @field_validator("google_oauth_scopes", mode="before")
     @classmethod

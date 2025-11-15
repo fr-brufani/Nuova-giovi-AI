@@ -9,6 +9,7 @@ class ReservationInfo(BaseModel):
     source: Literal["booking", "airbnb", "scidoo"]
     voucher_id: Optional[str] = Field(default=None, alias="voucherId")  # ID Voucher da Booking/Scidoo
     source_channel: Optional[Literal["booking", "airbnb"]] = Field(default=None, alias="sourceChannel")  # Canale: Booking o Airbnb (da subject email Scidoo)
+    thread_id: Optional[str] = Field(default=None, alias="threadId")  # Thread ID per Airbnb (per matchare messaggi)
     property_name: Optional[str] = Field(default=None, alias="propertyName")
     property_external_id: Optional[str] = Field(default=None, alias="propertyExternalId")
     check_in: Optional[datetime] = Field(default=None, alias="checkIn")
@@ -47,6 +48,7 @@ class ParsedEmail(BaseModel):
         "booking_confirmation",
         "booking_message",
         "airbnb_confirmation",
+        "airbnb_cancellation",
         "airbnb_message",
         "scidoo_confirmation",
         "scidoo_cancellation",

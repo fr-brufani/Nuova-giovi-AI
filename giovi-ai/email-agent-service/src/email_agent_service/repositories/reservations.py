@@ -32,6 +32,7 @@ class ReservationsRepository:
         adults: Optional[int] = None,
         voucher_id: Optional[str] = None,
         source_channel: Optional[str] = None,  # "booking" o "airbnb"
+        thread_id: Optional[str] = None,  # Thread ID per Airbnb (per matchare messaggi)
         imported_from: str = "scidoo_email",
     ) -> None:
         """
@@ -94,6 +95,8 @@ class ReservationsRepository:
             reservation_data["voucherId"] = voucher_id  # ID Voucher da Booking/Scidoo
         if source_channel:
             reservation_data["sourceChannel"] = source_channel  # "booking" o "airbnb" (da subject email Scidoo)
+        if thread_id:
+            reservation_data["threadId"] = thread_id  # Thread ID per Airbnb (per matchare messaggi)
 
         if existing_doc:
             # Aggiorna documento esistente
@@ -136,6 +139,80 @@ class ReservationsRepository:
                 "status": "cancelled",
                 "lastUpdatedAt": firestore.SERVER_TIMESTAMP,
                 "cancellationDetails": f"Cancellata via email Scidoo {datetime.now().isoformat()}",
+            },
+            merge=True,
+        )
+        return True
+
+    def cancel_reservation_by_reservation_id(
+        self,
+        reservation_id: str,
+        host_id: str,
+    ) -> bool:
+        """
+        Cancella una prenotazione cercandola per reservationId (per Airbnb).
+        
+        Returns:
+            True se la prenotazione è stata trovata e cancellata, False altrimenti
+        """
+        reservations_ref = self._client.collection("reservations")
+        
+        # Cerca prenotazione per reservationId e hostId
+        query = (
+            reservations_ref
+            .where("reservationId", "==", reservation_id)
+            .where("hostId", "==", host_id)
+            .limit(1)
+        )
+        docs = list(query.get())
+        
+        if not docs:
+            return False
+        
+        # Aggiorna lo status a "cancelled"
+        doc = docs[0]
+        doc.reference.set(
+            {
+                "status": "cancelled",
+                "lastUpdatedAt": firestore.SERVER_TIMESTAMP,
+                "cancellationDetails": f"Cancellata via email Airbnb {datetime.now().isoformat()}",
+            },
+            merge=True,
+        )
+        return True
+
+    def cancel_reservation_by_thread_id(
+        self,
+        thread_id: str,
+        host_id: str,
+    ) -> bool:
+        """
+        Cancella una prenotazione cercandola per threadId (per Airbnb).
+        
+        Returns:
+            True se la prenotazione è stata trovata e cancellata, False altrimenti
+        """
+        reservations_ref = self._client.collection("reservations")
+        
+        # Cerca prenotazione per threadId e hostId
+        query = (
+            reservations_ref
+            .where("threadId", "==", thread_id)
+            .where("hostId", "==", host_id)
+            .limit(1)
+        )
+        docs = list(query.get())
+        
+        if not docs:
+            return False
+        
+        # Aggiorna lo status a "cancelled"
+        doc = docs[0]
+        doc.reference.set(
+            {
+                "status": "cancelled",
+                "lastUpdatedAt": firestore.SERVER_TIMESTAMP,
+                "cancellationDetails": f"Cancellata via email Airbnb (threadId={thread_id}) {datetime.now().isoformat()}",
             },
             merge=True,
         )
