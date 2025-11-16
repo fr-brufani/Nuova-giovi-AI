@@ -134,6 +134,15 @@ class GmailWatchService:
                     skipped_count += 1
                     continue
 
+                # Marca SUBITO come processata per evitare duplicazioni in caso di notifiche multiple/race
+                # Nota: preferiamo evitare risposte duplicate anche se un eventuale errore successivo
+                # impedisse il completamento del flusso.
+                self._processed_repository.mark_processed(
+                    email,
+                    message_id,
+                    history_id=notified_history_id,
+                )
+
                 # Estrai e processa email
                 try:
                     payload = self._gmail_service.get_message_raw(integration, message_id)
@@ -247,12 +256,6 @@ class GmailWatchService:
                                     else:
                                         logger.warning("[WATCH] ⚠️ Impossibile generare risposta AI")
 
-                    # Marca come processata
-                    self._processed_repository.mark_processed(
-                        email,
-                        message_id,
-                        history_id=notified_history_id,
-                    )
                     processed_count += 1
 
                 except Exception as e:
