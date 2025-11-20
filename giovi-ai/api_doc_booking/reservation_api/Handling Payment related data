@@ -1,0 +1,68 @@
+Handling Payment related data
+Why is one of my connected properties not receiving credit card or CVC details via XML?
+Assuming you’re a PCI-compliant provider – meaning you manage payment card information via XML messages – the reasons credit card or CVC details are not sent could be due to:
+
+the extranet settings on the property level (for example: credit card is not set as a payment method)
+some reservation conditions don’t require credit card details at the time of booking (for example: last-minute reservations or domestic bookings are possible without credit cards)
+If you’re a PCI-compliant provider and want to receive credit card and CVC details, you can do so in Provider Portal and choose one of the following options:
+
+send all information (credit card and CVC details) via XML
+exclude CVC code from the XML
+display all information on the extranet (and optional email link to extranet)
+In the Provider Portal select the Properties tab, then select the property you would like to change. Select Property Settings and you will see an option for Credit Card Data via API. You can then select how the property can receive the credit card data.
+
+Note: We only accept requests from our connectivity partners, not from properties directly.
+
+Why is a reservation missing credit card details?
+For security reasons, we send out the customer’s full credit card details in the first pull only. However, if you need to see if the customer’s card details were included in the original pull, use the Reservation Timeline tool.
+
+If the credit card details don’t appear in the first pull, it could be due to three reasons:
+
+The property has chosen not to request card details via an option in the extranet.
+The reservation was made using certain commercial features that do not require credit card details.
+The property has chosen to remove the card details from the XML message.
+In these cases, we recommend you contact the property directly to check if they have activated one of these options. Since these are commercial decisions that impact conversion, they need to come from the property – preferably in consultation with their Booking.com contact.
+
+You can change the credit card setting option in the Provider Portal. In the Provider Portal, select the Properties tab, then select the property you would like to change. Select Property Settings and you will see an option for Credit Card Data via API. You can then select how the property can receive the credit card data.
+
+Why is a modification missing credit card details?
+For most modifications, you won’t receive the guest’s credit card details. This is because, for security reasons, we only send the full card details in the first pull. If the price, date or room are modified, you’ll only receive the relevant details in the modification message.
+
+However, if the credit card itself has been updated in the system, you will receive the full credit card details.
+
+How often can my properties access guest credit card details?
+Properties can only view a guest's credit card details three times, for up to 10 days after the check-out date. If a booking is cancelled, the credit card details are available for up to 10 days after the cancellation date.
+
+If a guest either cancels a non-refundable reservation or is a no-show, a property can view the credit card details up to three times (starting two weeks before check-in and for up to 10 days after check-out).
+
+Credit card and prepayment restrictions for new property partners
+In order to verify all new property partners, we have a temporary ‘No Prepayment’ restriction in place.
+
+If a property has newly joined Booking.com and hasn’t been verified yet, they won’t be able to view guests’ credit card details or set policies for prepayments until they’ve met the verification criteria.
+
+During the restricted period, Booking.com will validate the credit card for the property, so they can then charge the guest on the check-in date.
+
+We understand this may be an inconvenience, but it’s important for us to first make the checks before we ask the guests to pay up front. The verification process ensures guests feel confident that they're booking and staying with trusted, reliable properties.
+
+Exception: In cases of no-shows or non-refundable cancellations where a fee applies, properties can view and charge guest credit cards (starting 2 weeks before check-in and for up to 10 days after check-out).
+
+To learn more, see New partner restrictions: credit cards and prepayments.
+
+When is the credit card and prepayment restrictions removed for new property partners?
+The ‘No Prepayment’ restriction is either lifted after a property has been verified or after they’ve received a certain number of stayed reservations and reviews. They must also have consistently paid their invoices.
+
+For security reasons, we can’t specify the exact number of bookings and reviews required to reach this threshold.
+
+Once the verification process is complete, we look forward to having a long and successful partnership with you and your properties for many years to come.
+
+What should I do about invalid credit cards?
+Sometimes you might receive reservations made with invalid credit cards. This could be for a variety of reasons, including expiry, insufficient funds or a guest entering the wrong number.
+
+You should report this and request new details via the Reporting API. You can do so from the moment you collected the reservation until midnight on the day of check-in (midnight in the time zone of the property).
+
+The customer who provided the invalid credit card will then receive an email and an SMS from Booking.com asking them to provide new card information within 24 hours. If they don’t, the property can cancel the reservation directly using the cancel_reservation_invalid_cc feature.
+
+You can also request to have the reservation cancelled due to invalid credit card via the Reporting API.
+
+For more information about how property can handle invalid credit cards, take a look at the article Handling invalid credit cards.
+

@@ -1,0 +1,8 @@
+- Segui sempre le istruzioni complete presenti nel file /.cursorrules alla radice del repository.
+- Focus: lavorare esclusivamente su giovi-ai/email-agent-service (FastAPI Python per gestione email e parsing prenotazioni). Evitare core-service, gemini-proxy e altri servizi.
+- Dopo ogni implementazione esegui lint, test disponibili e controlli di base; chiedi test manuali solo se necessari per UX/UI.
+- Non creare file Markdown (o documenti simili) per spiegazioni: tutte le analisi e i report devono stare nella conversazione.
+- Distinguere chiaramente tra richieste di azione (implementare) e richieste di analisi (solo spiegare). Se il prompt è di sola analisi, non modificare codice finché non ricevi un comando operativo.
+- Mantieni coerenza con pattern, naming e architettura esistenti; sii proattivo nel reperire log/output necessari e nel chiedere credenziali solo quando indispensabili.---
+alwaysApply: true
+---

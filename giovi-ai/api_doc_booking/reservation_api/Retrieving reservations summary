@@ -1,0 +1,136 @@
+Use the reservationssummary endpoint to retrieve both the old and new reservations of a property with check-out dates in the future. Use this endpoint to match modifications/cancellations of future-dated reservations.
+
+The API only provides summary information and doesn't include guest details, other than the guest's name.
+
+Retrieving all unstayed reservations
+
+
+POST https://secure-supply-xml.booking.com/hotels/xml/reservationssummary
+Use this endpoint to get all the recent property reservations made through the Booking.com channels. You can apply a filter to retrieve reservations specific to certain properties specified by a property ID.
+
+Query parameters
+The following table describes the optional elements you can add as query parameters to filter the incoming reservations:
+
+Element	Description	Type	Required/Optional	Notes
+request	Root element.	object	Required	-
+hotel_id	Specify the unique property ID to identify the property you are trying to retrieve reservations for.	integer	Required	Max. occurrences: 1.
+Query parameter example
+The following query retrieves reservation(s) for a property with ID 8011855.
+
+
+
+<request>
+    <hotel_id>8011855</hotel_id>
+</request>
+Response body example
+The following is a successful response body example with the feature Include room-level guest count (guestcount_per_room) enabled:
+
+
+
+<reservations>
+    <reservation>
+        <customer>
+            <first_name>Alice</first_name>
+            <last_name>Gordon</last_name>
+        </customer>
+        <date>2022-05-12</date>
+        <id>3820212523</id>
+        <room>
+            <arrival_date>2022-05-15</arrival_date>
+            <currencycode>EUR</currencycode>
+            <departure_date>2022-05-17</departure_date>
+            <guest_counts>
+                <guest_count count="2" type="adult"></guest_count>
+            </guest_counts>
+            <id>801185502</id>
+            <meal_plan>Breakfast is included in the room rate.</meal_plan>
+            <price date="2022-05-15" rate_id="25279855">60.50</price>
+            <price date="2022-05-16" rate_id="25279855">60.50</price>
+            <roomreservation_id>3641632086</roomreservation_id>
+            <totalprice>121</totalprice>
+        </room>
+        <room>
+            <arrival_date>2022-05-15</arrival_date>
+            <currencycode>EUR</currencycode>
+            <departure_date>2022-05-17</departure_date>
+            <guest_counts>
+                <guest_count count="2" type="adult"></guest_count>
+            </guest_counts>
+            <id>801185502</id>
+            <meal_plan>Breakfast is included in the room rate.</meal_plan>
+            <price date="2022-05-15" rate_id="25279855">60.50</price>
+            <price date="2022-05-16" rate_id="25279855">60.50</price>
+            <roomreservation_id>3641632104</roomreservation_id>
+            <totalprice>121</totalprice>
+        </room>
+        <room>
+            <arrival_date>2022-05-15</arrival_date>
+            <currencycode>EUR</currencycode>
+            <departure_date>2022-05-17</departure_date>
+            <guest_counts>
+                <guest_count count="2" type="adult"></guest_count>
+            </guest_counts>
+            <id>801185502</id>
+            <meal_plan>Breakfast is included in the room rate.</meal_plan>
+            <price date="2022-05-15" rate_id="25279855">60.50</price>
+            <price date="2022-05-16" rate_id="25279855">60.50</price>
+            <roomreservation_id>3641632124</roomreservation_id>
+            <totalprice>121</totalprice>
+        </room>
+        <room>
+            <arrival_date>2022-05-15</arrival_date>
+            <currencycode>EUR</currencycode>
+            <departure_date>2022-05-17</departure_date>
+            <guest_counts>
+                <guest_count count="2" type="adult"></guest_count>
+            </guest_counts>
+            <id>801185502</id>
+            <meal_plan>Breakfast is included in the room rate.</meal_plan>
+            <price date="2022-05-15" rate_id="25279855">60.50</price>
+            <price date="2022-05-16" rate_id="25279855">60.50</price>
+            <roomreservation_id>3641632137</roomreservation_id>
+            <totalprice>121</totalprice>
+        </room>
+        <room>
+            <arrival_date>2022-05-15</arrival_date>
+            <currencycode>EUR</currencycode>
+            <departure_date>2022-05-17</departure_date>
+            <guest_counts>
+                <guest_count count="2" type="adult"></guest_count>
+            </guest_counts>
+            <id>801185502</id>
+            <meal_plan>Breakfast is included in the room rate.</meal_plan>
+            <price date="2022-05-15" rate_id="25279855">55</price>
+            <price date="2022-05-16" rate_id="25279855">55</price>
+            <roomreservation_id>3641632153</roomreservation_id>
+            <totalprice>110</totalprice>
+        </room>
+        <time>17:09:47</time>
+    </reservation>
+</reservations>
+<!-- RUID: [UmFuZG9tSVYkc2RlIyh9YVTaHvwstRic8Jl/BnXmLd9XUKM5o7PNTJVwBAolZyAvcGw2v3YnldZcTTwBgpaRw+CXxMviSsbKj2UbI//TrEQ=] -->
+Response body elements
+The following table describes the response elements:
+
+Element	Attribute	Description	Type	Notes
+reservations		Root element	array of reservation	
+> reservation		Contains reservation details for each reservation.	object	
+>> customer		Contains customer information.	object	
+>>> first_name		Specifies the guest's first/given name.	string	
+>>> last_name		Specifies the guest's last/family name.	string	
+>> date		Specifies the date the reservation was made.	date	Format: YYYY-MM-DD
+>> id		The ID of the parent element.	integer	Child of reservation.
+>> room		Contains information about the reserved room.	object	
+>>> arrival_date		Specifies the planned check-in date.	date	Format: YYYY-MM-DD
+>>> currencycode		Specifies the currency used to pay for the reservation.	enum	Use /xml/currencies to retrieve a list of currency codes.
+>>> departure_date		Specifies the planned check-out date.	date	Format: YYYY-MM-DD
+>>> guest_counts		Specifies the number of adults and children included while searching for a reservation.	integer	To view this and its child elements, make sure to enable the feature Include room-level guest count (guestcount_per_room).
+>>> id		The room type ID as used by Booking.com.	integer	
+>>> meal_plan		Specifies the meal plan description as it appears on Booking.com.	string	See also Meal Plan Types. Note that we show the information in the preferred language of the property's primary point of contact. If you have implemented the Content API, then you can set the language under ContactInfos ... >... Language for the ContactProfileType as general via the OTA_HotelDescriptiveContentNotif endpoint.
+>>> numberofguests		Specifies the number of persons in the reservation.	integer	If the feature Include room-level guest count (guestcount_per_room) is enabled, then this information is hidden.
+>>> price		Specifies the price per day for the reservation.	integer	Currency is specified in currencycode.
+date	The date on which the reservation was paid for.	date	Format: YYYY-MM-DD
+rate_id	The ID of the rate used for the reservation.	string	
+>>> roomreservation_id		The ID of the room reservation.	string	A reservation can include multiple rooms, and therefore multiple room reservations.
+>>> totalprice		The total price for the reservation.	integer	Currency is specified in currencycode.
+>> time		Specifies the time the reservation was made.	time	Format: HH:MM:SS (CET in winter, CEST in summer.)

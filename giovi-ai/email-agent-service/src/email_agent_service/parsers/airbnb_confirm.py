@@ -38,9 +38,14 @@ class AirbnbConfirmationParser(EmailParser):
         reservation_id = self._extract_reservation_id(subject, text, soup)
         thread_id = self._extract_thread_id(text, soup)
         property_name = extract_property_name(text, soup)
-        guest_name = extract_guest_name(text, soup)
-        check_in = extract_date(text, soup, ["Check-in"])
-        check_out = extract_date(text, soup, ["Check-out"])
+        guest_name = extract_guest_name(text, soup, subject=subject)
+        check_in = extract_date(text, soup, ["Check-in", "Arrivo"])
+        check_out = extract_date(text, soup, ["Check-out", "Partenza"])
+
+        if not check_in or not check_out:
+            calendar_check_in, calendar_check_out = extract_calendar_dates(text, soup)
+            check_in = check_in or calendar_check_in
+            check_out = check_out or calendar_check_out
         adults = extract_guests(text, soup)
         total_amount, currency = extract_amount(text, soup)
         
@@ -214,12 +219,21 @@ def extract_property_name(text: str, soup: Optional[BeautifulSoup]) -> Optional[
     # IMPORTANTE: Cerca il property name DOPO eventuali messaggi del guest
     # I messaggi del guest di solito vengono prima del link alla room
     # Pattern: cerca dopo il link "https://www.airbnb.it/rooms/..." che viene DOPO il messaggio
+    # E PRIMA di "Check-in" per evitare di prendere nomi da altre parti
     room_link_match = re.search(r"https://www\.airbnb\.it/rooms/[^\s]+", text, re.IGNORECASE)
     if room_link_match:
         # Cerca il property name dopo il link alla room
         text_after_room_link = text[room_link_match.end():]
-        # Cerca pattern property name nelle prime 500 caratteri dopo il link
-        search_text = text_after_room_link[:500]
+        # Trova dove inizia "Check-in" per limitare la ricerca
+        check_in_match = re.search(r"Check-in", text_after_room_link, re.IGNORECASE)
+        if check_in_match:
+            # Cerca solo tra il link e "Check-in"
+            search_text = text_after_room_link[:check_in_match.start()]
+        else:
+            # Se non c'è "Check-in", limita comunque a 500 caratteri
+            search_text = text_after_room_link[:500]
+        
+        # Cerca pattern property name (tutto maiuscolo con SUITE/CASA/APPARTAMENTO seguito da trattino)
         match = re.search(r"([A-Z][A-Z\s\-]+(?:SUITE|CASA|APPARTAMENTO|ROOM)\s*-\s*[A-Z\s\-]+)", search_text)
         if match:
             result = match.group(1).strip()
@@ -267,8 +281,15 @@ def extract_property_name(text: str, soup: Optional[BeautifulSoup]) -> Optional[
     return None
 
 
-def extract_guest_name(text: str, soup: Optional[BeautifulSoup]) -> Optional[str]:
+def extract_guest_name(
+    text: str,
+    soup: Optional[BeautifulSoup],
+    subject: Optional[str] = None,
+) -> Optional[str]:
     """Estrae il nome dell'ospite dall'email Airbnb."""
+    name = extract_guest_name_from_subject(subject)
+    if name:
+        return name
     # Pattern 1: Cerca nel subject completo: "Prenotazione confermata - Marie-Thérèse Weber-Gobet arriverà il 12 ott"
     # Cattura tutto il nome fino a "arriverà", gestendo anche nomi con trattini e spazi
     match = re.search(r"confermata\s*-\s*([A-Z][A-Za-zÀ-ÿ\s\-]+?)\s+arriver", text, re.IGNORECASE)
@@ -280,15 +301,17 @@ def extract_guest_name(text: str, soup: Optional[BeautifulSoup]) -> Optional[str
             return name
     
     # Pattern 2: Cerca "FRANCESCO" o "Francesco Brufani" prima di "arriverà" (pattern più generico)
-    # Cattura nomi con spazi, trattini, apostrofi
-    match = re.search(r"([A-Z][A-Za-zÀ-ÿ\s\-']+?)\s+arriverà", text, re.IGNORECASE)
+    # Cattura nomi con spazi, trattini, apostrofi - supporta sia maiuscolo che minuscolo
+    match = re.search(r"([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\-']{2,}?)\s+arriverà", text, re.IGNORECASE)
     if match:
         name = match.group(1).strip()
         # Rimuovi prefissi
         name = re.sub(r"^.*?confermata\s*!?\s*", "", name, flags=re.IGNORECASE).strip()
         name = re.sub(r"^.*?-\s*", "", name, flags=re.IGNORECASE).strip()
-        if name and len(name) > 2:
-            return name
+        # Escludi parole comuni che potrebbero essere catturate per errore
+        exclude_words = ["NUOVA", "PRENOTAZIONE", "CONFERMATA", "Prenotazione", "Confermata"]
+        if name and len(name) > 2 and name.upper() not in exclude_words:
+            return normalize_guest_name(name)
     
     # Pattern 3: Cerca "NUOVA PRENOTAZIONE CONFERMATA! MARIE-THÉRÈSE ARRIVERÀ"
     match = re.search(r"NUOVA PRENOTAZIONE CONFERMATA!\s*([A-Z][A-Z\s\-]+?)\s+ARRIVER", text, re.IGNORECASE)
@@ -315,13 +338,42 @@ def extract_guest_name(text: str, soup: Optional[BeautifulSoup]) -> Optional[str
     return None
 
 
+def extract_guest_name_from_subject(subject: Optional[str]) -> Optional[str]:
+    """Estrae il nome completo dell'ospite dal subject dell'email."""
+    if not subject:
+        return None
+    # Pattern per "Prenotazione confermata - Francesco Brufani arriverà il 19 ott"
+    # Cattura tutto il nome fino a "arriverà" (con accento), "arriver" o "arriva"
+    # Usa [A-Za-zÀ-ÿ\s\-'] per catturare nomi con spazi, trattini, apostrofi e accenti
+    patterns = [
+        r"prenotazione\s+confermata\s*-\s*([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\-']+?)\s+(?:arriverà|arriver|arriva)",
+        r"nuova\s+prenotazione\s+confermata!\s*([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\-']+?)\s+(?:arriverà|arriver|arriva)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, subject, re.IGNORECASE)
+        if match:
+            extracted_name = match.group(1).strip()
+            # Pulisci eventuali prefissi o suffissi
+            extracted_name = re.sub(r"^.*?confermata\s*!?\s*-\s*", "", extracted_name, flags=re.IGNORECASE).strip()
+            if extracted_name and len(extracted_name) > 1:
+                # Normalizza: se tutto maiuscolo, converti in title case
+                return normalize_guest_name(extracted_name)
+    return None
+
+
+def normalize_guest_name(value: str) -> str:
+    value = value.strip()
+    if value.isupper():
+        return value.title()
+    return value
+
 def extract_date(text: str, soup: Optional[BeautifulSoup], labels: list[str]) -> Optional[datetime]:
     """Estrae una data dall'email Airbnb (check-in o check-out)."""
     from datetime import datetime as dt
     
-    # Pattern per "gio 3 set 2026" o "3 settembre 2026" o "dom 12 ott" (senza anno)
+    # Pattern per "gio 3 set 2026" o "3 settembre 2026" o "19 ottobre 2026" o "dom 12 ott" (senza anno)
     for label in labels:
-        # Pattern 1: "Check-in gio 3 set 2026" (stessa riga, CON anno)
+        # Pattern 1: "Check-in gio 3 set 2026" (stessa riga, CON anno, formato abbreviato)
         pattern1 = re.compile(rf"{label}.*?([a-z]{{2,3}}\s+\d{{1,2}}\s+[a-z]{{3}}\s+\d{{4}})", re.IGNORECASE | re.DOTALL)
         match = pattern1.search(text)
         if match:
@@ -330,9 +382,27 @@ def extract_date(text: str, soup: Optional[BeautifulSoup], labels: list[str]) ->
             except (ValueError, OverflowError):
                 pass
         
-        # Pattern 2: "Check-in 3 settembre 2026" (stessa riga, CON anno)
-        pattern2 = re.compile(rf"{label}.*?(\d{{1,2}}\s+[a-z]+\s+\d{{4}})", re.IGNORECASE | re.DOTALL)
-        match = pattern2.search(text)
+        # Pattern 2: "Check-in 3 settembre 2026" o "19 ottobre 2026" (CON anno, formato completo)
+        # Cerca date complete anche su righe diverse, con più flessibilità
+        # Cerca nelle prime 1000 caratteri dopo il label per evitare match errati
+        label_pos = text.upper().find(label.upper())
+        if label_pos != -1:
+            search_text = text[label_pos:label_pos + 1000]
+            pattern2 = re.compile(rf"{label}.*?(\d{{1,2}}\s+[a-z]{{3,}}\s+\d{{4}})", re.IGNORECASE | re.DOTALL | re.MULTILINE)
+            match = pattern2.search(search_text)
+            if match:
+                try:
+                    date_str = match.group(1).strip()
+                    # Pulisci eventuali caratteri strani rimasti (quoted-printable)
+                    date_str = date_str.replace("=C3=8C", "ì").replace("=C3=AC", "ì")
+                    return date_parser.parse(date_str, dayfirst=True, fuzzy=True)
+                except (ValueError, OverflowError):
+                    pass
+        
+        # Pattern 2b: "LUNEDÌ...19 ottobre 2026" (giorno settimana separato, formato completo)
+        # Cerca pattern come "LUNEDÌ            MERCOLEDÌ\n19 ottobre 2026   21 ottobre 2026"
+        pattern2b = re.compile(rf"{label}.*?(?:LUNED[ÌI]|MARTED[ÌI]|MERCOLED[ÌI]|GIOVED[ÌI]|VENERD[ÌI]|SABATO|DOMENICA).*?\n.*?(\d{{1,2}}\s+[a-z]+\s+\d{{4}})", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+        match = pattern2b.search(text)
         if match:
             try:
                 return date_parser.parse(match.group(1), dayfirst=True, fuzzy=True)
@@ -348,13 +418,34 @@ def extract_date(text: str, soup: Optional[BeautifulSoup], labels: list[str]) ->
             except (ValueError, OverflowError):
                 pass
         
-        # Pattern 4: Gestisce il caso "Check-in         Check-out\ngio 3 set 2026   sab 5 set 2026" (CON anno)
+        # Pattern 4: Gestisce il caso "Check-in         Check-out\ngio 3 set 2026   sab 5 set 2026" o "19 ottobre 2026   21 ottobre 2026" (CON anno)
         # Cerca tutte le date dopo "Check-in" e "Check-out", poi prendi la prima per check-in, la seconda per check-out
         if label.lower() == "check-in":
-            # Cerca "Check-in" seguito da "Check-out" e poi due date sulla stessa riga (CON anno)
-            # Gestisce anche spazi multipli e caratteri speciali (quoted-printable)
-            pattern4 = re.compile(r"Check-in\s+Check-out.*?\n\s*([a-z]{2,3}\s+\d{1,2}\s+[a-z]{3}\s+\d{4})\s+([a-z]{2,3}\s+\d{1,2}\s+[a-z]{3}\s+\d{4})", re.IGNORECASE | re.MULTILINE | re.DOTALL)
-            match = pattern4.search(text)
+            # Pattern 4a: "Check-in" seguito da "Check-out" e poi due date abbreviate sulla stessa riga
+            pattern4a = re.compile(r"Check-in\s+Check-out.*?\n\s*([a-z]{2,3}\s+\d{1,2}\s+[a-z]{3}\s+\d{4})\s+([a-z]{2,3}\s+\d{1,2}\s+[a-z]{3}\s+\d{4})", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            match = pattern4a.search(text)
+            if match:
+                try:
+                    # Prendi la prima data (check-in)
+                    return date_parser.parse(match.group(1), dayfirst=True, fuzzy=True)
+                except (ValueError, OverflowError):
+                    pass
+            
+            # Pattern 4b: "Check-in" seguito da "Check-out" e poi due date complete sulla stessa riga (es. "19 ottobre 2026   21 ottobre 2026")
+            # Gestisce anche il caso con giorni settimana prima: "LUNEDÌ MERCOLEDÌ\n19 ottobre 2026   21 ottobre 2026"
+            pattern4b = re.compile(r"Check-in.*?Check-out.*?(?:.*?(?:LUNED[ÌI]|MARTED[ÌI]|MERCOLED[ÌI]|GIOVED[ÌI]|VENERD[ÌI]|SABATO|DOMENICA).*?)?\n.*?(\d{1,2}\s+[a-z]{3,}\s+\d{4})\s+(\d{1,2}\s+[a-z]{3,}\s+\d{4})", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            match = pattern4b.search(text)
+            if match:
+                try:
+                    # Prendi la prima data (check-in)
+                    date_str = match.group(1).strip()
+                    return date_parser.parse(date_str, dayfirst=True, fuzzy=True)
+                except (ValueError, OverflowError):
+                    pass
+            
+            # Pattern 4c: "Check-in" seguito da "Check-out" e poi due date separate da righe (es. "LUNEDÌ...MERCOLEDÌ\n19 ottobre 2026   21 ottobre 2026")
+            pattern4c = re.compile(r"Check-in.*?Check-out.*?(?:LUNED[ÌI]|MARTED[ÌI]|MERCOLED[ÌI]|GIOVED[ÌI]|VENERD[ÌI]|SABATO|DOMENICA).*?(?:LUNED[ÌI]|MARTED[ÌI]|MERCOLED[ÌI]|GIOVED[ÌI]|VENERD[ÌI]|SABATO|DOMENICA).*?\n.*?(\d{1,2}\s+[a-z]+\s+\d{4})\s+(\d{1,2}\s+[a-z]+\s+\d{4})", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            match = pattern4c.search(text)
             if match:
                 try:
                     # Prendi la prima data (check-in)
@@ -378,10 +469,31 @@ def extract_date(text: str, soup: Optional[BeautifulSoup], labels: list[str]) ->
                 except (ValueError, OverflowError):
                     pass
         elif label.lower() == "check-out":
-            # Cerca "Check-in" seguito da "Check-out" e poi due date sulla stessa riga (CON anno)
-            # Gestisce anche spazi multipli e caratteri speciali (quoted-printable)
-            pattern4 = re.compile(r"Check-in\s+Check-out.*?\n\s*([a-z]{2,3}\s+\d{1,2}\s+[a-z]{3}\s+\d{4})\s+([a-z]{2,3}\s+\d{1,2}\s+[a-z]{3}\s+\d{4})", re.IGNORECASE | re.MULTILINE | re.DOTALL)
-            match = pattern4.search(text)
+            # Pattern 4a: "Check-in" seguito da "Check-out" e poi due date abbreviate sulla stessa riga
+            pattern4a = re.compile(r"Check-in\s+Check-out.*?\n\s*([a-z]{2,3}\s+\d{1,2}\s+[a-z]{3}\s+\d{4})\s+([a-z]{2,3}\s+\d{1,2}\s+[a-z]{3}\s+\d{4})", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            match = pattern4a.search(text)
+            if match:
+                try:
+                    # Prendi la seconda data (check-out)
+                    return date_parser.parse(match.group(2), dayfirst=True, fuzzy=True)
+                except (ValueError, OverflowError):
+                    pass
+            
+            # Pattern 4b: "Check-in" seguito da "Check-out" e poi due date complete sulla stessa riga
+            # Gestisce anche il caso con giorni settimana prima: "LUNEDÌ MERCOLEDÌ\n19 ottobre 2026   21 ottobre 2026"
+            pattern4b = re.compile(r"Check-in.*?Check-out.*?(?:.*?(?:LUNED[ÌI]|MARTED[ÌI]|MERCOLED[ÌI]|GIOVED[ÌI]|VENERD[ÌI]|SABATO|DOMENICA).*?)?\n.*?(\d{1,2}\s+[a-z]{3,}\s+\d{4})\s+(\d{1,2}\s+[a-z]{3,}\s+\d{4})", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            match = pattern4b.search(text)
+            if match:
+                try:
+                    # Prendi la seconda data (check-out)
+                    date_str = match.group(2).strip()
+                    return date_parser.parse(date_str, dayfirst=True, fuzzy=True)
+                except (ValueError, OverflowError):
+                    pass
+            
+            # Pattern 4c: "Check-in" seguito da "Check-out" e poi due date separate da righe con giorni settimana
+            pattern4c = re.compile(r"Check-in.*?Check-out.*?(?:LUNED[ÌI]|MARTED[ÌI]|MERCOLED[ÌI]|GIOVED[ÌI]|VENERD[ÌI]|SABATO|DOMENICA).*?(?:LUNED[ÌI]|MARTED[ÌI]|MERCOLED[ÌI]|GIOVED[ÌI]|VENERD[ÌI]|SABATO|DOMENICA).*?\n.*?(\d{1,2}\s+[a-z]+\s+\d{4})\s+(\d{1,2}\s+[a-z]+\s+\d{4})", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            match = pattern4c.search(text)
             if match:
                 try:
                     # Prendi la seconda data (check-out)
@@ -523,6 +635,39 @@ def extract_date(text: str, soup: Optional[BeautifulSoup], labels: list[str]) ->
     
     return None
 
+CALENDAR_PAIR_REGEX = re.compile(
+    r"((?:lun|mar|mer|gio|ven|sab|dom)\s+\d{1,2}\s+[a-z\u00e0]{3,9}\s+\d{4}).{0,120}?((?:lun|mar|mer|gio|ven|sab|dom)\s+\d{1,2}\s+[a-z\u00e0]{3,9}\s+\d{4})",
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def extract_calendar_dates(text: str, soup: Optional[BeautifulSoup]) -> tuple[Optional[datetime], Optional[datetime]]:
+    """Estrae coppia di date consecutive (check-in/check-out) anche senza label."""
+    sources = [text]
+    if soup:
+        sources.append(soup.get_text(" "))
+
+    for source in sources:
+        if not source:
+            continue
+        match = CALENDAR_PAIR_REGEX.search(source)
+        if not match:
+            continue
+        first_raw, second_raw = match.groups()
+        first_date = _safe_parse_date(first_raw)
+        second_date = _safe_parse_date(second_raw)
+        if first_date or second_date:
+            return first_date, second_date
+    return None, None
+
+
+def _safe_parse_date(value: str) -> Optional[datetime]:
+    try:
+        return date_parser.parse(value, dayfirst=True, fuzzy=True)
+    except (ValueError, OverflowError):
+        return None
+
+
 
 def extract_guests(text: str, soup: Optional[BeautifulSoup]) -> Optional[int]:
     match = re.search(r"(\d+)\s+adulti", text, re.IGNORECASE)
@@ -630,6 +775,19 @@ def normalize_airbnb_text(value: str) -> str:
         return value
     # Rimuovi soft break di quoted-printable
     cleaned = value.replace("=\n", "")
+    # Decodifica caratteri accentati comuni (UTF-8 quoted-printable)
+    # LUNED=C3=8C -> LUNEDÌ, MERCOLED=C3=8C -> MERCOLEDÌ, etc.
+    accent_mappings = {
+        "=C3=8C": "Ì",  # I maiuscola con accento grave
+        "=C3=AC": "ì",  # i minuscola con accento grave
+        "=C3=A0": "à",  # a minuscola con accento grave
+        "=C3=A8": "è",  # e minuscola con accento grave
+        "=C3=B9": "ù",  # u minuscola con accento grave
+        "=C3=B2": "ò",  # o minuscola con accento grave
+        "=C3=A9": "é",  # e minuscola con accento acuto
+    }
+    for encoded, decoded in accent_mappings.items():
+        cleaned = cleaned.replace(encoded, decoded)
     # Sostituisci caratteri speciali comuni (=20, =C2=A0) con spazi normali
     artifacts = ["=20", "=C2=A0", "=E2=80=AF"]
     for artifact in artifacts:

@@ -1,0 +1,50 @@
+roubleshooting overbookings
+Why do overbookings happen, and how should I deal with them?
+Overbookings happen when a room gets more bookings than it can actually accommodate. This can happen for various reasons, including:
+
+System outages preventing availability from being updated
+Incorrect auto-replenishment of cancelled reservations or room nights
+Late requests to close availability before bookings are made
+Non-XML rates being used in the reservation (which should all be updated manually or via a rate relation that is configured in the extranet)
+The rate not being correctly mapped for ARI updates
+If a room is overbooked, Booking.com’s Customer Service team will notify both the guest and the property to arrange either an alternative room or a relocation for the guest.
+
+If you’ve checked the above possibilities and still aren’t sure what caused the overbooking, contact us.
+
+Why has a room or rate been booked for a date that seemed to be closed?
+There are two main reasons for reservations coming through on dates when a certain room or rate seems to be closed on your side.
+
+If you closed the booked room/rate only seconds or minutes before you received the reservation, please check the Reservation Timeline to see if the reservation was created before you sent the update that closed the room/rate.
+
+The following timeline shows how a reservation can end up being regarded as overbooking while there was open availability when the reservation was made:
+
+09:20:00 Reservation 123 for room A, rate B, date C is made on Booking.com and is enqueued to be retrieved via API
+09:20:25 You sent an API update which closed the availability for room A, rate B, date C
+09:20:45 You retrieved reservation 123 via API. The reservation is considered as an overbooking for a closed room/rate/date
+In this scenario, reservation 123 is incorrectly regarded as an overbooking because the reservation came in right after the room/rate/date was closed.
+
+We cannot rule this kind of cases out with 100 percent certainty, however it is possible to decrease the probability of the occurrence. The most effective way to achieve this is to increase the frequency of the periodic pull to 30 seconds or less.
+
+If the room/rate had been closed for longer than a few minutes before you received the suspected overbooking, we recommend checking if an existing reservation was modified or cancelled, as this can also trigger auto-replenishment. For more information, check out What is auto-replenishment and how does it work.
+
+What is auto-replenishment and how does it work?
+Auto-replenishment is an automatic default function that puts cancelled rooms back up for sale on Booking.com.
+
+This helps properties to sell more because they can offer maximum availability without having to go into the system to update it manually. Auto-replenishment also guarantees more visibility on Booking.com, and therefore a better ranking.
+
+When does auto-replenishment apply?
+When a reservation is partially or fully cancelled, the property’s availability is automatically adjusted as the cancelled room goes back on sale for those dates.
+
+The Reopen closed rooms setting applies to all rooms by default. The difference here is that unless the property has had this setting deactivated, any cancelled rooms will be auto-replenished, even if the property has closed sales for that date. If the property has deactivated this option, cancelled rooms will remain unavailable to be booked.
+
+Note: Rooms are not auto-replenished if they’re cancelled because of an overbooking. The property must contact Booking.com's Customer Service to register an overbooking or request a temporary deactivation of auto-replenishment.
+
+Can I deactivate auto-replenishment?
+As a Connectivity Partner, you cannot deactivate auto-replenishment.
+
+However, the Reopen closed rooms setting can be disabled on request. Please advise Property Partners who want to deactivate auto-replenishment to get in touch with their local Booking.com support team.
+
+How can I find out if a suspected overbooking was caused by auto-replenishment?
+Unfortunately, there’s no straightforward way of identifying this. However, you can get a good idea by looking at recently modified and cancelled reservations.
+
+If a property suspects that an overbooking has occurred, we recommend checking if a modification or cancellation was made between the moment the booking was made and the previous availability update. If there was a change in that middle period, it’s probable that auto-replenishment caused the overbooking.

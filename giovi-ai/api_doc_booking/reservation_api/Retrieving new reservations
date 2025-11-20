@@ -1,0 +1,932 @@
+Retrieving new reservations
+Use the OTA_HotelResNotif endpoint to retrieve and acknowledge new reservations. To process modified or cancelled reservations using OTA specifications, use the OTA_HotelResModifyNotif endpoint.
+
+At a high level, processing new reservations includes:
+
+Retrieving new reservations, and,
+Acknowledging that you have processed the reservations.
+To retrieve new reservations
+Use the GET OTA_HotelResNotif endpoint to get all the recent property reservations made through the Booking.com channels. By default, the response contains only reservations which have not yet been acknowledged.
+
+To ensure timely delivery of data, call GET OTA_HotelResNotif once per twenty seconds. However, to help ensure that acknowledgements have been processed, wait five seconds between POST OTA_HotelResNotif and the next GET OTA_HotelResNotif.
+
+Optionally, you can apply filters to retrieve:
+
+A single reservation.
+Reservations specific to certain properties specified by property IDs.
+Reservations which were booked or changed since a specified date.
+A maximum number of reservations to return per call.
+
+
+GET 
+https://secure-supply-xml.booking.com/hotels/ota/OTA_HotelResNotif
+Query parameters
+The following table describes the optional elements you can add as query parameters to filter the incoming reservations.
+
+Use filters sparingly
+To process reservations optimally, Booking.com recommends that you use these parameters sparingly and only while retrieving reservations immediately after an unexpected outage. Make sure to remove these parameters after recovering from unexpected events.
+
+Element	Description	Type	Required/Optional	Notes
+id	Specify a reservation ID to retrieve a single reservation.	integer	optional	Specify a reservation ID that you have already retrieved. For accurate results, use the hotel_ids parameter and specify the property ID. With this parameter, you may access reservations made more than two weeks in the past.
+Use the OTA_HotelResModifyNotif endpoint for reservations that have been modified or cancelled and OTA_HotelResNotif for all other reservations.
+For example, https://secure-supply-xml.booking.com/hotels/ota/OTA_HotelResNotif?id=2672953870&hotel_ids=8011855
+hotel_ids	Specify the unique property ID(s), separated by comma, to limit results to those properties. You can specify, for example, 10 property IDs.	integer	optional	Use only comma separated property IDs to specify individual property ID values. When retrieving reservations for multiple properties using this parameter, if you do not have access to some properties, the API returns a Warning in the response only for those properties while returning reservations for all other properties that you have access to. Use this parameter to restrict the results to a given property.
+For example, when servicing an interactive request, you may pass hotel_ids for the partner account and id from an input field. If they do not match, the API returns 404 status. For example, https://secure-supply-xml.booking.com/hotels/ota/OTA_HotelResNotif?id=2672953870&hotel_ids=8011855
+last_change	[Only applicable when Reservations Recovery API is not implemented] Specify a date, in the format YYYY-MM-DD HH:MM:SS, to retrieve all reservations that were created, modified or cancelled since the specified date. You can request reservations up until 2 weeks in the past.	datetime	optional	Using this filter, the API returns reservations starting from the oldest reservation. You can limit the returned reservations count by specifying the limit parameter.
+Use this parameter only when recovering lost reservations after an unexpected outage. Specifying a future date and time returns 0 reservations.
+Using this filter immediately after a daylight-savings time change may return 0 or more reservations depending on whether the clock was set ahead or behind.
+Important: Using this filter when the feature: Enable Reservation Recovery API (enable_reservation_recovery_api) is turned on, returns a HTTP 400 error.
+limit	Specify a maximum number of reservations to return. Specify a value >=10 and <= 200.	integer	optional	The API may return reservations less than the specified limit based on the immediate availability of data, even if there are enough reservations to satisfy the limit. This filter can improve latency at the expense of throughput, therefore it adds a risk of a throughput bottleneck. It is not recommended to use a low value when retrieving new bookings and modifications.
+Query parameter example
+The following query retrieves reservation(s) that meet the following conditions:
+
+Reservations that belong to the property: 8011855 and if providers have access to them.
+Reservations that were created/modified since 2025-03-31 11:00:00.
+Only 200 reservations.
+
+
+
+GET https://secure-supply-xml.booking.com/hotels/ota/OTA_HotelResNotif?hotel_ids=8011855&last_change=2025-03-31+11%3A00%3A00&limit=200
+Response body example
+The following is a successful response body example:
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<OTA_HotelResNotifRQ xmlns="http://www.opentravel.org/OTA/2003/05" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opentravel.org/OTA/2003/05 OTA_HotelResNotifRQ.xsd" TimeStamp="2025-03-11T15:02:38+00:00" Target="Production" Version="2.001">
+    <HotelReservations>
+        <HotelReservation>
+            <RoomStays>
+                <RoomStay IndexNumber="460">
+                    <RoomTypes>
+                        <RoomType RoomTypeCode="1296364403">
+                            <RoomDescription Name="Deluxe Double Room - General">
+                                <Text>This double room features a bathrobe, hot tub and game console.</Text>
+                                <MealPlan>Breakfast is included in the room rate.</MealPlan>
+                                <MaxChildren>0</MaxChildren>
+                            </RoomDescription>
+                            <Amenities>
+                                <Amenity>Bath</Amenity>
+                                <Amenity>TV</Amenity>
+                                <Amenity>Hot tub</Amenity>
+                                <Amenity>Bathrobe</Amenity>
+                                <Amenity>Free toiletries</Amenity>
+                                <Amenity>Infinity pool</Amenity>
+                                <Amenity>Bottle of water</Amenity>
+                                <Amenity>Chocolate or cookies</Amenity>
+                            </Amenities>
+                            </RoomDescription>
+                        </RoomType>
+                    </RoomTypes>
+                    <RatePlans>
+                        <RatePlan>
+                            <Commission>
+                                <CommissionPayableAmount Amount="0" DecimalPlaces="2" CurrencyCode="USD"/>
+                            </Commission>
+                        </RatePlan>
+                    </RatePlans>
+                    <RoomRates>
+                        <RoomRate EffectiveDate="2025-03-29" RatePlanCode="49111777">
+                            <Rates>
+                                <Rate>
+                                    <Total AmountBeforeTax="500" CurrencyCode="USD" DecimalPlaces="2"/>
+                                </Rate>
+                            </Rates>
+                        </RoomRate>
+                        <TPA_Extensions>
+                            <BookingCondition>Breakfast is included in the room rate. Children and Extra Bed Policy: All children are welcome. There is no capacity for extra beds in the room. The maximum number of total guests in a room is 2. There is no capacity for cots in the room.  Deposit Policy: No prepayment is needed.  Cancellation Policy: The guest can cancel free of charge at any time. </BookingCondition>
+                        </TPA_Extensions>
+                    </RoomRates>
+                    <GuestCounts>
+                        <GuestCount Count="2" AgeQualifyingCode="10"/>
+                    </GuestCounts>
+                    <Occupancy>4</Occupancy>
+                    <CancelPenalties>
+                        <CancelPenalty PolicyCode="152" From="2025-03-10T10:33:37+00:00">
+                            <AmountPercent Amount="0" DecimalPlaces="2" CurrencyCode="EUR"/>
+                        </CancelPenalty>
+                    </CancelPenalties>
+                    <Total AmountBeforeTax="500" CurrencyCode="USD" DecimalPlaces="2"/>
+                    <BasicPropertyInfo HotelCode="12963644"/>
+                    <ResGuestRPHs>
+                        <ResGuestRPH RPH="2"/>
+                    </ResGuestRPHs>
+                    <Comments>
+                        <Comment>
+                            <Text>I need a wakeup service</Text>
+                        </Comment>
+                    </Comments>
+                    <SpecialRequests>
+                        <SpecialRequest Name="smoking preference">
+                            <Text>Non-Smoking</Text>
+                        </SpecialRequest>
+                    </SpecialRequests>
+                    <PriceDetails>
+                        <GuestView>
+                            <Taxes>
+                                <Tax Amount="6" ChargeFrequency="12" Code="17" CurrencyCode="USD" DecimalPlaces="2" Type="Inclusive">
+                                    <TaxDescription>
+                                        <Text>CO County Sales &amp; Use Tax (Withheld Tax) (1.23%)</Text>
+                                    </TaxDescription>
+                                </Tax>
+                                <Tax Amount="5" ChargeFrequency="12" Code="17" CurrencyCode="USD" DecimalPlaces="2" Type="Inclusive">
+                                    <TaxDescription>
+                                        <Text>CO Special Sales &amp; Use Tax (Withheld Tax) (1.00%)</Text>
+                                    </TaxDescription>
+                                </Tax>
+                                <Tax Amount="14" ChargeFrequency="12" Code="17" CurrencyCode="USD" DecimalPlaces="2" Type="Inclusive">
+                                    <TaxDescription>
+                                        <Text>CO State Sales &amp; Use Tax (Withheld Tax) (2.90%)</Text>
+                                    </TaxDescription>
+                                </Tax>
+                            </Taxes>
+                            <Total Amount="526" DecimalPlaces="2"/>
+                        </GuestView>
+                        <HotelView>
+                            <Taxes>
+                                <Tax Amount="6" ChargeFrequency="12" Code="17" CurrencyCode="USD" DecimalPlaces="2" Type="Exclusive">
+                                    <TaxDescription>
+                                        <Text>CO County Sales &amp; Use Tax (Withheld Tax) (1.23%)</Text>
+                                    </TaxDescription>
+                                </Tax>
+                                <Tax Amount="5" ChargeFrequency="12" Code="17" CurrencyCode="USD" DecimalPlaces="2" Type="Exclusive">
+                                    <TaxDescription>
+                                        <Text>CO Special Sales &amp; Use Tax (Withheld Tax) (1.00%)</Text>
+                                    </TaxDescription>
+                                </Tax>
+                                <Tax Amount="14" ChargeFrequency="12" Code="17" CurrencyCode="USD" DecimalPlaces="2" Type="Exclusive">
+                                    <TaxDescription>
+                                        <Text>CO State Sales &amp; Use Tax (Withheld Tax) (2.90%)</Text>
+                                    </TaxDescription>
+                                </Tax>
+                            </Taxes>
+                            <Total Amount="500" DecimalPlaces="2"/>
+                        </HotelView>
+                    </PriceDetails>
+                </RoomStay>
+            </RoomStays>
+            <ResGuests>
+                <ResGuest ResGuestRPH="1">
+                    <Profiles>
+                        <ProfileInfo>
+                            <Profile>
+                                <Customer>
+                                    <PersonName>
+                                        <Surname>Lisa K</Surname>
+                                    </PersonName>
+                                </Customer>
+                            </Profile>
+                        </ProfileInfo>
+                    </Profiles>
+                </ResGuest>
+            </ResGuests>
+             <TPA_Extensions>
+                <flags>
+                    <flag name="booker_is_genius"/>
+                </flags>
+            </TPA_Extensions>
+            <ResGlobalInfo>
+                <Comments>
+                    <Comment ParagraphNumber="1">
+                        <Text>You have received a virtual credit card for this reservation.You may charge it as of 2025-03-29.
+** Genius Booker **</Text>
+                    </Comment>
+                </Comments>
+                <Guarantee>
+                    <GuaranteesAccepted>
+                        <GuaranteeAccepted>
+                            <PaymentCard CardCode="MC" CardNumber="1111000011110000" SeriesCode="720" ExpireDate="0326" EffectiveDate="2025-03-29" CurrentBalance="0" DecimalPlaces="2" CurrencyCode="USD" VCCExpirationDate="2026-03-01">
+                                <CardHolderName>Test Name</CardHolderName>
+                            </PaymentCard>
+                        </GuaranteeAccepted>
+                    </GuaranteesAccepted>
+                </Guarantee>
+                <Total AmountBeforeTax="500" CurrencyCode="USD" DecimalPlaces="2"/>
+                <HotelReservationIDs>
+                    <HotelReservationID ResID_Value="4705950059" ResID_Date="2025-03-10T10:33:37"/>
+                </HotelReservationIDs>
+                <Profiles>
+                    <ProfileInfo>
+                        <Profile>
+                            <Customer>
+                                <PersonName>
+                                    <GivenName>lisa</GivenName>
+                                    <Surname>K</Surname>
+                                </PersonName>
+                                <Telephone PhoneNumber="+31 6 14901111"/>
+                                <Email>feature.794761@guest.booking.com</Email>
+                                <Address>
+                                    <AddressLine>Park Avenue</AddressLine>
+                                    <CityName>Amsterdam</CityName>
+                                    <PostalCode>1234ABC</PostalCode>
+                                    <CountryName Code="NL"/>
+                                    <CompanyName/>
+                                </Address>
+                            </Customer>
+                        </Profile>
+                    </ProfileInfo>
+                </Profiles>
+                <TotalCommissions>
+                    <CommissionPayableAmount Amount="0000" DecimalPlaces="2" CurrencyCode="EUR"/>
+                    <Comment>This is the total commission amount calculated by Booking.com</Comment>
+                </TotalCommissions>
+            </ResGlobalInfo>
+        </HotelReservation>
+    </HotelReservations>
+</OTA_HotelResNotifRQ>
+Response body elements
+Depending on the number of properties you handle and the number of reservations per property, the API can return a long response body. To better understand each response element that make up the response body, this section is split into multiple tables.
+
+The response body contains the following high-level root elements:
+
+Reservation details: Lists each unique reservation per individual property.
+Room stay details: Consolidates reservation details per room booking.
+Guest details: Contains guest details.
+Booker details: Contains booker details.
+Reservation details
+This table lists the response elements that consolidate details per reservation.
+
+Element	Attribute	Description	Type	Notes
+OTA_HotelResNotifRQ		Contains the response data.	object	
+> HotelReservations		Contains a collection of all reservations.	object	
+>> HotelReservation		Contains individual property reservation details.	object	
+>>> RoomStays		Contains the booked room details per reservation.	object	
+>>> ResGuests		Contains the guests details per reservation.	object	
+>>> ResGlobalInfo		Contains the booker details per reservation.	object	
+>>> Services		Contains details of services that the guest is eligible for.	object	To view this and its child elements, make sure to enable the feature: Get extra information for reservations (res_extra_info).
+Booked room details
+The following table lists all the elements that consolidate details per booked room.
+
+Element	Attribute	Description	Type	Notes
+RoomStay		Contains the room reservation details for each booked room.	object	The details include Booking.com room type, rate plan, commission payable, guest count, and reference to guest details among others.
+IndexNumber	Specifies a unique ID generated by Booking.com for each booked room in the reservation.	integer	Use this ID to identify the booked room within the reservation. Unique for every booked room.
+> RoomTypes		Contains the room type details for each booked room.	object	
+>> RoomType		Contains the individual room type details for each reservation.	object	
+RoomTypeCode	Specifies the unique room type ID generated by Booking.com at the time of creating the room type.	integer	
+>>> RoomDescription		Contains a description of the booked room.	object	
+Name	Specifies the room name for the booked room.	string	Booking.com generates the name from the following values: room name, cancellation policy and meal plan name.
+>>>> Text		Specifies the room description for the booked room.	string	Booking.com populates this field based on the property’s settings in the room amenity and room details. Note that we show the information in the preferred language of the property's primary point of contact. If you have implemented the Content API, then you can set the language under ContactInfos ... >... Language for the ContactProfileType as general via the OTA_HotelDescriptiveContentNotif endpoint.
+>>>> MealPlan		Specifies the meal plan information applicable for the booked room.	string	Note that we show the information in the preferred language of the property's primary point of contact. If you have implemented the Content API, then you can set the language under ContactInfos ... >... Language for the ContactProfileType as general via the OTA_HotelDescriptiveContentNotif endpoint.
+>>>> MaxChildren		Specifies the maximum number of children who can stay in the booked room for free.	integer	This is a static setting defined per room when you set up Children Policies. Guests cannot specify a value for the MaxChildren attribute during the booking process. The maximum age of the children can be found in the policy of the property. The property can request this setting through the Booking.com Connectivity Support team or check in the Booking.com Extranet.
+>>> Amenities		Contains the details of all the facilities available in the room and at the property at the time of reservation.	object	
+>>>> Amenity		Specifies the details of each facility available in the room and at the property at the time of reservation.	string	Note that we show the information in the preferred language of the property's primary point of contact. If you have implemented the Content API, then you can set the language under ContactInfos ... >... Language for the ContactProfileType as general via the OTA_HotelDescriptiveContentNotif endpoint.
+> RatePlans		Contains the rate plan information for the reservation.	object	
+>> RatePlan		Contains individual rate plan information for the reservation.	object	
+>>> Commission		Contains the commission information for each reservation that the property owes to Booking.com.	object	
+>>>> CommissionPayableAmount		Contains the individual commission information.	object	
+Amount	Captures the total commission due for this room for all nights combined.	integer	
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	For example, Amount=13350 with DecimalPlaces="2" represents 133.50.
+CurrencyCode	Specifies the currency used for pricing the commission.	enumerated string	This is always the same for a property and is set by Booking.com.
+> RoomRates		Contains the room price and rate plan information.	object	
+>> RoomRate		Contains individual room price and rate plan information.	object	
+EffectiveDate	Specifies the start date of the stay.	datetime	
+RatePlanCode	Specifies the unique rate plan code generated by Booking.com at the time of creating the rate plan.	integer	
+>>> Rates		Contains room rate information.	object	
+>>>> Rate		Contains individual room rate information.	object	
+>>>>> Total		Contains information about the total price.	object	
+AmountAfterTax/AmountBeforeTax	Specifies the total price including all relevant taxes.	integer	If the property has both Including VAT and Including taxes enabled in the Extranet (VAT/Tax/Charges page under the Property tab), the API returns AmountAfterTax, otherwise it returns AmountBeforeTax.
+CurrencyCode	Specifies the currency used for pricing.	enumerated string	This is always the same for a property and is set by Booking.com.
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	For example, Amount=13350 with DecimalPlaces="2" represents 133.50.
+>> TPA_Extensions		Contains additional reservation details for each booked room.	object	To see this and GuestCounts element, you must enable the feature: Include room-level guest count old (childcount_per_room). To see this and the rate rewrite information, you must enable the feature: Get extra information for reservations (res_extra_info).
+> Occupancy		Contains the maximum occupancy for each room reservation. If the room has rate level restrictions, then this is the maximum occupancy for that rate.	integer	To see this element, make sure to enable the feature: Include room-level occupancy (include_room_level_occupancy).
+> GuestCounts		Contains the room-level guest count for the reservation.	object	
+>> GuestCount		Contains the guest count for the reservation.	object	
+Count	Specifies the number of guests for this reservation as entered by the booker.	integer	
+AgeQualifyingCode	Specifies a code that represents the guest's age. Each code represents an age range.	integer	To see this and the age attribute, you must enable the feature: Include room-level guest count (guestcount_per_room).
+The supported codes are:
+10 - Adult.
+8 - Child.
+Age	Specifies the age of the child guests.	integer	Only available when the AgeQualifyingCode = 8.
+> CancelPenalties		Contains the cancellation policy assigned to the roomrate.	object	To see this and its child elements, make sure to enable the feature: Add cancellation policy (res_cancel_policies).
+> Total		Contains the total price for this room for all nights combined. Calculated as the sum of all prices known at the moment of reservation.	object	For a detailed breakdown of individual taxes and fees for the booking, use the Payments Clarity Package v2 feature. We no longer recommend using the Include price details (include_price_details) feature.
+AmountAfterTax/AmountBeforeTax	Specifies the total price including all the taxes.	integer	If the property has both Including VAT and Including taxes enabled, AmountAfterTax is returned, otherwise AmountBeforeTax.
+CurrencyCode	Specifies the currency used for pricing.	enumerated string	This is always the same for a property and is set by Booking.com
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	For example, Amount=13350 with DecimalPlaces="2" represents 133.50.
+>> Taxes		Contains the tax information.	object	For a detailed breakdown of individual taxes and fees for the booking, use the Payments Clarity Package v2 feature. We no longer recommend using the Include price details (include_price_details) feature.
+> BasicPropertyInfo		Contains the property information where the room is booked.	object	
+HotelCode	Specifies the property ID as used by Booking.com.	integer	
+> ResGuestRPHs		Contains an index number that works as a cross-reference to link guests (ResGuest) to rooms (RoomStay).	object	
+>> ResGuestRPH			object	
+RPH	Specifies an index number that works as a cross-reference to link guests (ResGuest) to rooms (RoomStay).	integer	
+> SpecialRequests		Contains any special requests selected by the guest.	object	To view this and the child elements, make sure to enable the feature: Get extra information for reservations (res_extra_info).
+>> SpecialRequest		Contains individual special requests	object	
+Name	Specifies the service code.	enumerated string	For a full list of all available service names, see Service names/codes.
+>>> Text		Specifies the service description	enumerated string	For a full list of all the available service descriptions, see Service names.
+Guest details
+The following table lists all the elements that capture guest details.
+
+Element	Attribute	Description	Type	Notes
+ResGuests		Contains the details of all the guests for the reservation.	object	
+> ResGuest		Contains individual guest details per room booked in the reservation.	object	
+ResGuestRPH	Specifies a reference to the RPH attribute under RoomStay > ResGuestRPH.	integer	Use this value to identify the room type details that this guest is assigned to.
+>> Profiles		Contains a collection of guest details.	object	
+>>> ProfileInfo		Contains a collection of individual guest details.	object	
+>>>> Profile		Contains individual guest details.	object	Useful when there is more than one room booked to list guest details for each room.
+>>>>> Customer		Contains the guest details.	object	
+>>>>>> PersonName		Contains the first name and surname of the guest.	object	This can be different from the booker name.
+>>>>>>> GivenName		Specifies the first name of the booker as filled by the booker.	string	Only visible when the feature: Split Surname and GivenName (ota_res_split_names) is enabled. The API splits the name into a given name and surname. Otherwise, this field is omitted.
+>>>>>>> Surname		Contains the guest name for this room as filled in on the website.	string	If the feature: Split Surname and GivenName (ota_res_split_names) is enabled, then this element contains only the surname of the guest. Otherwise, it specifies both the given name and surname.
+TPA_Extensions		Contains additional reservation details about the guest.	object	To view this and its child elements, make sure to enable the feature: Get extra information for reservations (res_extra_info).
+Booker details
+The following table lists all the elements that capture details of the person who booked the stay.
+
+If you enable the feature: Include dummy CC details for bank transfer payout (res_dummy_cc_on_bt), the API returns dummy credit card details in reservation messages when:
+
+Guests pay through an alternate payment method.
+The property's payout method is set to bank transfer.
+You can identify that a message has dummy credit card details by looking for <CardHolderName>NOCCRESERVATION</CardHolderName>. For more details, see Include dummy credit card details for bank transfer payout.
+
+Element	Attribute	Description	Type	Notes
+ResGlobalInfo		Contains more details on the reservation.	object	This includes comments, reservation ID, and details of the individual who made the reservation.
+> Comments		Contains all the comments about the reservation provided at the time of booking.	object	
+> Guarantee		Contains the card details as a guarantee for the reservation.	object	
+>> GuaranteesAccepted			object	
+>>> GuaranteeAccepted			object	
+>>>> PaymentCard			object	
+CardCode	Specifies the 2-character code of the credit card issuer.	enumerated string	The API returns "XX" if no code for the credit card is defined. Only returns from one of the values in the Card code table.
+CardNumber	Specifies the credit card number as supplied by the guest.	string	If all values are 0s, something went wrong when retrieving the number. You can try retrieving the reservation again.
+SeriesCode	Specifies the credit card CVC code as supplied by the guest.	string	If all values are 0s, something went wrong when retrieving the CVC-code. You can try retrieving the reservation again.
+ExpireDate	Specifies the credit card expiration date as supplied by the guest.	datetime	If all values are 0s, something went wrong when retrieving the expiration date. You can try retrieving the reservation again.
+EffectiveDate	Specifies the date that the card can be charged from.	datetime	Applicable only for Payments by Booking reservations and when the payout type is virtual credit card.
+This attribute is included in the response, only when the Payments Clarity Package v2 (payment_clarity_package_v2) feature is enabled. To enable/disable this feature, contact Connectivity Support.
+We no longer recommend using the Payments Clarity Package(vcc_payment_v2) feature.
+CurrentBalance	Specifies the current balance that is chargeable on the virtual credit card.	integer	Applicable only for Payments by Booking reservations and when the payout type is virtual credit card.
+This attribute is included in the response, only when the Payments Clarity Package v2 (payment_clarity_package_v2) feature is enabled. To enable/disable this feature, contact Connectivity Support.
+We no longer recommend using the Payments Clarity Package(vcc_payment_v2) feature.
+DecimalPlaces	Specifies the position of the decimal point (from right to left) in the current balance value.	integer	For example, Amount=10599 with DecimalPlaces="2" represents 105.99.
+This attribute is included in the response, only when the Payments Clarity Package v2 (payment_clarity_package_v2) feature is enabled. To enable/disable this feature, contact Connectivity Support.
+We no longer recommend using the Payments Clarity Package(vcc_payment_v2) feature.
+CurrencyCode	Specifies the currency code (ISO 4217) of the virtual credit card's current balance.	string	
+This attribute is included in the response, only when the Payments Clarity Package v2 (payment_clarity_package_v2) feature is enabled. To enable/disable this feature, contact Connectivity Support.
+We no longer recommend using the Payments Clarity Package(vcc_payment_v2) feature.
+VCCExpirationDate	Specifies the expiration date of the virtual credit card.	string	Applicable only for Payments by Booking reservations and when the payout type is virtual credit card.
+This attribute is included in the response, only when the Payments Clarity Package v2(payment_clarity_package_v2) feature is enabled. To enable/disable this feature, contact Connectivity Support.
+We no longer recommend using the Payments Clarity Package(vcc_payment_v2) feature.
+>>>>>>>> CardHolderName		Specifies the credit card holder's name as supplied by the guest.	object	If you receive "-" as the value, then something went wrong when retrieving the holder's name. You can try retrieving the reservation again.
+If the API returns NOCCRESERVATION, then the reservation message contains dummy credit card details.
+> Total		Specifies the total amount of room sales of this reservation.	object	Computed as (all rooms * all nights combined). For a detailed breakdown of individual taxes and fees for the booking, use the Payments Clarity Package v2 feature. We no longer recommend using the Include price details (include_price_details) feature.
+AmountAfterTax/AmountBeforeTax	Specifies the total price including taxes.	integer	If the property has VAT set as included in the price, then the API returns AmountAfterTax, otherwise it returns AmountBeforeTax.
+CurrencyCode	Specifies the currency used for pricing.	enumerated string	This is always the same for a property and is set by Booking.com.
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	For example, Amount=13350 with DecimalPlaces="2" represents 133.50.
+> HotelReservationIDs		Contains the reservations	object	To view the ResID_Source and ResID_Type child elements, enable the feature: OTA hotel reservation response token (ota_res_response_token).
+> HotelReservationID		Contains individual reservations message ID.	object	
+ResID_Value	Specifies the Booking.com reservation ID.	string	
+ResID_Date	Specifies the reservation creation date and time value.	datetime	
+> Profiles		Contains booker details.	object	
+>> ProfileInfo			object	
+>>> Profile			object	
+>>>> Customer		Contains details about the booker.	object	
+Language	Specifies the customer's preferred language of communication with the property.	string	
+This attribute is included in the response, only when the Include Preferred language in Customer (res_customer_preferred_lang)feature is enabled. To enable/disable this feature, contact Connectivity Support.
+>>>>> PersonName		Contains the booker's personal details such as name, phone number and address.	object	
+>>>>>> GivenName		Specifies the first name of the booker as filled by the booker on the website.	object	Note that this doesn't have to be the same as the guest name(s).
+>>>>>> Surname		Specifies the last name of the booker as filled by the booker on the website.	object	Note that this doesn't have to be the same as the guest name(s).
+>>>>> Telephone		Contains the telephone number details.	object	
+PhoneNumber	Specifies the telephone number as supplied by the booker.	string	
+>>>>> Email		Specifies the email address supplied by the booker.	object	Used by Booking.com to send the reservation confirmation.
+>>>>> Address		Contains the home address details.	object	
+>>>>>> AddressLine		Specifies the home address supplied by the booker.	object	
+>>>>>> CityName		Specifies the city of residence as supplied by the booker.	object	
+>>>>>> PostalCode		Specifies the zip / post code as supplied by the booker.	object	
+>>>>>> CountryName		Specifies the country code of residence as supplied by the booker.	object	
+Code	Specifies the country code of residence as supplied by the booker.	string	
+>>>>>> CompanyName		Specifies the company name as supplied by the booker.	object	
+> TotalCommissions		Contains commission details for all rooms in a reservation.	object	To view this and its child elements, make sure to enable the feature: Include total commission (include_total_commission).
+> DepositPayments			object	To view this and its child elements, make sure to enable the feature: Get extra information for reservations (res_extra_info).
+RUID		Specifies the unique request ID which is an encoded string.	object	You can share this ID with the Booking.com Connectivity Support team when you run into an issue. This can help in understanding what went wrong.
+Include room-level guest counts (old)
+When you enable the feature: Include room-level guest count old (childcount_per_room), the API returns the number of adults and children per room in the reservation along with age information.
+
+Element	Attribute	Description	Type	Notes
+RoomStays		Contains the room reservation details.	object	
+> RoomStay		Contains the room reservation details for each booked room.	object	
+>> TPA_Extensions		Contains additional reservation details for each booked room.	object	
+>>> GuestCounts		Contains the number of adults and children per each room in the reservation.	object	
+>>>> GuestCount		Contains the number of adults and children per room in the reservation.	object	
+AgeQualifyingCode	Specifies a code that represents the guest's age. Each code represents an age range.	integer	The supported codes are:
+10 - Adult.
+8 - Child.
+Count	Specifies the guest count.	integer	
+Age	Specifies the age of the child guests.	integer	Only available when the AgeQualifyingCode = 8.
+Include room-level guest count
+When you enable the feature: Include room-level guest count (guestcount_per_room), the API returns the number of adults and children per room in the reservation along with age information.
+
+Element	Attribute	Description	Type	Notes
+RoomStays		Contains the room reservation details.	object	
+> RoomStay		Contains the room reservation details for each booked room.	object	
+>> GuestCounts		Contains the number of adults and children per each room in the reservation.	object	
+>>> GuestCount		Contains the number of adults and children per room in the reservation.	object	
+AgeQualifyingCode	Specifies a code that represents the guest's age. Each code represents an age range.	integer	The supported codes are:
+10 - Adult.
+8 - Child.
+Count	Specifies the guest count.	integer	
+Age	Specifies the age of the child guests.	integer	Only available when the AgeQualifyingCode = 8.
+Include room-level occupancy
+When you enable the feature: Include room-level occupancy (include_room_level_occupancy), the API returns the maximum occupancy for each room reservation. If the room has rate-level restrictions, then this is the maximum occupancy for that rate. In case of no rate-level restrictions, then this is the maximum occupancy of the room. It can be used to get the maximum occupancy of the room for a price.
+
+Element	Attribute	Description	Type	Notes
+RoomStays		Contains the room reservation details.	object	
+> RoomStay		Contains the room reservation details for each booked room.	object	
+>> Occupancy		Contains the maximum occupancy for each room reservation. If the room has rate level restrictions, then this is the maximum occupancy for that rate.	integer	
+Add cancellation policy
+When you enable the feature: Add cancellation policy (res_cancel_policies), you can view the cancellation policy assigned to the roomrate.
+
+The API also shows grace period information, if applicable. A grace period is a pre-defined period of time that allows guests to change a booking without being penalised with a fee. For more information, see how to set up grace period functionality.
+
+Element	Attribute	Description	Type	Notes
+RoomStays		Contains the room reservation details.	object	
+> RoomStay		Contains the room reservation details for each booked room.	object	
+>> CancelPenalties		Contains the cancellation penalty details.	object	
+>>> CancelPenalty		Contains the Booking.com cancellation policy code and its effective date.	object	
+PolicyCode	Specifies the Booking.com cancellation policy code.	integer	If the grace period policy exception applies, the API specifies another element with policy code grace_period and the deadline of the grace period.
+>>>> Deadline		Indicates when the grace period ends.	object	Applicable only when the grace period policy exception is in place.
+Time	Indicates when the grace period ends.	datetime	Applicable only when the grace period policy exception is in place.
+>>>> AmountPercent		Contains the penalty amount.	object	
+Amount	Specifies the cancellation fee (if applicable) expressed as a fixed amount, if the guests cancels the booking.	integer	When a grace period policy exception is in place, the value will always be 100, that is, the guest is charged 100% when they cancel the booking after the grace period.
+Add cancellation policy details
+When you enable the feature: Add cancellation policy details (res_cancel_policy_details), you can view the cancellation policy details assigned to the roomrate.
+
+The API also shows grace period information, if applicable. A grace period is a pre-defined period of time that allows guests to change a booking without being penalised with a fee. For more information, see how to set up grace period functionality.
+
+Note: You must implement feature Add cancellation policy first.
+
+Element	Attribute	Description	Type	Notes
+RoomStays		Contains the room reservation details.	object	
+> RoomStay		Contains the room reservation details for each booked room.	object	
+>> CancelPenalties		Contains the cancellation penalty details.	object	
+>>> CancelPenalty		Contains the Booking.com cancellation policy code and its effective date.	object	
+PolicyCode	Specifies the Booking.com cancellation policy code.	integer	If the grace period policy exception applies, the API specifies another element with policy code grace_period.
+From	Specifies the start date and time from which the policy is in effect.	datetime	Not applicable for grace period policy exception.
+Until	Specifies the date and time until which the policy is in effect.	datetime	Applicable only when the policy has an end date.
+Not applicable for grace period policy exception.
+>>>> Deadline		Indicates when the grace period policy ends.	object	Applicable only when the grace period policy exception is in place.
+Time	Indicates when the grace period policy ends.	datetime	Applicable only when the grace period policy exception is in place.
+>>>> AmountPercent		Contains the penalty amount.	object	
+Amount	Specifies the cancellation fee (if applicable) expressed as a fixed amount, if the guests cancels the booking.	integer	When a grace period policy exception is in place, the value will always be 100, that is, the guest is charged 100% when they cancel the booking after the grace period.
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	Not applicable for grace period policy exception.
+CurrencyCode	Specifies the currency used for pricing the penalty.	enumerated string	This is always the same for a property and is set by Booking.com.
+Not applicable for grace period policy exception.
+Include Payments Clarity Package v2
+Payments Clarity Package v2 (payment_clarity_package_v2) enables you to see payment and withheld tax related information.
+
+View the following information in the response:
+
+Price details: Contains information on taxes and charges applied on the reservation.
+Current balance: Specifies the current balance on the VCC.
+Card expiration date: Specifies the date the VCC expires in YYYY-MM-DD format. This is Booking.com standard. ExpiryDate follows the physical credit card standard. Both refer to the same expiration date, but one is more specific.
+Card activation date: Specifies the date the VCC was activated in YYYY-MM-DD format. Applicable only for Payments by Booking reservations and when the payout type is virtual credit card.
+Withheld tax details: [Only for reservations on a property that is located in a region where Booking.com is obligated to withhold and remit taxes on behalf of the property] Specifies the total amount that Booking.com has withheld as tax for the reservation. You can identify this information where the TaxDescription > Text contains: {{Tax_Name}} (Withheld tax)`
+Currency code: Specifies the currency code of the virtual credit card.
+Testing Payments Clarity Package v2 before implementing
+Test this feature before implementation due to changes in pricing structure and based on the following two critical changes:
+
+The computed amount in the total field is calculated differently.
+The Inclusive/Exclusive values for the Type field uses a different logic. For a detailed comparison, see comparing the existing Payments Clarity Package with the new Payments Clarity Package v2.
+For example, if you have been validating whether fees, taxes or charges are included in the price when recalculating the reservation prices, then you must revisit the price calculation. Doing this can avoid showing incorrect reservation prices.
+
+For more information on how to test by passing the Features: payment_clarity_package_v2 header parameter in your request header, see Implementing Payments Clarity Package v2.
+
+Overrides include_price_details and vcc_payment_v2 features
+If you switch to the Payments Clarity Package v2(payment_clarity_package_v2) feature, your price and payment data will now come exclusively from this feature, replacing the older include_price_details and vcc_payment_v2 features.
+
+In case you have the Provider XML setting: Dummy credit card on Last Minute No CC Reservations turned on, then the API returns dummy credit card details on last minute or same day, or domestic bookers.
+
+Expand to know more.
+Element	Attribute	Description	Type	Notes
+RoomStays		Contains the room reservation details.	object	
+> RoomStay		Contains the room reservation details for each booked room.	object	
+>> PriceDetails		Contains the guest and property-level price details for the reservation.	object	Also includes withheld tax details for reservations on a property that is located in a region where Booking.com is obligated to withhold and remit taxes on behalf of the property.
+If you previously used the features: Payments Clarity Package (vcc_payment_v2) or the Include Price Details (include_price_details), the definitions and calculations for the total amount under guest and hotel are now changed.
+>>> GuestView		Contains the guest-level price details for the reservation.	object	Specifies whether the guest paid the amount for Payments by Booking reservations. For non-Payments by Booking reservations (agency bookings), it indicates whether the amount is included in the total amount the guest will pay to the property.
+>>>> Taxes		Contains tax details.	object	
+>>>>> Tax		Contains tax details.	object	
+Amount	Specifies the tax amount.	integer	
+ChargeFrequency	Specifies the charge frequency.	enumerated integer	For a list of charge frequency code, see charge type codes.
+Code	Specifies the tax code.	integer	Note that we show the information in the preferred language of the property's primary point of contact. If you have implemented the Content API, then you can set the language under ContactInfos ... >... Language for the ContactProfileType as general via the OTA_HotelDescriptiveContentNotif endpoint. For a list of fee tax type codes, see Tax type codes.
+CurrencyCode	Specifies the currency used for pricing the room.	enumerated string	This is always the same for a property and is set by Booking.com.
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	
+Type	Specifies whether the guest paid or needs to pay the amount depending on whether the reservation is a Payments by Booking or for non-Payments by Booking or (agency bookings) reservations.	enumerated string	Possible values are:
+- Inclusive: For Payments by Booking reservations, specifies that the guest paid the amount for the reservations.
+For non-Payments by Booking reservations (agency bookings), indicates that the amount is included in the total amount the guest will pay to the property.
+- Exclusive: For Payments by Booking reservations, specifies that the guest did not pay the amount.
+For non-Payments by Booking reservations (agency bookings), indicates that the amount is excluded in the total amount the guest will pay to the property.
+>>>>>> TaxDescription		Contains the tax description.	object	For properties where Booking.com is obligated to withhold taxes, the response includes an additional entry for every tax component that Booking.com has to withhold with the value {{Tax_Name}} (Withheld tax) in the description.
+>>>>>>> Text		Specifies the tax description.	string	
+>>>> Total		Contains the total amount paid by the guest.	object	
+Amount	Specifies the total amount owed by or collected from the guest.	integer	The total amount is computed based on the Inclusive/Exclusive value for each tax amount breakup.
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	
+>>> HotelView		Contains the property-level price details for the reservation.	object	Specifies whether the amount is included in the payout to the property or the amount that the property needs to collect from the guest.
+>>>> Taxes		Contains tax details.	object	
+>>>>> Tax		Contains individual tax or fee details.	object	
+Amount	Specifies the tax amount.	integer	
+ChargeFrequency	Specifies the charge frequency.	enumerated integer	For a list of charge frequency code, see charge type codes.
+Code	Specifies the tax code.	integer	Note that we show the information in the preferred language of the property's primary point of contact. If you have implemented the Content API, then you can set the language under ContactInfos ... >... Language for the ContactProfileType as general via the OTA_HotelDescriptiveContentNotif endpoint. For a list of fee tax type codes, see Tax type codes.
+CurrencyCode	Specifies the currency used for pricing the room.	enumerated string	This is always the same for a property and is set by Booking.com.
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	
+Type	Specifies whether the amount is included in the payout to the property or the amount that the property needs to collect from the guest depending on whether the reservation is a Payments by Booking or a non-Payments by Booking reservations (agency bookings) reservation.	enumerated string	Possible values are:
+- Inclusive: Specifies that the amount is included in the payout to the property.
+- Exclusive: Specifies that the amount is excluded from the payout to the property or excluded in the total amount that the property should collect from the guest depending on whether the reservation is a Payments by Booking or a non-Payments by Booking reservations (agency bookings) reservation.
+>>>>>> TaxDescription		Contains the tax description.	object	For properties where Booking.com is obligated to withhold taxes, the response includes an additional entry for every tax component that Booking.com has to withhold with the value {{Tax_Name}} (Withheld tax) in the description.
+>>>>>>> Text		Specifies the tax description.	string	
+>>>> Total		Contains the total amount owed to the property.	object	The total amount is computed based on the Inclusive/Exclusive value for each amount.
+Amount	Specifies the total amount owed to the property.	integer	
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	
+ResGlobalInfo		Contains more details on the reservation.	object	This includes comments, reservation ID, and details of the individual who made the reservation.
+> Comments		Contains all the comments about the reservation provided at the time of booking.	object	
+> Guarantee		Contains the card details as a guarantee for the reservation.	object	
+>> GuaranteesAccepted			object	
+>>> GuaranteeAccepted			object	
+>>>> PaymentCard			object	
+EffectiveDate	Specifies the date that the card can be charged from.	datetime	This attribute exists only for virtual credit cards.
+CurrentBalance	Specifies the current balance that is chargeable on the virtual credit card.	integer	This attribute exists only for virtual credit cards.
+DecimalPlaces	Specifies the position of the decimal point (from right to left) in the current balance value.	integer	For example, Amount=10599 with DecimalPlaces="2" represents 105.99.
+CurrencyCode	Specifies the currency code (ISO 4217) of the virtual credit card's current balance.	string	
+VCCExpirationDate	Specifies the expiration date of the virtual credit card.	string	This attribute exists only for virtual credit cards.
+VCCActivationDate	Specifies the virtual credit card activation date.	string	Applicable only for Payments by Booking reservations and when the payout type is virtual credit card.
+To view this element, make sure to enable the feature: Payments Clarity Package v2 (payment_clarity_package_v2)
+Note: To enable/disable this feature, contact Connectivity Support.
+Summary of different combinations of Tax > Type values
+This table explains how the Tax > Type values (Inclusive/Exclusive) affect payment behavior in different scenarios.
+
+Scenario	Guest View	Property View	Payments by Booking behaviour	Agency Booking behaviour
+1	Exclusive	Exclusive	- Fees/tax was not collected during the book process.
+- Fees/tax will not be paid out to the property.
+- Fees/tax will be collected from guests by the property at the time of check-in.	-
+2	Exclusive	Inclusive	- Fees/tax was not collected from the guest during booking.
+- Fees/tax cost will be borne by Booking and paid out to the property as a benefit.	-
+3	Inclusive	Exclusive	- Fees/tax was collected from the guest during booking.
+- Fees/tax is withheld and will be paid directly to the authorities and not to property.	-
+4	Inclusive	Inclusive	- Fees/tax was collected from the guest during booking.
+- Fees/tax will be paid out to property.	Fees/tax will be collected from guests by the property.
+Booking.com remits taxes when the property has all taxes and fees defined in scenario 3 and uses Payments by Booking.com virtual credit card (VCC) payouts.
+The partner remits taxes when the property has all taxes and fees defined in scenario 4 and uses Payments by Booking.com virtual credit card (VCC) payouts.
+Split tax obligations and remittance occur when the property has taxes and fees defined in scenarios 3 and 4, respectively, and uses Payments by Booking.com virtual credit card (VCC) payouts.
+Include virtual credit card information
+Implement the latest version: Payments Clarity Package v2(payment_clarity_package_v2) to get a detailed breakdown of each booking’s total price, including tax details. It also breaks down the amount based on the guest and the property's perspectives. To compare the difference in data between the two features, see Payment clarity package features comparison.
+
+If you have been using this feature, we recommend you to test and migrate to the Payments Clarity Package v2(payment_clarity_package_v2) feature. For more help with the migration, contact Connectivity Support.
+
+When the feature: Payments Clarity Package (vcc_payment_v2) is enabled, you can view the following information in the response:
+
+Price details: Contains information on specified taxes and charges.
+Current balance: Specifies the current balance on the VCC.
+Card expiration date: Specifies the date the VCC expires in YYYY-MM-DD format. This is Booking.com standard. ExpiryDate follows the physical credit card standard. Both refer to the same expiration date, but one is more specific.
+Card activation date: Specifies the date the VCC was activated in YYYY-MM-DD format.
+If the Provider XML setting: Dummy credit card on Last Minute No CC Reservations is turned on, then the API returns dummy credit card details on last minute or same day, or domestic bookers. You can notice that the card details are not real by looking for the following:
+
+The VCC details are the same.
+The credit card holder's name is NOCCRESERVATION.
+The ExpireDate is one year from the date of reservation.
+For more information on how to activate the Dummy credit card on Last Minute No CC Reservations XML setting, contact the Connectivity Support team.
+
+Element	Attribute	Description	Type	Notes
+RoomStays		Contains the room reservation details.	object	
+> RoomStay		Contains the room reservation details for each booked room.	object	
+>> Total			object	
+AmountBeforeTax/AmountAfterTax	Specifies the amount before or after tax.	integer	Depending on whether the tax amount is excluded/included for the current room type, the API returns AmountBeforeTax or Amountaftertax.
+CurrencyCode	Specifies the currency used for pricing the commission.	enumerated string	This is always the same for a property and is set by Booking.com.
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	
+>>> Taxes		Contains tax details.	object	
+Amount	Specifies the tax amount.	integer	
+CurrencyCode	Specifies the currency used for pricing the commission.	enumerated string	This is always the same for a property and is set by Booking.com.
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	
+>>>> Tax		Contains tax details.	object	
+Amount	Specifies the tax amount.	integer	
+ChargeFrequency	Specifies the charge frequency.	enumerated integer	For a list of charge frequency code, see charge type codes.
+Code	Specifies the tax code.	integer	Note that we show the information in the preferred language of the property's primary point of contact. If you have implemented the Content API, then you can set the language under ContactInfos ... >... Language for the ContactProfileType as general via the OTA_HotelDescriptiveContentNotif endpoint. For a list of fee tax type codes, see Tax type codes.
+CurrencyCode	Specifies the currency used for pricing the commission.	enumerated string	This is always the same for a property and is set by Booking.com.
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	
+Type	Specifies whether this extra charge is included in the total amount.	enumerated string	Possible values are:
+- Inclusive: The extra charge is included in the total amount.
+- Exclusive: The extra charge is excluded from the total amount.
+>>>> TaxDescription		Contains the tax description.	object	
+>>>>> Text		Specifies the tax description.	string	
+ResGlobalInfo		Contains more details on the reservation.	object	This includes comments, reservation ID, and details of the individual who made the reservation.
+> Comments		Contains all the comments about the reservation provided at the time of booking.	object	
+> Guarantee		Contains the card details as a guarantee for the reservation.	object	
+>> GuaranteesAccepted			object	
+>>> GuaranteeAccepted			object	
+>>>> PaymentCard			object	
+EffectiveDate	Specifies the date that the card can be charged from.	datetime	This attribute exists only for virtual credit cards.
+CurrentBalance	Specifies the current balance that is chargeable on the virtual credit card.	integer	This attribute exists only for virtual credit cards.
+DecimalPlaces	Specifies the position of the decimal point (from right to left) in the current balance value.	integer	For example, Amount=10599 with DecimalPlaces="2" represents 105.99.
+CurrencyCode	Specifies the currency code (ISO 4217) of the virtual credit card's current balance.	string	
+VCCExpirationDate	Specifies the expiration date of the virtual credit card.	string	This attribute exists only for virtual credit cards.
+Include price details
+Implement the latest version: Payments Clarity Package v2(payment_clarity_package_v2) to get a detailed breakdown of each booking’s total price, including tax details. It also breaks down the amount based on the guest and the property's perspectives.
+
+If you have been using this feature, we recommend you to test and migrate to the Payments Clarity Package v2(payment_clarity_package_v2) feature. For more help with the migration, contact Connectivity Support.
+
+When the feature: Include price details (include_price_details) is enabled, the API includes the VAT and city taxes details in the response. Properties can configure the setup of taxes and charges in the Booking.com Extranet. They can specify how VAT and city tax are calculated and can set up to 5 extra charges.
+
+Element	Attribute	Description	Type	Notes
+RoomStays		Contains the room reservation details.	object	
+> RoomStay		Contains the room reservation details for each booked room.	object	
+>> Total		Contains the room price details.	object	
+AmountBeforeTax/AmountAfterTax	Specifies the amount before or after tax.	integer	Depending on whether the tax amount is excluded/included for the current room type, the API returns AmountBeforeTax or Amountaftertax.
+CurrencyCode	Specifies the currency used for pricing the room.	enumerated string	This is always the same for a property and is set by Booking.com.
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	
+>>> Taxes		Contains tax details.	object	
+Amount	Specifies the tax amount.	integer	
+CurrencyCode	Specifies the currency used for pricing the room.	enumerated string	This is always the same for a property and is set by Booking.com.
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	
+>>>> Tax		Contains tax details.	object	
+Amount	Specifies the tax amount.	integer	
+ChargeFrequency	Specifies the charge frequency.	enumerated integer	For a list of charge frequency code, see charge type codes.
+Code	Specifies the tax code.	integer	For a list of fee tax type codes, see Tax type codes.
+CurrencyCode	Specifies the currency used for pricing the room.	enumerated string	This is always the same for a property and is set by Booking.com.
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	
+Type	Specifies whether this extra charge is included in the total amount.	enumerated string	Possible values are:
+- Inclusive: The extra charge is included in the total amount.
+- Exclusive: The extra charge is excluded from the total amount.
+>>>>> TaxDescription		Contains the tax description.	object	
+>>>>>> Text		Specifies the tax description.	string	
+Payment clarity package features comparison
+The following table compares the data returned by both the vcc_payment_v2 and payment_clarity_package_v2 features:
+
+Payment solution	Response elements Changed	When using the Payments Clarity Package
+(vcc_payment_v2)	When using the Payments Clarity Package v2
+payment_clarity_package_v2 feature
+VCC Bookings
+Property where Booking.com is obligated to withhold tax	GuestView > Tax > Type
+Inclusive/Exclusive	Indicates whether the taxes/fees are included in the room price that Booking.com shows to guests.	Indicates whether Booking.com collected the taxes/fees amount from the guest during the booking process.
+GuestView > Total	Indicates the price amount that Booking.com shows to guests.	Indicates the total amount that Booking.com collected from the guests.
+HotelView > Tax > Type
+Inclusive/Exclusive	Indicates whether the taxes/fees are included in the room price of the reservation as specified in the Extranet VAT/tax/charges page.	Indicates whether the taxes/fees amount is included in the payout to the property.
+HotelView > Total	Indicates the price amount of the reservation.	Indicates the total payout amount to the property.
+VCC balance	Indicates the amount that properties can charge on the VCC.	- Bookings with withheld tax: The amount that properties can charge on the VCC. Note that this excludes the withheld tax that Booking.com has withheld and will remit on property's behalf.
+- Bookings without withheld tax: The amount that properties can charge on the VCC.
+Bank transfer bookings
+Property where Booking.com is obligated to withhold tax	GuestView > Tax > Type
+Inclusive / Exclusive	Indicates whether the taxes/fees are included in the room price that Booking.com shows to guests.	Indicates whether Booking.com collected the taxes/fees amount from the guest during the booking process.
+GuestView > Total	Indicates the price amount that Booking.com shows to guests.	Indicates the total amount that Booking.com collected from the guests.
+HotelView > Tax > Type
+Inclusive/Exclusive	Indicates whether the taxes/fees are included in the room price of the reservation as specified in the Extranet VAT/tax/charges page.	Indicates whether the taxes/fees amount is included in the payout to the property.
+HotelView > Total	Indicates the price amount of the reservation.	Indicates the total payout amount to the property.
+Agency bookings^	GuestView > Tax > Type
+Inclusive/Exclusive	Indicates whether the taxes/fees are included in the room price that Booking.com shows to guests.	Indicates whether the taxes/fees amount is included in the total amount the guest will pay to the property.
+GuestView > Total	Indicates the price amount that Booking.com shows to guests.	Indicates the total amount the guest will pay to the property.
+HotelView > Tax > Type
+Inclusive/Exclusive	Indicates whether the taxes/fees are included in the room price of the reservation as specified in the Extranet VAT/tax/charges page.	Indicates if the taxes/fees amount is included in the total amount that the property should collect from the guest.
+HotelView > Total	Indicates the price amount of the reservation.	Indicates the total amount the property should collect from the guest.
+^ - HotelView > Total amount is always the same as the GuestView > Total amount.
+   - HotelView > Tax > Type Inclusive/Exclusive value is always the same as the GuestView > Tax > Type Inclusive/Exclusive value.
+
+Get extra information: Rate rewrite
+When you enable the feature: Get extra information for reservations (res_extra_info), the API adds the following information to the reservation messages.
+
+Specifies the property's policies.
+Specifies more details about the price, such as whether the roomrate applied to the booking is a specially discounted genius rate.
+Specifies service details.
+Specifies extra details about the guests.
+Specifies deposit payment details.
+Element	Attribute	Description	Type	Notes
+RoomStays		Contains the room reservation details.	object	
+> RoomStay		Contains the room reservation details for each booked room.	object	
+>> TPA_Extensions		Contains additional reservation details for each booked room.	object	
+>>> RateRewrite		Contains the parent rate plan information when there is a rate rewrite.	object	
+FromCode	Specifies the rate ID of the booked rate of the room when the booked rate is rewritten from a parent rate.	integer	
+FromName	Specifies the name of the booked rate of the room when the booked rate is rewritten from a parent rate.	string	
+ToCode	Specifies the parent rate plan ID.	integer	
+>>>> BookingCondition		Contains more information on the property's policy.	object	Note that we show the information in the preferred language of the property's primary point of contact. If you have implemented the Content API, then you can set the language under ContactInfos ... >... Language for the ContactProfileType as general via the OTA_HotelDescriptiveContentNotif endpoint.
+>>>>> RateGenius		Contains whether the roomrate applied to the booking is a specially discounted genius rate.	object	
+Value	Specifies whether the roomrate applied to the booking is a specially discounted genius rate.	boolean	A reservation with the value set to false can show a genius discounted price, only if a genius discount has been added at the room level. For more information on how to set room-level genius rate discounts, see the Opportunities tab in the Extranet.
+RateIds	Specifies the rate category ID as known at the moment of reservation.	integer	If the room is booked with a rate that is rewritten from a parent rate, the API specifies the rate category ID of the parent rate.
+Get extra information: Services details
+In addition to the rate rewrite information, when you enable the feature: Get extra information for reservations (res_extra_info), the API adds service details.
+
+Element	Attribute	Description	Type	Notes
+> Services		Contains information about the services.	object	
+>> Service		Contains information about individual services and freebies for guests who are Genius members.	object	
+>>> ServiceDetails		Contains the service details.	enumerated string	The service details can include one of the following values based on the pricing type code:
+- GuestCount (number of guests).
+- Timespan (number of nights).
+- Fees (price to be paid for the add-ons).
+>>>> SpecialRequests		Contains any special requests selected by the guest.	object	
+>>>>> SpecialRequest		Contains individual special requests	object	
+Name	Specifies the service code.	enumerated string	For a full list of all available service names, see Service names/codes.
+>>>>>> Text		Specifies the service description	enumerated string	For a full list of all the available service descriptions, see Service names.
+>>>> GuestCounts		Contains the guest count information.	object	
+>>>>> GuestCount			object	
+Count	Specifies the guest count.	integer	
+>>>>> TimeSpan		Contains the number of stay nights.	object	
+Duration	Specifies the number of stay nights.	integer	
+>>>>> Fees		Contains the price that the guest has to pay for the add-ons.	object	
+>>>>>> Fee		Contains the price that the guest has to pay for the individual add-on.	object	
+Amount	Specifies the price to be paid for the add-on.	integer	
+Get extra information: Guest details
+In addition to the rate rewrite and service details information, when you enable the feature: Get extra information for reservations (res_extra_info), the API:
+
+Specifies whether the booker is travelling on business, including company name & tax.
+Highlights whether the guest is a member of Booking.com's loyalty program, Genius and if they qualify for any available freebies, such as a welcome drink or a late check-out.
+Element	Attribute	Description	Type	Notes
+RoomStays		Contains the room reservation details.	object	
+> RoomStay		Contains the room reservation details for each booked room.	object	
+>>TPA_Extensions		Contains additional reservation details for each booked room.	object	
+>>> reservation_extra_info			object	
+booker			object	
+>>>>> affiliations		Contains the details of any affiliations that the person who made the booking might have.	object	
+>>>>>> affiliation		Contains the company name and VAT number provided by the booker.	object	
+name	Specifies the company name	object	
+number	Specifies the VAT number for the company which the booker is affiliated to.	object	
+numbertype	Specifies the type. For example, vat.	object	
+type	Specifies the affiliation type. For example, company.	enumerated string	
+>>>> flags		Contains additional details about the booking.	object	
+>>>>> flag			object	
+name		enumerated string	Can contain one of the following values:
+- booker_is_genius: Indicates Whether the Booker is a member of Booking.com's loyalty program called Genius.
+- no_cc_reservation: Indicates that the reservation doesn't need a credit card guarantee.
+- no_address_reservation: Indicates that the reservation doesn't need to enter their address for the reservation.
+- smart_flex_replacement_reservation: Indicates that Booking.com will provide an alternate reservation to the host if the guest cancels the reservation
+- smart_flex_reservation: Indicates that Booking.com will pay the cancellation charge if guests cancel the reservation.
+Get extra information: Include deposit payments
+In addition to the rate rewrite and all the above mentioned details, when you enable the feature: Get extra information for reservations (res_extra_info), the API also specifies any prepayment details, if applicable for the reservation.
+
+Element	Attribute	Description	Type	Notes
+ResGlobalInfo		Contains additional details on special requests.	object	
+> DepositPayments		Contains information about the payment of the reservation. Booking.com can now take payments from the guest on behalf of the property. Specifies the payout type such as bank transfer or virtual credit card.	object	
+>> GuaranteePayment		If the reservation doesn't require a prepayment, the payment section is omitted. (only the tag is returned)	object	
+GuaranteeType	Specifies the guarantee payment type.	string	Currently supports the value PrePay.
+>>> Description		Contains payout type information.	object	
+>>>> Text		Specifies the payment and payment options such as bank transfer or virtual credit card.	object	
+>>>> AmountPercent		Contains the prepayment amount.	object	
+Amount	Specifies the amount Booking.com collected from the guest during the booking process, when the payment option is bank transfer. For reservations with a virtual credit card as payment option, the amount refers to the payout amount to the property.	integer	
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	
+Currency	Specifies the currency used for the prepayment amount.	enumerated string	This is always the same for a property and is set by Booking.com.
+Include reservation response token
+When you enable the feature: OTA hotel reservation response token (ota_res_response_token), the API response includes a new HotelReservationID tag for every reservation that includes a token in OTA responses. The token identifies the message the provider is replying to, so that the Booking.com system can then acknowledge that a message has been received by the provider.
+
+Element	Attribute	Description	Type	Notes
+ResGlobalInfo		Contains more details on special requests.	object	
+> HotelReservationIDs		Contains the reservations details.	object	
+> HotelReservationID		Contains individual reservation message details.	object	When the OTA hotel reservation response token feature is enabled, the API returns an additional HotelReservationID element with an alphanumeric value in the ResID_Value, if the API detects changes to the reservation details since the last retrieval.
+ResID_Source	Only available when the OTA hotel reservation response token feature is enabled. Specifies the reservation source.	string	To create a custom ResID_Source value, you must enable the connection setting "Include ResID_Source information in HotelReservationID". For more information on how to enable this setting, contact the Booking.com Connectivity Support team.
+ResID_Type	Only available when the OTA hotel reservation response token feature is enabled. Specifies the Booking.com reservation type.	integer	Can contain the following values:
+- 14: new reservation
+- 18: reservation was modified since the last retrieval.
+ResID_Value	Specifies the Booking.com reservation ID.	string	Can contain 2 entries if the API detects that a reservation was changed before the provider could acknowledge the booking. While acknowledging a changed reservation, you must provide both the ResID_Values.
+ResID_Date	Specifies the reservation creation date and time value.	datetime	
+Include reservation-level guest count
+When you enable the feature: Include reservation-level guest count (childcount), the API returns the number of adults and children (with their ages) that the booker searched for when making the booking. This information is added to the reservation message.
+
+Disable Include room-level guest count
+Before enabling this feature, make sure to disable the feature: Include room-level guest count (guestcount_per_room). If both the features are enabled, the API shows only the room-level guest count.
+
+Element	Attribute	Description	Type	Notes
+ResGlobalInfo		Contains additional details on special requests.	object	
+> GuestCounts		Contains the number of adults and children (with their ages) per room reservation.	object	
+>> GuestCount		Contains the number of adults and ages of individual children included while searching for a reservation.	integer	
+AgeQualifyingCode	Specifies a code that represents the guest's age. Each code represents an age range.	integer	The supported codes are:
+10 - Adult
+8 - Child
+Count	Specifies the guest count.	integer	
+Age	Specifies the age of the child guests.	integer	
+Include reservation-level commission
+When you enable the feature: Include total commission (include_total_commission), the API returns the total commission amount for all rooms for all nights of a reservation.
+
+By default, the API displays the commission amount per room stay under the RoomStay element. A single reservation can include multiple room stays. But by enabling this feature, you can get the total commission amount for all rooms for all nights of the reservation.
+
+You can use this value to check the commission amount calculated, as some non-refundable reservations may be eligible for commission even if the reservation was modified or cancelled.
+
+Element	Attribute	Description	Type	Notes
+ResGlobalInfo		Contains additional details on special requests.	object	
+> TotalCommissions		Contains commission details for all rooms in a reservation.	object	
+>> CommissionPayableAmount		Specifies the total commission for all rooms in a reservation.	object	
+Amount	Specifies the total commission amount.	integer	
+DecimalPlaces	Specifies the position of the decimal point (from right to left) in the total commission amount.	integer	
+CurrencyCode	Specifies the currency used for pricing the commission.	enumerated string	This is always the same for a property and is set by Booking.com.
+>> Comment		Specifies a comment.	object	
+Include payment charges
+When you enable the feature: ReservationsAPI Payment Charges (res_payment_charges), the API includes the following details for reservations that are paid through the PayByBooking payment method.
+
+Element	Attribute	Description	Type	Notes
+ResGlobalInfo		Contains additional details on special requests.	object	
+> Total			object	
+AmountAfterTax	Specifies the total including taxes.	integer	
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	
+CurrencyCode	Specifies the currency used for pricing the commission.	enumerated string	This is always the same for a property and is set by Booking.com.
+>> TPA_Extensions		Contains additional reservation details for each booked room.	object	
+>>> TPA_Extension		Contains additional reservation details for each booked room.	object	
+>>>> PaymentCharge		Contains the payment charge details.	object	
+Amount		integer	
+CurrencyCode	Specifies the currency used for pricing the charge.	enumerated string	This is always the same for a property and is set by Booking.com.
+DecimalPlaces	Specifies the number of decimal places to represent the minor unit of a particular currency.	integer	
+Include dummy credit card details for bank transfer payout
+Enable this feature only if the property's payout method is set to bank transfer (BT).
+
+If you enable the feature: Include dummy CC details for bank transfer payout (res_dummy_cc_on_bt), the API returns dummy credit card details in reservation messages when guests pay through an alternate payment method.
+
+You can notice that the card details are not real by looking for the following:
+
+The VCC details are the same.
+The credit card holder's name is NOCCRESERVATION.
+The ExpireDate is one year from the date of reservation.
+Element	Attribute	Description	Type	Notes
+ResGlobalInfo		Contains more details on the reservation.	object	This includes comments, reservation ID, and details of the individual who made the reservation.
+>>>> PaymentCard		Contains payment information.	object	
+CardCode	Specifies dummy credit card issuer details.	enumerated string	
+CardNumber	Specifies dummy credit card number.	string	
+SeriesCode	Specifies dummy credit card CVC code.	string	
+ExpireDate	Specifies dummy credit card expiration date.	datetime	
+>>>>>>>> CardHolderName		Specifies NOCCRESERVATION as the credit card holder's name.	object	Applicable only for reservations paid through an alternate payment method.
+Include Value adds details version 2.0
+Enable the feature: Include bundle details V2 in reservation (include_bundle_details_v2) to receive value added service details in the reservations response. For a list of supported services, their IDs and corresponding names, see Implementing the Value adds catalog API.
+
+Element	Attribute	Description	Type	Notes
+>>> ValueAddedServices		Specifies the details for the value-added services.	object	
+Name	Specifies a name for the value-add collection.	string	
+>>>> ValueAddedService		Specifies details for each of the value-added services.	object	
+ServiceId	Specifies the Booking.com value-add service ID.	enumerated integer	required
+parkingType^	Specifies the possible parking types when service ID is 1 (v1 IDs: 1001 and 1002).	integer	Possible values: Self, Valet
+creditAmount^	Specifies an amount for display purposes when service IDs are 2, 3, 4, 7, 8, 9 (v1 IDs: 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2011, 2012).	integer	Use this to show the perceived benefit of the value adds.
+accruedDaily^	Specifies whether the value adds is accrued/renewed daily when service IDs are 2, 3, 4, 7 (v1 IDs: 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008).	boolean	Possible values are: true, false. Use this to show the perceived benefit of the value adds.
+currencyCode^	Specifies the currency code of the specified amount when service IDs are 2, 3, 4, 7, 8, 9 (v1 IDs: 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2011, 2012).	string	Default: Uses property's currency code. Follows ISO 4217 country codes.
+amount^	Specifies a decimal value as a percentage when service IDs are 10, 11 (v1 IDs: 2009, 2010) for display purposes.	float	Use this to show the perceived benefit of the value adds.
+minHour^	Specifies the minimum check-in time when service ID is 12 (v1 ID: 3001).	integer	
+maxHour^	Specifies the maximum check-in time when service IDs are 13, 14 (v1 IDs: 3002, 3003).	integer	
+numHours^	Specifies the number of hours permitted at the Spa when service ID is 16 (v1 ID: 4002).	integer	
+numMinutes^	Specifies the maximum massage duration per adult per stay when service ID is 17 (v1 ID:4003).	integer	
+numPets^	Specifies the maximum number of pets allowed per stay per room when service ID is 22 (v1 ID:8001).	integer	
+transferType^	Specifies the possible transfer types when service ID is 19 (v1 IDs: 6001 and 6002).	string	Possible values: Oneway, Roundtrip
+numDays^	Specifies the maximum number of days allowed per stay per room when service ID is 28.	integer	
+
+
+<TPA_Extensions>
+    <ValueAddedServices Name="additional package">
+        <ValueAddedService ServiceId="1" parkingType="Self"/>
+        <ValueAddedService ServiceId="10" amount="0.01"/>
+        <ValueAddedService ServiceId="14" maxHour="16"/>
+        <ValueAddedService ServiceId="17" numMinutes="30"/>
+    </ValueAddedServices>
+</TPA_Extensions>
+Include Value adds details
+Enable the feature: Include bundle details (include_bundle_details) to receive value added service details in the reservations response. If both features are enabled (i.e v1 and v2), the response will include value added service details as per the latest version (v2). For a list of supported services, their IDs and corresponding names, see Implementing the Value adds catalog API.
+
+Element	Attribute	Description	Type	Notes
+>>> ValueAddedServices		Specifies the details for the value-added services.	object	
+Name	Specifies a name for the value-add collection.	string	
+>>>> ValueAddedService		Specifies details for each of the value-added services.	object	
+ServiceId	Specifies the Booking.com value-add service ID.	enumerated integer	For a list of supported services, their IDs and corresponding names, see implementing the Value adds catalog API.
+Amount	Specifies the value adds worth for display purposes.	integer	Shows the benefit of the service/value add.
+currencyCode	Specifies the currency code of the specified amount.	integer	Default: Uses property's currency code.
+Percentage	Specifies the percentage discount.	number	Any value greater than 0 and less than 100.
+Hour	Specifies the maximum check-in time when service ID is 3003.	integer	
+Minute	Specifies the maximum massage duration per adult per stay when service ID is 4003.	integer	
+
+
+
+<TPA_Extensions>
+ <ValueAddedServices Name="fancy package">
+ <ValueAddedService ServiceId="2001" Amount="50" CurrencyCode="USD"/>
+ <ValueAddedService ServiceId="1001" />
+ </ValueAddedServices>
+</TPA_Extensions>
+Service names
+The following table lists all the services code names and their associated descriptions. Based on the code in the response, you can identify the available services supported by the property for a specific reservation.
+
+Code Name	Description
+GF_1	Early check in
+GF_2	Free airport shuttle
+GF_3	Free drink upon arrival
+Gf_4	Free bike rental
+GF_5	Give Genius guests 2 extra hours to check out
+GF_6	Free breakfast
+GF_7	Free parking on availability
+GF_8	Free Wifi
+Service type ID
+The following table lists all the services and their associated IDs. Based on the ID(s) in the response, you can identify the services or add-ons supported by the property for a reservation.
+
+Service Type ID	Service Name
+1	Late Check-out
+2	Early Check-in
+3	Late Check-in
+4	Champagne
+5	Wine
+6	Flowers
+7	Attraction
+8	Airport Shuttle
+9	Parking
+10	Massage
+11	Facial
+12	Body
+13	Christmas
+14	New Year
+15	Celebration Package
+16	Ski Pass
+Available price modes
+The following table lists all the price modes and their corresponding IDs. Based on the ID in the response, you can identify the price mode that was used to calculate the room price for a reservation.
+
+ID	Price mode
+0	Not applicable
+1	Per stay
+2	Per person per stay
+3	Per night
+4	Per person per night
+5	Percentage
+6	Per person per night restricted
+Quick Actions
+→ To know more about how to acknowledge new reservation messages, see Acknowledging new reservations.
+→ For troubleshooting information, see Troubleshooting and list of error codes.
+
+
+

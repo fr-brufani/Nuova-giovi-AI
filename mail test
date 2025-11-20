@@ -1,0 +1,1125 @@
+Mail prenotazione Booking (via scidoo)
+
+
+dati estratti
+
+
+cancellationDetails
+"Cancellata via email Scidoo 2025-11-15T21:28:16.702310"
+(stringa)
+
+
+clientId
+"gbX0CUxHHmHzl38VICq9"
+(stringa)
+
+
+clientName
+"Conti Chiara"
+(stringa)
+
+
+createdAt
+15 novembre 2025 alle ore 22:28:10 UTC+1
+(timestamp)
+
+
+endDate
+21 settembre 2025 alle ore 02:00:00 UTC+2
+(timestamp)
+
+
+hostId
+"YMweo32F7IexdEPkJE8PjoPtOKD2"
+(stringa)
+
+
+importedFrom
+"scidoo_email"
+(stringa)
+
+
+lastUpdatedAt
+15 novembre 2025 alle ore 22:28:16 UTC+1
+(timestamp)
+
+
+propertyId
+"qeBvXyTC1dXOj9VIb5m0"
+(stringa)
+
+
+propertyName
+"1 Suite Maggiore"
+(stringa)
+
+
+reservationId
+"5897326627"
+(stringa)
+
+
+sourceChannel
+"booking"
+(stringa)
+
+
+startDate
+17 settembre 2025 alle ore 02:00:00 UTC+2
+(timestamp)
+
+
+status
+"cancelled"
+(stringa)
+
+
+totalPrice
+415.5
+(numero)
+
+
+voucherId
+"5897326627"
+
+
+
+
+
+Html:
+
+
+Delivered-To: shortdeseos@gmail.com
+Received: by 2002:a17:504:8c0d:b0:1d27:83a3:6131 with SMTP id fy13csp2357943njb;
+        Sun, 9 Nov 2025 12:57:19 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IEymLSK1INGDcSELg4ap8a5eL52zsBM14c2Q+YrB/c1L0+8wYPjR/QhHjy8psbjaiokmfXi
+X-Received: by 2002:a05:600c:4593:b0:477:2f7c:314f with SMTP id 5b1f17b1804b1-47773246357mr38581595e9.10.1762721839509;
+        Sun, 09 Nov 2025 12:57:19 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1762721839; cv=none;
+        d=google.com; s=arc-20240605;
+        b=f4nfmCS8sAB3z+cHENR7J1q6if7zMAXhKurzl4j2NuJIemNBJ3h/gKAv2e7sMPBiy9
+         rOhfZ3KOz4eJ8dr4AIl4XPTrMhKcKbP3zSTqSu8F0Hxig1JJJms72kVcy/Mty/y8ZY+6
+         429168IKvAZm/ldq/fDjMtjxWUJo4q8H8WFoxkiwPBupvRMx4NccIVHIzOH3ejmj/xgJ
+         YoYi+rGROUGu2z4QqA8XbGuD0Tcu79mFR9+E8iXQovAuwe0CMqNaVGQoJ9NLJqchhrMi
+         0Y9ADPrIE4Luhlim8nPueY6UMEed1pN90ezHpu5Jq2fSmqu9AeLfvfSE6KD+QOLfkN8g
+         XEqg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=mime-version:from:origin-messageid:subject:date:to:list-unsubscribe
+         :feedback-id:list-unsubscribe-post:reply-to:message-id
+         :dkim-signature;
+        bh=WHexP+MYF7x+Z0Oxrrj/3zDzFDA4ozQxxpzoy1eFJRs=;
+        fh=ZB2BVnsrDn+1LKbb9eEvR7ec8wSVeDXaQ8kKuqyu/MQ=;
+        b=b0VCo7HzwhT9Y1z1lzy00jxEfxzrPOnQX8Cjm0EwSV7VtU9spLoH3PCZSso8kVkN1i
+         hK2Xx1lBDSrlB1Ga0+2/7IsC0n8hrTktKIAu13JjpIenU3FBf1b6eA1QCuZKGIGdbErV
+         wsvK8MiCnmKjMmAQ4+P4YOe5mUvsXzuDV0iqq+dQdeZqJzE3ADIHn++SZUXIBocVe+Ep
+         GIhF3FY0g+4+1AK2a7BpJS4/2+wEReq+9U+WvJoEKmuRjdy11mkbS+0mq7Duvto+8Tk7
+         S1J5f891i/ug7mNvLOE/oogMldCqPAB6J+ZF2MnISwGOTghzlrOM/Pg5JdyYXRDgOoGG
+         JOGw==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@scidoo.com header.s=mail header.b=lAToo1hQ;
+       spf=pass (google.com: domain of bounces-91910830-4256376833@email.scidoo.com designates 212.146.252.118 as permitted sender) smtp.mailfrom=bounces-91910830-4256376833@email.scidoo.com;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=scidoo.com
+Return-Path: <bounces-91910830-4256376833@email.scidoo.com>
+Received: from email.scidoo.com (email.scidoo.com. [212.146.252.118])
+        by mx.google.com with ESMTPS id ffacd0b85a97d-42ac6797dc9si4839341f8f.313.2025.11.09.12.57.19
+        for <shortdeseos@gmail.com>
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 09 Nov 2025 12:57:19 -0800 (PST)
+Received-SPF: pass (google.com: domain of bounces-91910830-4256376833@email.scidoo.com designates 212.146.252.118 as permitted sender) client-ip=212.146.252.118;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@scidoo.com header.s=mail header.b=lAToo1hQ;
+       spf=pass (google.com: domain of bounces-91910830-4256376833@email.scidoo.com designates 212.146.252.118 as permitted sender) smtp.mailfrom=bounces-91910830-4256376833@email.scidoo.com;
+       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=scidoo.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=scidoo.com; q=dns/txt; s=mail; bh=WHexP+MYF7x+Z0Oxrrj/3zDzFDA4ozQxxpzoy1eFJRs=; h=from:reply-to:subject:date:to:mime-version:content-type:list-unsubscribe:x-csa-complaints:list-unsubscribe-post:message-id:x-sib-id:feedback-id;
+        b=lAToo1hQFgMrT8EDcZu4eGMyBGvOCh9+fYv8hDs3xHD/uDXALL50whNMuDH+g1fDIKd0Go0hR5Zh
+        WPs9/4p2z62SoAw9cMloJuD32o2qppccAzB5jcSuJM9oLu8ITw/+VF5YqAe9Wf+matT2uZKZV6W8
+        ddhxVKRThYUpjcnsWsE=
+Message-Id: <202511092057.36824442411@smtp-relay.mailin.fr>
+Reply-To: <reservation@scidoo.com>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+Feedback-ID: 212.146.199.187:2694517_-1:2694517:Sendinblue
+List-Unsubscribe: <https://r.email.scidoo.com/tr/un/li/5HPzvQ5DkopAJU44EbYPJLp7LehjDvz2LZA5C5hKHZaPtA30nVPZ9UMpTZxOQbUlJfr_UMKPTtjjhsAqTBk4jlCHd2zIMIKrhHD9E7oOrx0086V-QQ924OsiJ_SJyMmQhyhVrpp3pIcEcS3_x-a7DJOTn10mqinVb5F5uMVxkTyucUk-wb-XESgP5bzXq24aNGoYu6EKdZ843nEWMDo7d3AML22AsIJCFaiMoHg>
+X-CSA-Complaints: csa-complaints@eco.de
+X-Mailin-EID: OTE5MTA4MzB%2Bc2hvcnRkZXNlb3NAZ21haWwuY29tfjwyMDI1MTEwOTIwNTcuMzY4MjQ0NDI0MTFAc210cC1yZWxheS5tYWlsaW4uZnI%2BfmVtYWlsLnNjaWRvby5jb20%3D
+To: <shortdeseos@gmail.com>
+Date: Sun, 09 Nov 2025 20:57:18 +0000
+Subject: Confermata - Prenotazione ID 5743262506 - Booking
+Origin-messageId: <202511092057.36824442411@smtp-relay.mailin.fr>
+From: Scidoo Booking Manager <reservation@scidoo.com>
+X-sib-id: vROtkD6hHn8qsDASPAsAsXJnxuYsX0K9051am3eK--2EMjfSIhr9YwiOnDm55YK1au0boKMRmVnsVN-yk-vBn6ISvPanhARbQoqS4vr1S_qYVRuEL8_Rpdv1Fnf_il4kx28LJUsmFS1--raO6HqiAB6hMqGy5galooC875IdWIzAylE
+Mime-Version: 1.0
+Content-Type: multipart/alternative; boundary=1b9cbd5b97d05dcfc54d3ebbfbb9a72d434bc433d10c08302112dbf38da3
+X-Api-Version: v3
+
+--1b9cbd5b97d05dcfc54d3ebbfbb9a72d434bc433d10c08302112dbf38da3
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+
+Agenzia Prenotante=0944813 -> Booking
+ID Voucher=095743262506
+Camera/Alloggio=091 Suite Maggiore
+Struttura Richiesta=09Piazza Danti Perugia Centro
+Stato Prenotazione=09Confermata
+Tariffa=09Pernottamento
+Ospiti=092 Adulti
+Prezzo=09429,20
+
+Nome Ospite=09Simone Muscianese
+Data di Check-in=0903/07/2026
+Data di Check-out=0905/07/2026
+Commissione=0962.86
+
+---------------------------------------------------------------
+
+Servizi Prenotati
+
+N.2 Pernottamento
+N.2 Pernottamento
+N.1 Addebito Libero
+N.1 Pulizia Suite Small
+
+---------------------------------------------------------------
+Conto:
+
+---------------------------------------------------------------
+
+Totale Retta: 339,20=E2=82=AC
+Totale Extra: 90,00=E2=82=AC
+Totale Prenotazione: 429,20 =E2=82=AC
+
+Dati Ospite
+
+Email:msimon.943220@guest.booking.com
+Telefono:
+Cellulare:+393383732315
+
+---------------------------------------------------------------
+
+Note:
+
+Booker Genius - BankTransfer - ** THIS RESERVATION HAS BEEN PRE-PAID ** BOO=
+KING NOTE : Payment charge is EUR 5.238 LANGUAGE: IT
+
+
+--1b9cbd5b97d05dcfc54d3ebbfbb9a72d434bc433d10c08302112dbf38da3
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html; charset=utf-8
+
+<html><head></head><body><img width=3D"1" height=3D"1" src=3D"https://r.ema=
+il.scidoo.com/tr/op/4BF7KFrLdlYAk7GObGiYHkBq2Nv6BAPJaV35zzQEUKCRgomcjeGZo7m=
+o3_v_evunXI_OxYetaJoyIoQBlPxFd7PF5PYOMc-JqD8cVEsAi4iDBNsBTrXoVv5eZ5FbqNsILH=
+leviaHsQC3VX4VDM5JHUwzrLfXTCz2RGokuOjrqzlcfq30p-Z6M6sn92EblOINMACjU1oIq2i1F=
+gaW-mGvUUY" style=3D"mso-hide:all"/>
+
+=09<style>
+=09.table{border-collapse:coollapse;}
+=09.table th{background:#f1f1f1; border:solid 1px #cccccc; width:150px; hei=
+ght:30px; text-align:left;}
+=09.table td{ border:solid 1px #cccccc; padding:4px; text-align:left;}
+=09</style>
+
+=09<div style=3D"line-height:16px; font-size:15px;">
+
+=09<table class=3D"table" cellspacing=3D"0">
+=09=09<tbody><tr><th>Agenzia Prenotante</th><td>44813 -&gt; Booking</td></t=
+r>
+=09=09<tr><th>ID Voucher</th><td>5743262506</td></tr>
+=09=09<tr><th>Camera/Alloggio</th><td>1 Suite Maggiore</td></tr>
+=09=09<tr><th>Struttura Richiesta</th><td>Piazza Danti Perugia Centro</td><=
+/tr>
+=09=09<tr><th>Stato Prenotazione</th><td>Confermata</td></tr>
+=09=09<tr><th>Tariffa</th><td>Pernottamento</td></tr>
+=09=09<tr><th>Ospiti</th><td>2 Adulti</td></tr>
+=09=09<tr><th><strong>Prezzo</strong></th><td>429,20</td></tr>
+=09</tbody></table><br/><br/>
+
+
+=09<table class=3D"table" cellspacing=3D"0">
+=09=09<tbody><tr><th>Nome Ospite</th><td>Simone Muscianese</td></tr>
+=09=09<tr><th>Data di Check-in</th><td>03/07/2026</td></tr>
+=09=09<tr><th>Data di Check-out</th><td>05/07/2026</td></tr>
+=09=09<tr><th>Commissione</th><td>62.86</td></tr>
+=09</tbody></table><br/><hr/>
+<br/>
+
+=09<strong>Servizi Prenotati</strong><br/><br/>N.2 Pernottamento<br/>N.2 Pe=
+rnottamento<br/>N.1 Addebito Libero<br/>N.1 Pulizia Suite Small<br/><hr/>
+        <strong>Conto:</strong><br/><hr/><br/>Totale Retta: 339,20=E2=82=AC=
+<br/>Totale Extra: 90,00=E2=82=AC<br/><strong>Totale Prenotazione: 429,20 =
+=E2=82=AC</strong><br/><br/>
+
+=09<strong>Dati Ospite</strong><br/><br/>
+=09Email:msimon.943220@guest.booking.com<br/>
+=09Telefono:<br/>
+=09Cellulare:+393383732315<br/><hr/><br/><strong>Note:</strong><br/><br/> B=
+ooker Genius  - BankTransfer  - ** THIS RESERVATION HAS BEEN PRE-PAID **  B=
+OOKING NOTE : Payment charge is EUR 5.238  LANGUAGE: IT
+</div></body></html>
+
+--1b9cbd5b97d05dcfc54d3ebbfbb9a72d434bc433d10c08302112dbf38da3--
+
+
+
+
+
+Mail conferma diretta Airbnb
+
+dati attualmente estratti:
+
+
+adults
+2
+(numero)
+
+
+clientId
+"BDkK6NUhVoqo2YVCqN2q"
+(stringa)
+
+
+clientName
+"PETRA"
+(stringa)
+
+
+createdAt
+15 novembre 2025 alle ore 22:28:04 UTC+1
+(timestamp)
+
+
+endDate
+null
+(nullo)
+
+
+hostId
+"YMweo32F7IexdEPkJE8PjoPtOKD2"
+(stringa)
+
+
+importedFrom
+"airbnb_email"
+(stringa)
+
+
+lastUpdatedAt
+15 novembre 2025 alle ore 22:28:04 UTC+1
+(timestamp)
+
+
+propertyId
+"tbZjBuGZRwhtkxWBchf8"
+(stringa)
+
+
+propertyName
+"Nuova prenotazione confermata! Petra arriverà il 14 ago."
+(stringa)
+
+
+reservationId
+"HMM5AE9MXB"
+(stringa)
+
+
+sourceChannel
+"airbnb"
+(stringa)
+
+
+startDate
+null
+(nullo)
+
+
+status
+"confirmed"
+(stringa)
+
+
+threadId
+"2212052179"
+(stringa)
+
+
+totalPrice
+550
+(numero)
+
+
+voucherId
+"HMM5AE9MXB"
+
+html:
+
+
+
+Delivered-To: shortdeseos@gmail.com
+Received: by 2002:a17:504:d884:b0:1d27:83a3:6131 with SMTP id nr4csp2329676njb;
+        Sat, 15 Nov 2025 10:31:09 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IEbkr9fnHhEjHzyS1NQX3f6mdi/35NSrUxz4n7z828ETiOm4gIE3sjWFMtPqUh+fOzGH9l1
+X-Received: by 2002:ad4:5de2:0:b0:87e:32:8f16 with SMTP id 6a1803df08f44-882926c2648mr110803926d6.52.1763231469442;
+        Sat, 15 Nov 2025 10:31:09 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1763231469; cv=none;
+        d=google.com; s=arc-20240605;
+        b=VhcIfHOn6VpK5fArYrpns6AEikzDf4vgKAktQHhNDNSNnCcmhPX/1crt4cqoDbN0hb
+         7MSOR7OYL1WYFAMUNuD4RtkiI1ziD7sbDPRtz8uMR4jcBAA5oYdB8ibCT6reyTuwnFP7
+         nn9RqgCuASGNUMYwhNJDnjHigm47+R/65ASPNPljxr4WwIkaugLIMwU/1M5kH6fc6XEN
+         ke5GB9XWHyYXO0kqvqtkbGS/d64LtxKJSgIHtoGveRLVg89QxsoBg/kjV47GkGmLd0EI
+         604v2v/wLUELr+jZoGeTmhUVeNb9kCKyNUEuhaoWrDbx504t6qNPre8gxdmOqGeuX6KX
+         YqQg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=to:priority:importance:bimi-selector:subject:message-id
+         :mime-version:from:date:dkim-signature:dkim-signature;
+        bh=UNIN8lIorANq8veA6//54nn02SKkrbOe+5WJ5pRwfbo=;
+        fh=XBTByGVyCMihm8LvqfNCIEQ1zKLApuAOsFeBQLo6miw=;
+        b=TeugVgEdi10tTKatQaYzPvbs9niLbHgLHz+arlJtMAYmHTxSIPWtzltNY+Dh1S3lqk
+         fdrMB4uxCM2jdq26BXw67Tjsqlq4zQ2L2RInZht1fqZRlXLWJabpyb2QMl9j1rTi5I0l
+         OblZ3kSyCsHnwx8mkbRKY85lCzJfNXbcbE9WUXzNM6m0xI043jaYFZVdrVvNKEkIwDbX
+         nW/wZROe9zJ2/JO4qpVL4frN8o6wwvAtUUqe20eiCIBoOLhqgfx5I1SIQAcaa3+Z45Fv
+         wcdVFE6PE4xV5llZCm03sQr8MjF8oR2dnQA3qMGBtMtlOgf3W3btTk2GIiXzKTdz1/pS
+         Gvwg==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@email.airbnb.com header.s=s20150428 header.b=n5HVHf5Q;
+       dkim=pass header.i=@sendgrid.info header.s=smtpapi header.b=JmGq5nTS;
+       spf=pass (google.com: domain of bounces+169303-ba73-shortdeseos=gmail.com@email.airbnb.com designates 167.89.102.173 as permitted sender) smtp.mailfrom="bounces+169303-ba73-shortdeseos=gmail.com@email.airbnb.com";
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=airbnb.com
+Return-Path: <bounces+169303-ba73-shortdeseos=gmail.com@email.airbnb.com>
+Received: from xtrwssxd.outbound-mail.sendgrid.net (xtrwssxd.outbound-mail.sendgrid.net. [167.89.102.173])
+        by mx.google.com with ESMTPS id 6a1803df08f44-882865c0fe5si26636546d6.377.2025.11.15.10.31.08
+        for <shortdeseos@gmail.com>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 15 Nov 2025 10:31:09 -0800 (PST)
+Received-SPF: pass (google.com: domain of bounces+169303-ba73-shortdeseos=gmail.com@email.airbnb.com designates 167.89.102.173 as permitted sender) client-ip=167.89.102.173;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@email.airbnb.com header.s=s20150428 header.b=n5HVHf5Q;
+       dkim=pass header.i=@sendgrid.info header.s=smtpapi header.b=JmGq5nTS;
+       spf=pass (google.com: domain of bounces+169303-ba73-shortdeseos=gmail.com@email.airbnb.com designates 167.89.102.173 as permitted sender) smtp.mailfrom="bounces+169303-ba73-shortdeseos=gmail.com@email.airbnb.com";
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=airbnb.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=email.airbnb.com; h=content-type:date:from:mime-version:subject:to:cc:content-type:date: feedback-id:from:subject:to; s=s20150428; bh=UNIN8lIorANq8veA6//54nn02SKkrbOe+5WJ5pRwfbo=; b=n5HVHf5QvlN5FH8pP+NAuvH9cv6yB3e8zX+kU9tJfPdPBxk/mSacvw9xxk2GJ/ZQ4jvG Mvqd5SNOxY4eQWCAsDtCXdHtR8uXjtZc1PKwJA3WwpfhKZhoowSeHQk+0JK9Z7tW/4Xw9s qga8eB+gJE9oSmf9Sv1SIFNJzDaftJYh0=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sendgrid.info; h=content-type:date:from:mime-version:subject:to:cc:content-type:date: feedback-id:from:subject:to; s=smtpapi; bh=UNIN8lIorANq8veA6//54nn02SKkrbOe+5WJ5pRwfbo=; b=JmGq5nTSL0SxBfyt/QGeKSPIb4VUh/EMoIBvZM5a9w6s6Wr6+YxiF0hMp+WyuNXxZmRo EQVqtxwcOfg0OJlWgrk7F4I6Pi69TwHUkt7YyAYBX920KPTDF9J0Cd01uAisVtyOugQGiQ tiZPTNU4DcoRlBnRQMq+MXfz2wP+CZklo=
+Received: by recvd-5ffc458897-xvbs2 with SMTP id recvd-5ffc458897-xvbs2-1-6918C6EB-38 2025-11-15 18:31:07.633790111 +0000 UTC m=+952068.626250092
+Received: from MTY5MzAz (unknown) by geopod-ismtpd-19 (SG) with HTTP id 1Kpz0EdRSim4U6xHq2Riow Sat, 15 Nov 2025 18:31:07.608 +0000 (UTC)
+Content-Type: multipart/alternative; boundary=5485a06cb81ae1798d833beb9ac6b7c7a73cbc11308cb6036c1e39bff147
+Date: Sat, 15 Nov 2025 18:31:07 +0000 (UTC)
+From: Airbnb <automated@airbnb.com>
+Mime-Version: 1.0
+Message-ID: <1Kpz0EdRSim4U6xHq2Riow@geopod-ismtpd-19>
+Subject: Prenotazione confermata - Francesco Brufani arriverà il 3 set
+BIMI-Selector: v=BIMI1; s=belov2;
+Importance: high
+Priority: Urgent
+Return-Path: automated@airbnb.com
+X-Category: support
+X-Locale: it
+X-MSMail-Priority: High
+X-Message-Package-UUID: a1c9571a-ceca-ced8-cc5c-66ebc2eeb979
+X-Priority: 1
+X-Strategy: email
+X-Template: BOOKING_CONFIRMATION_TO_HOST
+X-User-ID: 520289023
+X-rpcampaign: airbnb20251115314132869019873354248048644364731244989
+X-SG-EID: u001.373TPjtMqGbzwgRnUiLO4XljsWSZKewimAbF7sau2vF2RcaqvXC4aBu98qmouqE3NhOsRkORQTmCJ9+dmNncsNtzCxpnIe3aUQp0PReDyOfMQKfoEF2VZlealNH06IwDgz8n4mc8uFYppcAhgJCSKIM9REaJnNtk4lUuxCFHK/HBiqRnMaAh+TfY/AowQ6v2KkY33swpOLA/5UviWlWKnhpZY1j3d/gaf1RWq9LmQ+k=
+X-SG-ID: u001.SdBcvi+Evd/bQef8eZF3Bl1dI85s/c4/Dg2sQidk/jkCmsQMj9q+P7w8+NFqnbbePcsL2eNowOcDFtA4zhaCQnxVyPpnfa3Vw827VTOWY5asGBABfyP58g5i6rLCmqLHFowKxxfGDIFzxbe1iECZMVsritndY2jPHHF3syixw4WtjIS/vnR4s5LCfFuiNGTSg5Gqa0tKF14TWTAqdaq3T5P5nmE+LFjaHg8zK0d5zQiqtQ13pHVOuJyhwIGn9oG+Um4zknoRzI8oEhxaJct8MW1jWXJqC44Ewa7X7RUhSF/0jrb+lcIB6+5DK78axxk1IcGUpU8NlczhEuv1k4CMmwXdZrcASIthH6/LUTUgt9ysVbCUWzXwkRHRq8f/+vuXlLUGDcIU3XvSkn7yZ22xhd9n3vjDJmnRNQ5lvGuhOWQ0E+dlr5/erwJi5UaKFpDU3hwnapRWlrF8xZGVkak5xNkYtmRIYQGlCiq8cTW+jRDo9y8t6XKmsqaYAxWkVasSQERp5/3PGLPbbwjmZ4zYDw==
+To: shortdeseos@gmail.com
+X-Entity-ID: u001./H5mzSYUmGGnQUq8WJ0Pfw==
+
+--5485a06cb81ae1798d833beb9ac6b7c7a73cbc11308cb6036c1e39bff147
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Mime-Version: 1.0
+
+%opentrack%
+
+https://www.airbnb.it/?c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENv=
+bmZpcm1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced8-cc5c-66ebc2eeb979
+
+NUOVA PRENOTAZIONE CONFERMATA! FRANCESCO ARRIVER=C3=80 IL 3 SET.
+
+Invia un messaggio per confermare i dettagli di check-in o
+per dare il benvenuto a Francesco.
+
+https://www.airbnb.it/hosting/reservations/details/HM9WTWBPCY?c=3D.pi80.pkY=
+m9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3Da1c9=
+571a-ceca-ced8-cc5c-66ebc2eeb979   Francesco
+                                                                           =
+                                                                           =
+                              =20
+                                                                           =
+                                                                           =
+                               [https://www.airbnb.it/hosting/reservations/=
+details/HM9WTWBPCY?c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENvbmZp=
+cm1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced8-cc5c-66ebc2eeb979]
+                    
+                                                                           =
+                                                                           =
+                              =20
+                                                                           =
+                                                                           =
+                               Identit=C3=A0 verificata =C2=B7 3 recensioni
+                                                                           =
+                                                                           =
+                              =20
+                                                                           =
+                                                                           =
+                               Perugia, Italy
+
+Invia un Messaggio a Francesco.Invia un Messaggio a
+Francesco.
+[https://www.airbnb.it/hosting/thread/2352274460?thread_type=3Dhome_booking=
+&email_cta=3Dlink_hosting_message_thread&c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2=
+VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced8-cc5c-6=
+6ebc2eeb979]
+
+https://www.airbnb.it/rooms/1095594458816788080?c=3D.pi80.pkYm9va2luZy9ob3N=
+0L1Jlc2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced8=
+-cc5c-66ebc2eeb979
+
+MAGGIORE SUITE - DUOMO DI PERUGIA
+
+Intera casa/apt
+
+[https://www.airbnb.it/rooms/1095594458816788080?c=3D.pi80.pkYm9va2luZy9ob3=
+N0L1Jlc2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced=
+8-cc5c-66ebc2eeb979]
+
+Check-in         Check-out
+                =20
+gio 3 set 2026   sab 5 set 2026
+                =20
+16:00            11:00
+
+OSPITI
+
+1 adulto
+
+PI=C3=99 DETTAGLI SU CHI STA ARRIVANDO
+
+Gli ospiti ti faranno sapere se viaggiano con bambini o
+neonati. Se attivi la funzione di Prenotazione Immediata,
+gli ospiti con bambini continueranno ad aver bisogno della
+tua approvazione per prenotare. Imposta la Prenotazione
+Immediata
+[https://www.airbnb.com/manage-your-space/1095594458816788080/booking/how-g=
+uests-book]
+
+CODICE DI CONFERMA
+HM9WTWBPCY
+
+L'OSPITE HA PAGATO
+
+114,00=C2=A0=E2=82=AC x 2 notti   228,00=C2=A0=E2=82=AC
+
+Costi di pulizia   90,00=C2=A0=E2=82=AC
+
+Costi del servizio dell'ospite   0,00=C2=A0=E2=82=AC
+
+TOTALE (EUR)   318,00=C2=A0=E2=82=AC
+
+COMPENSO DELL'HOST
+
+Costi della stanza per 2 notti   240,00=C2=A0=E2=82=AC
+
+Costi di pulizia   90,00=C2=A0=E2=82=AC
+
+Correzione del prezzo medio per notte   -12,00=C2=A0=E2=82=AC
+
+Costi del servizio dell'host (15.5%)   -49,29=C2=A0=E2=82=AC
+
+TU GUADAGNI   268,71=C2=A0=E2=82=AC
+
+Visualizza guadagniVisualizza guadagni
+[https://www.airbnb.it/users/transaction_history?c=3D.pi80.pkYm9va2luZy9ob3=
+N0L1Jlc2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced=
+8-cc5c-66ebc2eeb979]
+
+Attendi il tempo necessario per l'elaborazione del
+pagamento. Scopri di pi=C3=B9
+[https://www.airbnb.it/help/article/425?c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2V=
+ydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced8-cc5c-66=
+ebc2eeb979]
+
+CANCELLAZIONI
+I tuoi termini di cancellazione per gli ospiti sono Moderati
+[https://www.airbnb.com/help/article/149].
+
+Le penalit=C3=A0 previste per cancellare questa prenotazione
+includono la pubblicazione di una recensione visibile a
+tutti in cui =C3=A8 indicata la cancellazione da parte tua, il
+pagamento del costo di cancellazione e il blocco dei
+pernottamenti cancellati sul tuo calendario.
+
+Leggi informazioni sulle penalit=C3=A0 di cancellazione
+[https://www.airbnb.it/help/article/990?src_section=3DHOST_CONFIRMATION_CAN=
+CELLATION_SECTION&c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENvbmZpc=
+m1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced8-cc5c-66ebc2eeb979]
+
+PREPARATI ALL'ARRIVO DI FRANCESCO
+
+CONSULTA LE PRATICHE DI SICUREZZA PER L'EMERGENZA COVID-19
+Abbiamo creato una serie di pratiche di sicurezza
+obbligatorie per l'emergenza COVID-19 che host e ospiti di
+Airbnb sono tenuti a seguire. Queste includono il rispetto
+del distanziamento sociale e l'utilizzo di una mascherina.
+
+Consulta le pratiche
+[https://www.airbnb.it/help/article/2839?src_section=3DHOST_CONFIRMATION_GE=
+T_READY_FOR_ARRIVAL_SECTION_COMPONENT&c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2Vyd=
+mF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced8-cc5c-66eb=
+c2eeb979]
+
+SEGUI IL PROCESSO AVANZATO DI PULIZIA IN 5 FASI
+Tutti gli host devono seguire il protocollo avanzato di
+pulizia tra un soggiorno e l'altro. Abbiamo sviluppato
+queste fasi in collaborazione con esperti allo scopo di
+prevenire la diffusione della malattia causata dal nuovo
+coronavirus (COVID-19).
+
+Consulta il processo
+[https://www.airbnb.it/help/article/2809?src_section=3DHOST_CONFIRMATION_GE=
+T_READY_FOR_ARRIVAL_SECTION_COMPONENT&c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2Vyd=
+mF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced8-cc5c-66eb=
+c2eeb979]
+
+FORNISCI INDICAZIONI
+Verifica che l'ospite sappia come arrivare al tuo alloggio.
+
+Invia il messaggio
+[https://www.airbnb.it/hosting/thread/2352274460?thread_type=3Dhome_booking=
+&src_section=3DHOST_CONFIRMATION_GET_READY_FOR_ARRIVAL_SECTION_COMPONENT&c=
+=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl=
+&euid=3Da1c9571a-ceca-ced8-cc5c-66ebc2eeb979]
+
+La protezione dalla A alla Z, inclusa ogni volta che ospiti.
+Scopri di pi=C3=B9
+[https://www.airbnb.it/help/article/3142/getting-protected-through-aircover=
+-for-hosts?email_cta=3D&c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdEN=
+vbmZpcm1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced8-cc5c-66ebc2eeb979]
+
+ASSISTENZA CLIENTI
+Contatta il nostro team di assistenza 24 ore su 24, da
+qualsiasi parte del mondo.
+
+Visita il Centro Assistenza
+[https://www.airbnb.it/help?src_section=3DHOST_PENDING_BOOKING_EMAIL_CUSTOM=
+ER_SERVICE&c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENvbmZpcm1hdGlv=
+blRlbXBsYXRl&euid=3Da1c9571a-ceca-ced8-cc5c-66ebc2eeb979]Contatta
+Airbnb
+[https://www.airbnb.it/help/contact_us?src_section=3DHOST_PENDING_BOOKING_E=
+MAIL_CUSTOMER_SERVICE&c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENvb=
+mZpcm1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced8-cc5c-66ebc2eeb979]
+
+Airbnb Ireland UC
+
+8 Hanover Quay
+
+Dublin 2, Ireland
+
+Termini di pagamento tra te e:
+
+Airbnb Payments Luxembourg S.A.
+
+4 Rue Henri M. Schnadt
+
+2530 Luxembourg
+
+Scarica l'app di Airbnb
+
+https://www.airbnb.it/external_link?c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF=
+0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced8-cc5c-66ebc2=
+eeb979&url=3Dhttps%3A%2F%2Fairbnb.sng.link%2FA6f9up%2Fdvs6%3F_smtype%3D3%26=
+pcid%3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBs=
+YXRl   https://www.airbnb.it/external_link?c=3D.pi80.pkYm9va2luZy9ob3N0L1Jl=
+c2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3Da1c9571a-ceca-ced8-cc5c=
+-66ebc2eeb979&url=3Dhttps%3A%2F%2Fairbnb.sng.link%2FA6f9up%2Fqh0lc%3F_dl%3D=
+airbnb%3A%2F%2Fs%2Fhomes%26_smtype%3D3%26pcid%3D.pi80.pkYm9va2luZy9ob3N0L1J=
+lc2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl  =20
+
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0
+--5485a06cb81ae1798d833beb9ac6b7c7a73cbc11308cb6036c1e39bff147
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html; charset=utf-8
+Mime-Version: 1.0
+
+<html lang=3D"en"><head><meta http-equiv=3D"Content-Type" content=3D"text/h=
+tml; charset=3Dutf-8"><meta name=3D"viewport" content=3D"width=3Ddevice-wid=
+th, initial-scale=3D1"><style type=3D"text/css">@font-face{font-family:Cere=
+al;src:url("https://a0.muscache.com/airbnb/static/airbnb-dls-web/build/font=
+s/Airbnb_Cereal-Book-9a1c9cca9bb3d65fefa2aa487617805e.woff2") format("woff2=
+"),url("https://a0.muscache.com/airbnb/static/airbnb-dls-web/build/fonts/Ai=
+rbnb_Cereal-Book-aa38e86e3f98554f9f7053d7b713b4db.woff") format('woff');fo
+
+
+Mail messaggio Booking
+
+Delivered-To: shortdeseos@gmail.com
+Received: by 2002:a17:504:d884:b0:1d27:83a3:6131 with SMTP id nr4csp2158379njb;
+        Sat, 15 Nov 2025 04:32:27 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IE3o7WxAPGD+ShUMPDm5JqWQ7aMiHj9lLjLNaBg3stFg1QtUIuZAJaOzRvaLSLr8l1/GY6I
+X-Received: by 2002:a05:6402:35d5:b0:640:c8b8:d55 with SMTP id 4fb4d7f45d1cf-64350e0473bmr5687315a12.3.1763209946743;
+        Sat, 15 Nov 2025 04:32:26 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1763209946; cv=none;
+        d=google.com; s=arc-20240605;
+        b=XPFTGQJP/eX9EDOaAuqrZzzuu6S7S0FHeP4ioPIyJlkyRzpzCmqUFDN8E+9kBQgbGc
+         K0zgBm7w5q/A2EtqRMJVzibQCZOWuieVVMDRYe5cIaWWzMjuOMQzAiF8Ugn9L7FvXQJv
+         diD1zX2FC3VeulxmAmYT3uVL/Lj01BpwkzuyRGijoH72x/moBvs1Bc29bYiizl+bVYZI
+         BPet5RXwT4YM7V35wRtmiSZ8lJtGQx3dV4tiW3y2kpCasX1PP/F2YY5SvgD0+QTTSUOQ
+         Tw7vd0Fkn/Q+b3qZH9YsF8zo0n6YZRHCeJuJeDKp/W9JmtL8fSzaLHL4LdlBYGpQlW8S
+         IrUg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=message-id:reply-to:subject:sender:from:to:date:mime-version
+         :content-transfer-encoding:dkim-signature;
+        bh=wiPliOjsAuOxuxO55xSTOAzNL/vTFUoWy/R+eQV4nas=;
+        fh=XBTByGVyCMihm8LvqfNCIEQ1zKLApuAOsFeBQLo6miw=;
+        b=elM4JKU8rUCg4Pum7zD836d6aYtjt6BESh/uSCY9XaW44VQVbiA28ItcqBgWt+KXk8
+         Zy+jaNSvUUZljy7Z7L02ihKU3tzSGLHAjeUdwoL+Vu+PsOAiuQ+z2PqE2849vAM3351K
+         9AYXuLaWaPQ/leTVV4DfRepFvoEcS3oJCx/bFYu1JSTvkQHWSdK+0Ia1a1Rzf3pyp1QP
+         D5hjMuralkCHBZmbNoXemUbMXZzKA+cQJgg4FZI+xvS2GO4qo3ukQ71zlIXQ6bmup6bD
+         g9l3aSmdk+rNbcjAcfAxZb41cr+6kDrJ5Y6S0CE0nOf93/m2iI5deqantmEif7t0qr6E
+         6Juw==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@guest.booking.com header.s=bk header.b=THXE3bPo;
+       spf=pass (google.com: domain of 5958915259-nj5q.ey2f.c2mf.432g@guest.booking.com designates 37.10.30.9 as permitted sender) smtp.mailfrom=5958915259-nj5q.ey2f.c2mf.432g@guest.booking.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=guest.booking.com
+Return-Path: <5958915259-nj5q.ey2f.c2mf.432g@guest.booking.com>
+Received: from mailout-203-r2.booking.com (mailout-203-r2.booking.com. [37.10.30.9])
+        by mx.google.com with ESMTPS id 4fb4d7f45d1cf-6433a51f329si3809156a12.392.2025.11.15.04.32.26
+        for <shortdeseos@gmail.com>
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 15 Nov 2025 04:32:26 -0800 (PST)
+Received-SPF: pass (google.com: domain of 5958915259-nj5q.ey2f.c2mf.432g@guest.booking.com designates 37.10.30.9 as permitted sender) client-ip=37.10.30.9;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@guest.booking.com header.s=bk header.b=THXE3bPo;
+       spf=pass (google.com: domain of 5958915259-nj5q.ey2f.c2mf.432g@guest.booking.com designates 37.10.30.9 as permitted sender) smtp.mailfrom=5958915259-nj5q.ey2f.c2mf.432g@guest.booking.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=guest.booking.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; s=bk; d=guest.booking.com; h=Content-Transfer-Encoding:Content-Type:MIME-Version:Date:To:From:Sender: Subject:Reply-To:Message-Id; i=5958915259-nj5q.ey2f.c2mf.432g@guest.booking.com; bh=wiPliOjsAuOxuxO55xSTOAzNL/vTFUoWy/R+eQV4nas=; b=THXE3bPot/stghd9lG2PH0mvimbecxka2n+sMdB6Av6kBFRI/RjRy77tdTCvBmtoQPO/9myfLWIS
+   SmPnaHrRmDeGCmUh4D9lgGz881uu9SN70CEIDR969VJa/TnNMRpFsrH2xoWef9D9oCy19k3Tcja+
+   GUPUL8yq3H/+0QGeERk=
+Content-Transfer-Encoding: binary
+Content-Type: multipart/alternative; boundary="_----------=_17632099454446964"
+MIME-Version: 1.0
+Date: Sat, 15 Nov 2025 13:32:25 +0100
+To: shortdeseos@gmail.com
+From: "Francesco Brufani tramite Booking.com" <5958915259-nj5q.ey2f.c2mf.432g@guest.booking.com>
+Sender: "Francesco Brufani tramite Booking.com" <5958915259-nj5q.ey2f.c2mf.432g@guest.booking.com>
+Subject: Abbiamo ricevuto questo messaggio da Francesco Brufani
+Reply-To: 5958915259-nj5q.ey2f.c2mf.432g@guest.booking.com
+X-Bme-Id: 35232924948
+Message-Id: <4d7tgZ0P6Jz1DG@mailrouter-605.fra3.prod.booking.com>
+
+--_----------=_17632099454446964
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 15 Nov 2025 13:32:25 +0100
+
+ICAgIyMtIFNjcml2aSBsYSB0dWEgcmlzcG9zdGEgc29wcmEgcXVlc3RhIHJpZ2EgLSMjCgogICAg
+ICAgICAgICAgICAgICAgICAgIE51bWVybyBkaSBjb25mZXJtYTogNTk1ODkxNTI1OQoKICAgICAg
+ICAgICAgICAgICAgICAgICAgTnVvdm8gbWVzc2FnZ2lvIGRhIHVuIG9zcGl0ZQoKICAgICAgICAg
+ICAgICAgICAgICAgICAgRnJhbmNlc2NvIEJydWZhbmkgaGEgc2NyaXR0bzoKCiAgICAgICAgICAg
+ICAgICAgICAgICAgIENpYW8gcG9zc28gcG9ydGFyZSB1biBnYXR0bz8KCiAgIFJpc3BvbmRpCgog
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgLS0+CiAgIGh0dHBzOi8vYWRtaW4u
+Ym9va2luZy5jb20vaG90ZWwvaG90ZWxhZG1pbi9leHRyYW5ldF9uZy9tYW5hZ2UvbWVzc2FnaW5n
+CiAgIC9pbmJveC5odG1sP2xhbmc9aXQmaG90ZWxfaWQ9MTE3MjI1NjkmcmVzX2lkPTU5NTg5MTUy
+NTkmcHJvZHVjdF90eXBlPVBPCiAgIFNUX0JPT0tJTkcmbWVzc2FnZV9pZD02YTI2Y2FlMC1jMjFl
+LTExZjAtYjUzMi05OWNmNjdkYjRmODAmcHJvZHVjdF9pZD01CiAgIDk1ODkxNTI1OSZmcm9tX2lu
+c3RhbnRfZW1haWw9MSZ1dG1fY2FtcGFpZ249cGZfZ3Vlc3RfcmVxdWVzdCZ1dG1fc291cmNlCiAg
+ID1tZXNzYWdpbmcmdXRtX21lZGl1bT1lbWFpbCZ1dG1fdGVybT1mcmVlX3RleHQmdXRtX2NvbnRl
+bnQ9cmVwbHkmX2U9MTc2CiAgICAgICAgICAgMzIwOTk0NSZfcz1TZVpVSE5iQ29tbkxHeG0xdXJB
+RmpKd0UxRndWb3pIV1ZWMjdvZFNSVU9VCgogICBEYXRpIGRlbGxhIHByZW5vdGF6aW9uZQoKICAg
+Tm9tZSBkZWxsJ29zcGl0ZToKICAgRnJhbmNlc2NvIEJydWZhbmkKCiAgIENoZWNrLWluOgogICBn
+aW8gMTUgZ2VuIDIwMjYKCiAgIENoZWNrLW91dDoKICAgZG9tIDE4IGdlbiAyMDI2CgogICBOb21l
+IHN0cnV0dHVyYToKICAgTWFnZ2lvcmUgU3VpdGUgLSBEdW9tbyBkaSBQZXJ1Z2lhCgogICBOdW1l
+cm8gZGkgcHJlbm90YXppb25lOgogICA1OTU4OTE1MjU5CgogICBPc3BpdGkgdG90YWxpOgogICAy
+CgogICBUb3RhbGUgZGVsbGUgY2FtZXJlOgogICAxCgogICDCqSBDb3B5cmlnaHQgQm9va2luZy5j
+b20gMjAyNQogICBRdWVzdGEgZS1tYWlsIHRpIMOoIHN0YXRhIGludmlhdGEgZGEgQm9va2luZy5j
+b20KCiAgIEFsIG1vbWVudG8sIGxhIHR1YSBpc2NyaXppb25lIGFsbGEgbmV3c2xldHRlciBkaSBC
+b29raW5nLmNvbSDDqCBhdHRpdmEuCiAgIFNhcGV2aSBjaGUgcHVvaSBtb2RpZmljYXJlIGxlIHR1
+ZSBwcmVmZXJlbnplIGUgaW1wb3N0YXJlIGxlIHJpc3Bvc3RlCiAgIGF1dG9tYXRpY2hlIHBlciBh
+bGN1bmkgbWVzc2FnZ2kgZGVnbGkgb3NwaXRpPwoKICAgUXVlc3RhIGUtbWFpbCDDqCBzdGF0YSBp
+bnZpYXRhIGE6IHNob3J0ZGVzZW9zQGdtYWlsLmNvbQogICAgICAgICAgICAgICAgICAgICAgICAg
+IE1vZGlmaWNhIGxlIHR1ZSBwcmVmZXJlbnplCgogICAqQm9va2luZy5jb20gcmljZXZlcsOgIGVk
+IGVsYWJvcmVyw6AgbGUgcmlzcG9zdGUgYSBxdWVzdGEgZS1tYWlsLCBjb21lCiAgIHNwZWNpZmlj
+YXRvIG5lbGwnSW5mb3JtYXRpdmEgc3VsbGEgUHJpdmFjeSBlIHN1aSBDb29raWUgZGkgQm9va2lu
+Zy5jb20uCiAgIElsIGNvbnRlbnV0byBkaSBxdWVzdG8gbWVzc2FnZ2lvIG5vbiDDqCBzdGF0byBn
+ZW5lcmF0byBkYSBCb29raW5nLmNvbSwKICAgcXVpbmRpIEJvb2tpbmcuY29tIG5vbiBuZSDDqCBy
+ZXNwb25zYWJpbGUuCgoKCiAgIFtlbWFpbF9vcGVuZWRfdHJhY2tpbmdfcGl4ZWw/bGFuZz1pdCZh
+bXA7YWlkPTMwNDE0MiZhbXA7dG9rZW49NTI2MTZlNjQ2CiAgIGY2ZDQ5NTYyNDczNjQ2NTIzMjg3
+ZDYxZmQ0ZWExODY2Mzk2ZTM0MzUyZDQwYmRhNzJlOWNjNDc1YTExMzA3OTAyNzViYTg1CiAgIGQ4
+NTY0NmI3Y2Q5Njk0YjI3MTY4NTZlNWY0NmU2ODg2YWQwOTZiOWI5MTVmYmNiY2Q0ZGM3MTg5NWNj
+MjcyZWZiZDBiYjJiCiAgIGZiODMxODFjZjI3ZmFjNWFmOWJmZjg4YWU3NTY5ZGM4MDk5ZGJjMDQ4
+MDNmMzE0OWZiMGYyYTZjODRjMjAwYjBkOWI4YzcxCiAgIDU4ZDMzYjlhMThjMzY2MzZhNzVkYmRi
+MjkzMDQ0ZmJmNTFkMTQ0YjlkMGUxNzQxMDY3JmFtcDt0eXBlPXRvX2hvdGVsX2ZyCiAgIGVlX3Rl
+eHRdCg==
+--_----------=_17632099454446964
+Content-Type: multipart/related; boundary="_----------=_17632099454446965"
+Date: Sat, 15 Nov 2025 13:32:25 +0100
+
+--_----------=_17632099454446965
+Content-Transfer-Encoding: base64
+Content-Type: text/html; charset=utf-8
+Date: Sat, 15 Nov 2025 13:32:25 +0100
+
+PCFET0NUWVBFIGh0bWwgUFVCTElDICItLy9XM0MvL0RURCBYSFRNTCAxLjAgVHJhbnNpdGlvbmFs
+Ly9FTiIgImh0dHA6Ly93d3cudzMub3JnL1RSL3hodG1sMS9EVEQveGh0bWwxLXRyYW5zaXRpb25h
+bC5kdGQiPgo8aHRtbCB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94aHRtbCIgeG1sbnM6
+dj0idXJuOnNjaGVtYXMtbWljcm9zb2Z0LWNvbTp2bWwiPgogPGhlYWQ+CiAgPHRpdGxlPkFiYmlh
+bW8gcmljZXZ1dG8gcXVlc3RvIG1lc3NhZ2dpbyBkYSBGcmFuY2VzY28gQnJ1ZmFuaTwvdGl0bGU+
+CiAgPHN0eWxlIHR5cGU9InRleHQvY3NzIj4KLkV4dGVybmFsQ2xhc3Mge3dpZHRoOjEwMCU7fQou
+RXh0ZXJuYWxDbGFzcywgLkV4dGVybmFsQ2xhc3MgcCwgLkV4dGVybmFsQ2xhc3Mgc3BhbiwgLkV4
+dGVybmFsQ2xhc3MgZm9udCwgLkV4dGVybmFsQ2xhc3MgdGQsIC5FeHRlcm5hbENsYXNzIGRpdiB7
+CmxpbmUtaGVpZ2h0OiAxMDAlICFpbXBvcnRhbnQ7Cn0KYm9keSB7LXdlYmtpdC10ZXh0LXNpemUt
+
+
+
+Mail prenotaizone airbnb (con messaggio)
+
+
+
+Delivered-To: shortdeseos@gmail.com
+Received: by 2002:a17:504:d92a:b0:1d27:83a3:6131 with SMTP id cx10csp4817346njc;
+        Fri, 3 Oct 2025 05:25:35 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IH4gJd0fa0HsG1uUserJMyua3V+jjJ4cF2zJr9dTN19jDMHBXVW6GvzWlhEILTR5RVjeCvZ
+X-Received: by 2002:ac8:5a8e:0:b0:4e0:296e:8cc3 with SMTP id d75a77b69052e-4e576b0598fmr33852741cf.60.1759494335184;
+        Fri, 03 Oct 2025 05:25:35 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1759494335; cv=none;
+        d=google.com; s=arc-20240605;
+        b=Er2463DYsfeLZzKmMda62/tj0xBFZNrVNIFkIR6J+N+QPH/mUZ2p3FAB5FbH1JpTlD
+         bfxg5EynFBsOn3D9GgxQnabi/h7mU/Q7F4RH2tIXx3G924k01EjwaZNawCrOAD9Ueaoc
+         +cm2135mOBJljkcFckxGGmaCPfZ2DP9MvFeKdmgPkR67tkQqfdegT+NFqZcx4ZDt6IoE
+         bm3DzkH0cFOEVqKQEtYeZRexto5vidPg9lHmqapOmHAT3+5gJ5V9T9wVOHgIID6nekSO
+         wwVakjk+tRF3R2nBApuqCzWbauaIBD7B218T8nFMB2jLj2RHO7cL2WqrD4sWXd14Q3Zn
+         bB+w==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=to:priority:importance:bimi-selector:subject:message-id
+         :mime-version:from:date:dkim-signature:dkim-signature;
+        bh=tVYJniedW1esJyNt+3AZfF1wL/qA6EAGeH852vF1uL8=;
+        fh=XBTByGVyCMihm8LvqfNCIEQ1zKLApuAOsFeBQLo6miw=;
+        b=XzMG83HjIO6VRKcTyPSZDH4Jk1pceY4yzh5aAIPV3bIECv90Jk7CldEKQNlcaqIsTx
+         bdyORgfWUZNtu/Y3oVc0JDd6P3L8RBGhlEWNjEpRrltKnkHuf49945J7+E5RJh100Ycz
+         kR2N7ehm4G4S8YMw1qESs2D7CXyYfTbfuhb0Wyr7OYy/3eQgrPkLKP6XQPNvMxG01Jle
+         vWlL3DpYTj+yCV2xNb2WSb8qxMoRBMFXWypY3Z0P3aRKUXiq0zUWvivjbcW8FVd3lYbK
+         nLNxT3klR+oobmyW3md4B5Q9GgS95SoMb/IvIJR0xliE6gukL2FgkoxKD0kaV11h+Pq3
+         K61g==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@email.airbnb.com header.s=s20150428 header.b="Pe+A/iGN";
+       dkim=pass header.i=@sendgrid.info header.s=smtpapi header.b=I+iaNtz+;
+       spf=pass (google.com: domain of bounces+169303-ba73-shortdeseos=gmail.com@email.airbnb.com designates 50.31.32.60 as permitted sender) smtp.mailfrom="bounces+169303-ba73-shortdeseos=gmail.com@email.airbnb.com";
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=airbnb.com
+Return-Path: <bounces+169303-ba73-shortdeseos=gmail.com@email.airbnb.com>
+Received: from pnkfnhpc.outbound-mail.sendgrid.net (pnkfnhpc.outbound-mail.sendgrid.net. [50.31.32.60])
+        by mx.google.com with ESMTPS id af79cd13be357-87775fef498si204971485a.650.2025.10.03.05.25.35
+        for <shortdeseos@gmail.com>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 03 Oct 2025 05:25:35 -0700 (PDT)
+Received-SPF: pass (google.com: domain of bounces+169303-ba73-shortdeseos=gmail.com@email.airbnb.com designates 50.31.32.60 as permitted sender) client-ip=50.31.32.60;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@email.airbnb.com header.s=s20150428 header.b="Pe+A/iGN";
+       dkim=pass header.i=@sendgrid.info header.s=smtpapi header.b=I+iaNtz+;
+       spf=pass (google.com: domain of bounces+169303-ba73-shortdeseos=gmail.com@email.airbnb.com designates 50.31.32.60 as permitted sender) smtp.mailfrom="bounces+169303-ba73-shortdeseos=gmail.com@email.airbnb.com";
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=airbnb.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=email.airbnb.com; h=content-type:date:from:mime-version:subject:to:cc:content-type:date: feedback-id:from:subject:to; s=s20150428; bh=tVYJniedW1esJyNt+3AZfF1wL/qA6EAGeH852vF1uL8=; b=Pe+A/iGNAdeZTNadnD1Af+2efZjXR1MWXnaUzTF262mXjZFlh3zOsMh7aqkTGg7CC82e RHDFApO9wae3DoVS2msk6P3cGEFgwfUjcEwNBxd2LIRNDWZ+hndHtwKmryALtJJ7iCbrYG cF00z5/niWa00cohGGdrFf8/7WIbWr8Dc=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sendgrid.info; h=content-type:date:from:mime-version:subject:to:cc:content-type:date: feedback-id:from:subject:to; s=smtpapi; bh=tVYJniedW1esJyNt+3AZfF1wL/qA6EAGeH852vF1uL8=; b=I+iaNtz+IdYfJyhBTec3WYxH57HVNanHay0yy3YY+fuAx72O0ewhf7XzeJyLAW4ZFg1a iTtC40D07YlbCPXU3fmdHciNuUAFQBptX97Fa1yMU9x0HqG6VNxDdjuPRJtG7A4mDpexTN i8+jJ3RLZThIXXRS50+EtBzHOxwsggeWQ=
+Received: by recvd-64b95b6d8c-dvw62 with SMTP id recvd-64b95b6d8c-dvw62-1-68DFC0BE-5C 2025-10-03 12:25:34.879793304 +0000 UTC m=+10438879.378105025
+Received: from MTY5MzAz (unknown) by geopod-ismtpd-10 (SG) with HTTP id JGaltqR6TR-UxZQBCLmS9g Fri, 03 Oct 2025 12:25:34.874 +0000 (UTC)
+Content-Type: multipart/alternative; boundary=11e88689d578e70607a641e7ba099e7a574eaaa3ff48c213c5e75913222e
+Date: Fri, 03 Oct 2025 12:25:34 +0000 (UTC)
+From: Airbnb <automated@airbnb.com>
+Mime-Version: 1.0
+Message-ID: <JGaltqR6TR-UxZQBCLmS9g@geopod-ismtpd-10>
+Subject: Prenotazione confermata - Marie-Thérèse Weber-Gobet arriverà il 12 ott
+BIMI-Selector: v=BIMI1; s=belov2;
+Importance: high
+Priority: Urgent
+Return-Path: automated@airbnb.com
+X-Category: support
+X-Locale: it
+X-MSMail-Priority: High
+X-Message-Package-UUID: 4b3a63af-821d-f53c-607f-004dd91d81cb
+X-Priority: 1
+X-Strategy: email
+X-Template: BOOKING_CONFIRMATION_TO_HOST
+X-User-ID: 520289023
+X-rpcampaign: airbnb20251003314132869019873354248048644364731244989
+X-SG-EID: u001.373TPjtMqGbzwgRnUiLO4XljsWSZKewimAbF7sau2vF2RcaqvXC4aBu98qmouqE3bGDLwz3vVN8LQWcgplp5ZAAxza1f3/+LjviwoTy6ZU5NfKj/e/mktN9dpCm2GD2jHXm5wy4Cyd9IiV/t5p4KaTELWOmr8LyrCrawsC3h8HIjaxgnFsuxKYi1oKw3sYAl7/6DJeR4Q6yNhdkRKcXOo7xthy+BbkGbVjXzi+tjwh4=
+X-SG-ID: u001.SdBcvi+Evd/bQef8eZF3Bl1dI85s/c4/Dg2sQidk/jkCmsQMj9q+P7w8+NFqnbbePcsL2eNowOcDFtA4zhaCQnxVyPpnfa3Vw827VTOWY5asGBABfyP58g5i6rLCmqLHFowKxxfGDIFzxbe1iECZMVsritndY2jPHHF3syixw4WtjIS/vnR4s5LCfFuiNGTSg5Gqa0tKF14TWTAqdaq3T4QTU6XBh5u/SIAL9iiaVR/W572sDHdEKPvCz0nsU4g177zPJ+kP92GP707l3RfIAuBUy04pS4mfvLNXb1fUgGG9MhxXqAMBZno0dWM2SlKOKtU+O2R3hHVYmctYQ9DZBHHxZtQyRvJEwEo7xsvzdL4YN3WxDURpnjAbx9NhQRUg7V5YeGRlRx8mQHitesTEyCN1jYeOl+RikSzF3VMOqIIhNhCw94psS1Dm7N8R4OGges62usUoHtpS9w3/MoRtKd5B4yCBGxJ+sEE1nkNgC2EpdkVwPwFZ8HAtme13L9GNv2ahL1XnLx7FHIZAlG0Qag==
+To: shortdeseos@gmail.com
+X-Entity-ID: u001./H5mzSYUmGGnQUq8WJ0Pfw==
+
+--11e88689d578e70607a641e7ba099e7a574eaaa3ff48c213c5e75913222e
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Mime-Version: 1.0
+
+%opentrack%
+
+https://www.airbnb.it/?c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENv=
+bmZpcm1hdGlvblRlbXBsYXRl&euid=3D4b3a63af-821d-f53c-607f-004dd91d81cb
+
+NUOVA PRENOTAZIONE CONFERMATA! MARIE-TH=C3=89R=C3=88SE ARRIVER=C3=80 IL 12
+OTT.
+
+Invia un messaggio per confermare i dettagli di check-in o
+per dare il benvenuto a Marie-Th=C3=A9r=C3=A8se.
+
+https://www.airbnb.it/hosting/reservations/details/HMPBBAR2AN?c=3D.pi80.pkY=
+m9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3D4b3a=
+63af-821d-f53c-607f-004dd91d81cb   Marie-Th=C3=A9r=C3=A8se
+                                                                           =
+                                                                           =
+                              =20
+                                                                           =
+                                                                           =
+                               [https://www.airbnb.it/hosting/reservations/=
+details/HMPBBAR2AN?c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENvbmZp=
+cm1hdGlvblRlbXBsYXRl&euid=3D4b3a63af-821d-f53c-607f-004dd91d81cb]
+                                                                           =
+                                                                           =
+                              =20
+                                                                           =
+                                                                           =
+                               Identit=C3=A0 verificata =C2=B7 19 recension=
+i
+                                                                           =
+                                                                           =
+                              =20
+                                                                           =
+                                                                           =
+                               Schmitten, Switzerland
+
+Ciao Deseos
+Siamo una coppia di sposi svizzeri (68 e 69 anni) e
+desideriamo visitare Perugia e Assisi da molto tempo. Per
+noi =C3=A8 importante poter trascorrere le nostre vacanze in un
+ambiente tranquillo e pulito. =C3=88 cos=C3=AC nel suo appartamento?
+Viaggiamo in treno. Arrivo previsto a Perugia: 18:26. Come
+si arriva dalla stazione all'appartamento? Facile da
+raggiungere o si consiglia un taxi? Come avviene la consegna
+delle chiavi?
+Non vediamo l'ora e vi salutiamo cordialmente
+Marie-Th=C3=A9r=C3=A8se e Bruno
+
+Tradotto automaticamente. Segue il messaggio originale:
+
+Hallo Deseos
+Wir sind ein Ehepaar aus der Schweiz (68 und 69 Jahre) und
+haben schon lange den Wunsch, Perugia und Assisi zu
+besuchen. Uns ist es wichtig, dass wir unsere Ferien in
+einem ruhigen und sauberen Umfeld verbringen k=C3=B6nnen. Ist das
+in Ihrer Wohnung der Fall? Wir reisen mit der Bahn.
+Voraussichtliche Ankunft in Perugia: 18:26. Wie ist der Weg
+vom Bahnhof zur Wohnung? Gut machbar oder wird ein Taxi
+empfohlen? Wie findet die Schl=C3=BCssel=C3=BCbergabe statt?
+Wir freuen uns und gr=C3=BCssen herzlich
+Marie-Th=C3=A9r=C3=A8se und Bruno
+
+I messaggi di ospiti e host sono stati tradotti
+automaticamente nella lingua del tuo account. Puoi
+modificare questa preferenza dalle impostazioni.
+
+Invia un Messaggio a Marie-Th=C3=A9r=C3=A8se.Invia un Messaggio a
+Marie-Th=C3=A9r=C3=A8se.
+[https://www.airbnb.it/hosting/thread/2311813630?thread_type=3Dhome_booking=
+&email_cta=3Dlink_hosting_message_thread&c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2=
+VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3D4b3a63af-821d-f53c-607f-0=
+04dd91d81cb]
+
+https://www.airbnb.it/rooms/1136830922567086505?c=3D.pi80.pkYm9va2luZy9ob3N=
+0L1Jlc2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3D4b3a63af-821d-f53c=
+-607f-004dd91d81cb
+
+IMPERIAL SUITE - PALAZZO DELLA STAFFA
+
+Intera casa/apt
+
+[https://www.airbnb.it/rooms/1136830922567086505?c=3D.pi80.pkYm9va2luZy9ob3=
+N0L1Jlc2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3D4b3a63af-821d-f53=
+c-607f-004dd91d81cb]
+
+Check-in     Check-out
+            =20
+dom 12 ott   dom 19 ott
+            =20
+16:00        11:00
+
+OSPITI
+
+2 adulti
+
+PI=C3=99 DETTAGLI SU CHI STA ARRIVANDO
+
+Gli ospiti ti faranno ora sapere se viaggiano con bambini o
+neonati. Scopri di pi=C3=B9
+[https://blog.atairbnb.com/more-host-controls-it/]
+
+CODICE DI CONFERMA
+HMPBBAR2AN
+
+L'OSPITE HA PAGATO
+
+294,81=C2=A0=E2=82=AC x 7 notti   2.063,67=C2=A0=E2=82=AC
+
+Costi di pulizia   110,00=C2=A0=E2=82=AC
+
+Costi del servizio dell'ospite   0,00=C2=A0=E2=82=AC
+
+TOTALE (EUR)   2.173,67=C2=A0=E2=82=AC
+
+COMPENSO DELL'HOST
+
+Costi della stanza per 7 notti   2.219,00=C2=A0=E2=82=AC
+
+Costi di pulizia   110,00=C2=A0=E2=82=AC
+
+Correzione del prezzo medio per notte   -155,33=C2=A0=E2=82=AC
+
+Costi del servizio dell'host (15.0%)   -326,05=C2=A0=E2=82=AC
+
+TU GUADAGNI   1.847,62=C2=A0=E2=82=AC
+
+Ti invieremo il denaro che guadagni come host 24 ore dopo
+l'arrivo del tuo ospite. Puoi controllare i prossimi
+pagamenti nella Cronologia delle transazioni
+[https://www.airbnb.com/users/transaction_history].
+
+CANCELLAZIONI
+I tuoi termini di cancellazione per gli ospiti sono Moderati
+[https://www.airbnb.com/help/article/149].
+
+Le penalit=C3=A0 previste per cancellare questa prenotazione
+includono la pubblicazione di una recensione visibile a
+tutti in cui =C3=A8 indicata la cancellazione da parte tua, il
+pagamento del costo di cancellazione e il blocco dei
+pernottamenti cancellati sul tuo calendario.
+
+Leggi informazioni sulle penalit=C3=A0 di cancellazione
+[https://www.airbnb.it/help/article/990?c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2V=
+ydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3D4b3a63af-821d-f53c-607f-00=
+4dd91d81cb]
+
+PREPARATI ALL'ARRIVO DI MARIE-TH=C3=89R=C3=88SE
+
+CONSULTA LE PRATICHE DI SICUREZZA PER L'EMERGENZA COVID-19
+Abbiamo creato una serie di pratiche di sicurezza
+obbligatorie per l'emergenza COVID-19 che host e ospiti di
+Airbnb sono tenuti a seguire. Queste includono il rispetto
+del distanziamento sociale e l'utilizzo di una mascherina.
+
+Consulta le pratiche
+[https://www.airbnb.it/help/article/2839?c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2=
+VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3D4b3a63af-821d-f53c-607f-0=
+04dd91d81cb]
+
+SEGUI IL PROCESSO AVANZATO DI PULIZIA IN 5 FASI
+Tutti gli host devono seguire il protocollo avanzato di
+pulizia tra un soggiorno e l'altro. Abbiamo sviluppato
+queste fasi in collaborazione con esperti allo scopo di
+prevenire la diffusione della malattia causata dal nuovo
+coronavirus (COVID-19).
+
+Consulta il processo
+[https://www.airbnb.it/help/article/2809?c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2=
+VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3D4b3a63af-821d-f53c-607f-0=
+04dd91d81cb]
+
+FORNISCI INDICAZIONI
+Verifica che l'ospite sappia come arrivare al tuo alloggio.
+
+Invia il messaggio
+[https://www.airbnb.it/hosting/thread/2311813630?thread_type=3Dhome_booking=
+&c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYX=
+Rl&euid=3D4b3a63af-821d-f53c-607f-004dd91d81cb]
+
+La protezione dalla A alla Z, inclusa ogni volta che ospiti.
+Scopri di pi=C3=B9
+[https://www.airbnb.it/help/article/3142/getting-protected-through-aircover=
+-for-hosts?email_cta=3D&c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdEN=
+vbmZpcm1hdGlvblRlbXBsYXRl&euid=3D4b3a63af-821d-f53c-607f-004dd91d81cb]
+
+ASSISTENZA CLIENTI
+Contatta il nostro team di assistenza 24 ore su 24, da
+qualsiasi parte del mondo.
+
+Visita il Centro Assistenza
+[https://www.airbnb.it/help?c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9=
+zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3D4b3a63af-821d-f53c-607f-004dd91d81cb]C=
+ontatta
+Airbnb
+[https://www.airbnb.it/help/contact_us?c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2Vy=
+dmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3D4b3a63af-821d-f53c-607f-004=
+dd91d81cb]
+
+Airbnb Ireland UC
+
+8 Hanover Quay
+
+Dublin 2, Ireland
+
+Termini di pagamento tra te e:
+
+Airbnb Payments UK Ltd.
+
+Suite 1, 3rd Floor
+
+11-12 St. James=E2=80=99s Square
+
+London, SW1Y 4LB
+
+United Kingdom
+
+Scarica l'app di Airbnb
+
+https://www.airbnb.it/external_link?url=3Dhttps%3A%2F%2Fairbnb.sng.link%2FA=
+6f9up%2Fdvs6%3F_smtype%3D3%26pcid%3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9=
+uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0a=
+W9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&euid=3D4b3a63af-821d-f53c-607f-004dd91d=
+81cb   https://www.airbnb.it/external_link?url=3Dhttps%3A%2F%2Fairbnb.sng.l=
+ink%2FA6f9up%2Fqh0lc%3F_dl%3Dairbnb%3A%2F%2Fs%2Fhomes%26_smtype%3D3%26pcid%=
+3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXRl&=
+c=3D.pi80.pkYm9va2luZy9ob3N0L1Jlc2VydmF0aW9uSG9zdENvbmZpcm1hdGlvblRlbXBsYXR=
+l&euid=3D4b3a63af-821d-f53c-607f-004dd91d81cb  =20
+
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0
+--11e88689d578e70607a641e7ba099e7a574eaaa3ff48c213c5e75913222e
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html; charset=utf-8
+Mime-Version: 1.0
+
+<html lang=3D"en"><head><meta http-equiv=3D"Content-Type" content=3D"text/h=
+tml; charset=3Dutf-8"><meta name=3D"viewport" content=3D"width=3Ddevice-wid=
+th, initial-scale=3D1"><style type=3D"text/css">
+@font-face {
+  font-family: Cereal;
+  src: url("https://a0.muscache.com/airbnb/static/airbnb-dls-web/build/font=
+s/Airbnb_Cereal-Book-9a1c9cca9bb3d65fefa2aa487617805e.woff2") format("woff2=
+"), url("https://a0.muscache.com/airbnb/static/airbnb-dls-web/build/fonts/A=
+irbnb_Cereal-Book-aa38e86e3f98554f9f7053d7b713b4db.woff") format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;}
+@font-face {
+  font-family: Cereal;
+  src: url("https://a0.muscache.com/airbnb/static/airbnb-dls-web/build/font=
+s/Airbnb_Cereal-Medium-50fc004b3082375f12ff0cfb67bf8e56.woff2") format("wof=
+f2"), url("https://a0.muscache.com/airbnb/static/airbnb-dls-web/build/fonts=
+/Airbnb_Cereal-Medium-4bc8dafd2e0fd8914bf4d5edce9acd24.woff") format('woff'=
+);
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;}
+@font-face {
+  font-family: Cereal;
+  src: url("https://a0.muscache.com/airbnb/static/airbnb-dls-web/build/font=
+s/Airbnb_Cereal-Bold-bdfb98485e7836ba31b456f65cded088.woff2") format("woff2=
+"), url("https://a0.muscache.com/airbnb/static/airbnb-dls-web/build/fonts/A=
+irbnb_Cereal-Bold-a188841af78481a25b7bb2316a5f5716.woff") format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;}

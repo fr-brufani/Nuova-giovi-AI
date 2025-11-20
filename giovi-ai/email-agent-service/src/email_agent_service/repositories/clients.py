@@ -15,6 +15,23 @@ class ClientsRepository:
     def __init__(self, client: firestore.Client):
         self._client = client
 
+    def get_by_id(self, client_id: str) -> Optional[dict]:
+        """
+        Recupera un cliente per ID.
+        
+        Args:
+            client_id: ID del cliente da recuperare
+            
+        Returns:
+            dict con i dati del cliente o None se non trovato
+        """
+        doc = self._client.collection("clients").document(client_id).get()
+        if not doc.exists:
+            return None
+        data = doc.to_dict() or {}
+        data["id"] = doc.id
+        return data
+
     def find_or_create_by_email(
         self,
         host_id: str,

@@ -1,0 +1,300 @@
+This topic details the scope of change when implementing the Payments Clarity Package v2 and outlines steps to test, and identify the change in the response.
+
+Understanding the scope of change
+If you had implemented the existing Payments Clarity Package feature, following are the possible changes when implementing the new Payments Clarity Package v2:
+
+Change 1: Withheld tax details shown under price details
+You can find an additional entry for every tax component that Booking.com has to withhold.
+
+Change 2: Improved payment details: Price details showing collection (GuestView) and disbursement breakdown (HotelView)
+You can find two new sections in the response schema: GuestView and HotelView listing the booking amount breakup. If you previously used the features: Payments Clarity Package (vcc_payment_v2) or the Include Price Details (include_price_details), the price breakdown data will now be replaced with the new sections in the response schema: GuestView and HotelView.
+
+Change 3: Redefined Inclusive/Exclusive values
+The definitions for the Inclusive/Exclusive values have now changed.
+
+Change 4: New logic when calculating the total amount for guest view and hotel view
+The total amount is calculated based on the new definition.
+
+Comparing response changes
+Payment solution	Response elements Changed	When using the Payments Clarity Package
+(vcc_payment_v2) and/or Include price details (include_price_details)	When using the Payments Clarity Package v2
+(payment_clarity_package_v2)
+VCC Bookings
+Property where Booking.com is obligated to withhold tax	GuestView > Taxes > Tax > Type=Inclusive/Exclusive	Indicates whether the taxes/fees are included in the room price that Booking.com shows to guests.	Indicates whether Booking.com collected the taxes/fees amount from the guest during the booking process.
+GuestView > Total	Indicates the price amount that Booking.com shows to guests.	Indicates the total amount that Booking.com collected from the guests for the booked room.
+HotelView > Taxes > Tax > Type=Inclusive/Exclusive	Indicates whether the taxes/fees are included in the room price of the reservation as specified in the Extranet VAT/tax/charges page.	Indicates whether the taxes/fees amount is included in the payout to the property for the booked room.
+HotelView > Total	Indicates the price amount of the reservation.
+
+VCC balance*	Indicates the total payout amount to the property for the booked room.
+Indicates the amount that the properties can charge on the VCC.
+- Bookings with withheld tax: The amount that properties can charge on the VCC. Note that this excludes the withheld tax that Booking.com has withheld and will remit on property's behalf.
+- Bookings without withheld tax: The amount that properties can charge on the VCC.
+Bank transfer bookings
+Property where Booking.com is obligated to withhold tax	Taxes > Tax > Type=Inclusive/Exclusive	Indicates whether the taxes/fees are included in the room price that Booking.com shows to guests.	Indicates whether Booking.com collected the taxes/fees amount from the guest during the booking process for the booked room.
+GuestView > Total	Indicates the price amount that Booking.com shows to guests.	Indicates the total amount that Booking.com collected from the guests for the booked room.
+HotelView > Taxes > Tax > Type=Inclusive/Exclusive	Indicates whether the taxes/fees are included in the room price of the reservation as specified in the Extranet VAT/tax/charges page.	Indicates whether the taxes/fees amount is included in the payout to the property for the booked room.
+HotelView > Total	Indicates the price amount of the reservation.	Indicates the total payout amount to the property for the booked room.
+Agency bookings^	GuestView > Taxes > Tax > Type=Inclusive/Exclusive	Indicates whether the taxes/fees are included in the room price that Booking.com shows to guests.	Indicates whether the taxes/fees amount is included in the total amount the guest will pay to the property for the booked room.
+GuestView > Total	Indicates the price amount that Booking.com shows to guests.	Indicates the total amount that the guest will pay to the property for the booked room.
+HotelView > Taxes > Tax > Type=Inclusive/Exclusive	Indicates whether the taxes/fees are included in the room price of the reservation as specified in the Extranet VAT/tax/charges page.	Indicates whether the taxes/fees amount is included in the total amount that the property should collect from the guest for the booked room.
+HotelView > Total	Indicates the price amount of the reservation.	Indicates the total amount the property should collect from the guest.
+^ HotelView > Total amount is always the same as the GuestView > Total amount.
+^ HotelView > Taxes > Tax > Type=Inclusive/Exclusive value is always the same as the GuestView > Taxes > Tax > Type=Inclusive/Exclusive value.
+* Not available when using the Include price details (include_price_details) feature.
+
+Based on the changes discussed above, make sure to:
+
+Update all properties with the new definition of the Inclusive/Exclusive values for the taxes / fees in the price breakdown.
+Revisit the price calculation:
+If you validate whether fees, taxes or charges are included in the price when recalculating the reservation price using the Include Price Details (include_price_details) or the Payments Clarity Package (vcc_payment_v2) features, you must update your calculations.
+To avoid showing incorrect reservation prices, revisit the price calculation as the relevant flags and amounts will change when the new Payments Clarity Package v2 (payment_clarity_package_v2) feature is enabled.
+OTA response changes
+What do the changes mean for properties?
+After implementing Payments Clarity Package v2 (payment_clarity_package_v2), properties can determine:
+
+Whether they need to collect certain taxes / fees from guests.
+Whether they need to remit the taxes / fees to the authorities directly. You can find more information in the Summary of different combinations of included value.
+Before you start
+Make sure you follow these high-level steps to set up a test environment:
+
+Request a test property with withheld tax configured.
+
+i) Contact the [Connectivity Support team][contact-us] to request a test property. The test property will have withheld tax and Payments by Booking virtual credit cards (VCCs) solution enabled.
+ii) Set availability for the test property with withheld tax and create test reservations:
+Follow the tutorial Create a test reservation to set availability and make test reservations.
+iii) Set low room inventory prices and a flexible cancellation policy which allows for free cancellation.
+iv) While creating test bookings, use a valid payment method, such as using a PayPal account. You will receive a refund upon cancellation.
+
+Prepare a test property without withheld tax configured, to see the changes that Payments Clarity Package v2 will bring for properties without withheld tax, such as changes in the confirmation of non-Payments by Booking reservations (agency bookings).
+
+i) Prepare a test property that is not on Payments by Booking.
+ii) Follow the tutorial Create a test reservation and use our test credit card (card number 4111 1111 1111 1111) for the payment method.
+
+(Optional) Prepare a test property without withheld tax configured and where the property is on Payments by Booking (Bank Transfer). This shows the changes that Payments Clarity Package v2 will bring for properties without withheld tax.*
+
+i) Prepare a test property that is on Payments by Booking (Bank Transfer).
+ii) Follow the tutorial Create a test reservation and use a valid payment method, such as using a PayPal account. You will receive a refund upon cancellation.
+
+How to test
+Make an API request to retrieve an existing reservation using the reservation ID (id) query parameter and specify the feature in the header to see and compare the changes.
+
+Make a request for a reservation using your current implementation.
+Make the same request but add the Features: payment_clarity_package_v2 header.
+Compare the responses to understand how your price calculations will need to change.
+For example, you can send a cURL request by adding the header as follows:
+
+
+
+curl -X GET -H "Authorization: Basic xxxxx" -H "Features: payment_clarity_package_v2" -H "Cache-Control: no-cache" https://secure-supply-xml.booking.com/hotels/ota/OTA_HotelResNotif
+Testing tax withholding component
+For providers who manage properties located in a region where Booking.com is obligated to withhold and remit taxes on behalf of the property: Before testing this feature you need to fulfill certain additional requirements. For more information, contact the Connectivity Support team.
+
+Identifying use cases to test
+We recommend that you test the following use cases to make sure you can deliver the relevant taxes and fees information for your connected properties. You can find more details and how to test it in the Detailed overview of each use case.
+
+Use cases	Test properties to use	Who needs to test this?	What changes will the PCP v2 bring?
+Test reservation with withheld tax and on Payments by Booking (Virtual Credit Card)	Test property you get from the Connectivity Support Team (with withheld tax configured)	If you work with Payments by Booking (Virtual Credit Card) properties where Booking.com is obligated to withhold taxes	- Withheld tax details shown under price details as an additional row
+- Price details showing collection from the guest (GuestView) and disbursement breakdown (Hotelview)
+- New definition for the Type=Inclusive/Exclusive values specific to taxes and fees impacting guest view and hotel view
+- New logic when calculating the total amount for guest view and hotel view
+Test reservation without withheld tax and on Payments by Booking (Virtual Credit Card)	Any test property you have that is on Payments by Booking (Virtual Credit Card)	If you work with Payments by Booking (Virtual Credit Card) properties where Booking.com is not obligated to withhold taxes	- Price details showing collection from the guest (GuestView) and disbursement breakdown (Hotelview)
+- New definition for the Type=Inclusive/Exclusive values specific to taxes and fees impacting guest view and hotel view
+- New logic when calculating the total amount for guest view and hotel view
+Test reservation without withheld tax and on Payments by Booking (Bank Transfer)*	Any test property you have that is on Payments by Booking (Bank Transfer)	If you work with Payments by Booking (Bank Transfer) properties where Booking.com is not obligated to withhold taxes	- Price details showing collection from the guest (GuestView) and disbursement breakdown (Hotelview)
+- New definition for the Type=Inclusive/Exclusive values specific to taxes and fees impacting guest view and hotel view
+- New logic when calculating the total amount for guest view and hotel view
+Test reservation without withheld tax and not on Payments by Booking (agency bookings)	Any test property you have that is NOT on Payments by Booking	If you work with properties that are not on Payments by Booking where Booking.com is not obligated to withhold taxes	- Price details showing collection from the guest (GuestView) and disbursement breakdown (Hotelview)
+- New definition for the Type=Inclusive/Exclusive values specific to taxes and fees impacting guest view and hotel view
+- New logic when calculating the total amount for guest view and hotel view
+* Only applicable if you work with properties that are on Payments by Booking (Bank Transfer) and want to see the changes that PCP v2 (payment_clarity_package_v2) will bring for properties without withheld tax.
+
+Test reservation with withheld tax and Payments by Booking (Virtual Credit Card)
+Steps to follow:
+
+Create a test reservation on the test property (the one with withheld tax configured) you obtained from the Connectivity Support team.
+Retrieve the reservation messages with the features you’ve already implemented.
+Retrieve the reservation messages again but this time use the Payments Clarity Package v2 feature as described in How to test.
+Validate the API responses received from steps 2 and 3.
+Test reservation without withheld tax and Payments by Booking (Virtual Credit Card)
+Steps to follow:
+
+Create a test reservation on any test property on Payments by Booking (Virtual Credit Card) that does not have withheld tax setup.
+Retrieve the reservation messages with the features you’ve already implemented.
+Retrieve the reservation messages again but this time use the Payments Clarity Package v2 feature as described in How to test.
+Validate the API responses received from steps 2 and 3.
+Test reservation without withheld tax and Payments by Booking (Bank Transfer)
+Steps to follow:
+
+Create a test reservation on any test property on Payments by Booking (Bank transfer) and that does not have withheld tax setup.
+Retrieve the reservation messages with the features you’ve already implemented.
+Retrieve the reservation messages again but this time use the Payments Clarity Package v2 feature as described in How to test.
+Validate the API responses received from steps 2 and 3.
+Test reservation without withheld tax and where the property is not on Payments by Booking
+Steps to follow:
+
+Create a test reservation on any test property not on Payments by Booking and that does not have withheld tax setup.
+Retrieve the reservation messages with the features you’ve already implemented.
+Retrieve the reservation messages again but this time use the Payments Clarity Package v2 feature as described in How to test.
+Validate the API responses received from steps 2 and 3.
+OTA response examples
+Following is a summary of response examples covered in this section.
+
+OTA response with Payments Clarity Package (vcc_payment_v2)	OTA response with Payments Clarity Package V2 (payment_clarity_package_v2)
+Current example	Response with withheld tax
+Multiroom property response example	Multiroom property response with withheld tax
+Current example	Response without withheld tax
+OTA response with the existing Payments Clarity Package
+For the example responses in this section, the following price configurations are set up for the property:
+
+The price of the room is $10.
+The price excludes:
+Withheld tax of 2.00%
+Withheld tax of 5.00%
+Withheld tax of 1.50%
+City tax of 5.50%
+Also, either the Payments Clarity Package (vcc_payment_v2), or the Include Price Details (include_price_details) feature is turned on.
+
+Expand this section to view the OTA response example with the existing Payments Clarity Package (vcc_payment_v2) enabled.
+OTA response with the new Payments Clarity Package v2
+For the following example, the Payments Clarity Package v2 (payment_clarity_package_v2) is enabled.
+
+Expand this section to view the OTA response example with the new Payments Clarity Package v2 (payment_clarity_package_v2) enabled.
+OTA response for multiroom property using existing PCP feature with Withheld tax component
+For the following reservation response examples, the property has the following setup with the existing Payments Clarity Package (vcc_payment_v2) enabled:
+
+The price of the room is $10.
+The price excludes:
+Withheld tax of 8.50%
+City tax of 5.50%
+Expand this section to view the B.XML response example with the existing Payments Clarity Package (vcc_payment_v2) enabled.
+OTA response for multiroom property using the new PCP 2.0 feature with withheld tax component
+For the following reservation response examples, the property has the following setup with the new Payments Clarity Package v2 (payment_clarity_package_v2) enabled:
+
+The price of the room is $10.
+The price excludes:
+Withheld tax of 8.50%
+City tax of 5.50%
+Expand this section to view the OTA response example with the new Payments Clarity Package v2 (payment_clarity_package_v2) enabled.
+OTA response using existing PCP feature with no withheld tax component
+For the following reservation response examples, the property has the following setup with the existing Payments Clarity Package (vcc_payment_v2) enabled:
+
+Room Price is €10 per night
+VAT of 18.00% is included
+City tax of 3.50% isn't included
+Bed linens fee of €5 per stay isn't included
+Expand this section to view the OTA response example with the existing Payments Clarity Package (vcc_payment_v2) enabled.
+OTA response using the new PCP 2.0 feature with no withheld tax component
+For the following response example, the property has the new Payments Clarity Package v2 (payment_clarity_package_v2) enabled:
+
+Expand this section to view the OTA response example with the new Payments Clarity Package v2 (payment_clarity_package_v2) enabled.
+Property on Payments by Booking using Bank transfer as payout
+This section shows the current (with Payments Clarity Package (vcc_payment_v2) feature enabled) and with the new Payments Clarity Package v2 (payment_clarity_package_v2) feature enabled to help you compare the difference in behaviour.
+
+This section contains OTA response examples based on the Bank transfer payment solution and with/without withheld tax in the response.
+
+Expand to see relevant response examples
+As we have included multiple response examples, to improve readability we have collapsed all examples. You can expand to see the examples of specific scenarios that you are interested in.
+
+OTA response on Bank transfer using the existing Payments Clarity Package feature with no withheld tax component
+For the following response example, the property has the existing Payments Clarity Package (vcc_payment_v2) enabled with the following configuration:
+
+Room Price is €10 per night
+VAT of 18.00% is included
+City tax of 3.50% isn't included
+Bed linens fee of €5 per stay isn't included
+Expand this section to view the OTA response example with the existing Payments Clarity Package (vcc_payment_v2) enabled.
+OTA response on Bank transfer using the new Payments Clarity Package v2 feature with no withheld tax component
+For the following response example, the property has the new Payments Clarity Package v2 (payment_clarity_package_v2) enabled with the following configuration:
+
+Room Price is €10 per night
+VAT of 18.00% is included
+City tax of 3.50% isn't included
+Bed linens fee of €5 per stay isn't included
+Expand this section to view the OTA response example with the new Payments Clarity Package v2 (payment_clarity_package_v2) enabled.
+Agency booking response examples
+The following response examples list the OTA response for agency booking using both the existing and the new PCP 2.0 features.
+
+Agency booking OTA response using existing Payments Clarity Package feature
+For the following response example, the property has the existing Payments Clarity Package (vcc_payment_v2) enabled with the following configuration:
+
+Room Price is €10 per night
+VAT of 5.00% is included
+City tax of 2.50% isn't included
+Expand this section to view the OTA response example with the existing Payments Clarity Package (vcc_payment_v2) enabled.
+Agency booking OTA response using the new Payments Clarity Package v2 feature
+For the following response example, the property has the new Payments Clarity Package v2 (payment_clarity_package_v2) enabled with the following configuration:
+
+Room Price is €10 per night
+VAT of 5.00% is included
+City tax of 2.50% isn't included
+Expand this section to view the OTA response example with the new Payments Clarity Package v2 (payment_clarity_package_v2) enabled.
+Understanding tax remittance using Payments Clarity Package v2
+Based on the property’s location and tax configuration, multiple taxes could apply for each reservation or booking. If the property participates in Payments by Booking.com, and is paid via virtual credit card (VCC), then Booking.com is obligated to collect and pay certain taxes on behalf of the property whereas the property is directly obligated to remit certain other taxes.
+
+The ability to support showing reservations that detail the division of tax responsibilities between Booking.com and the property is known as split tax obligation and remittance.
+
+You can find more details of the various scenarios in the Summary of different combinations of Inclusive/Exclusive value.
+
+The following outlines the three types of tax remittances and reservation message examples of each type.
+
+Booking remits all taxes
+Partner remits all taxes
+Split tax obligation between Booking.com and partner
+Booking.com remits all taxes and fees
+Booking.com remits taxes when the property has all taxes and fees defined the same way as scenario 3 in Summary of different combinations of Inclusive/Exclusive value and uses Payments by Booking.com virtual credit card (VCC) payouts.
+
+Scenario	Guest View	Property View	Payments by Booking behaviour
+3	Inclusive	Exclusive	- Fees/tax was collected from the guest during booking.
+- Fees/tax is withheld and will be paid directly to the authorities and not to property.
+Consider the following scenario - Property ABC has the following tax configurations:
+
+Booking.com remits:
+
+5% Local Community Impact Fee
+1.5% Recreation and Public Improvement Promotion Tax
+2% Parks Recreation and Community Economic Development Tax
+The following reservation message snippet shows that all the three taxes are remitted by Booking.com. The actual tax names and tax amounts of your properties will differ, depending on the specifics, such as the property’s location and tax configuration.
+
+Expand this section to view the OTA response example when Booking.com remits all taxes and fees.
+Partner remits all taxes and fees
+The partner remits taxes when the property has all taxes and fees defined the same way as scenario 4 in Summary of different combinations of Inclusive/Exclusive value and uses Payments by Booking.com virtual credit card (VCC) payouts.
+
+Scenario	Guest View	Property View	Payments by Booking behaviour
+4	Inclusive	Exclusive	- Fees/tax was collected from the guest during booking.
+- Fees/tax will be paid out to property.
+Consider the following scenario - Property ABC has the following tax configurations:
+
+Partner needs to remit:
+
+2% Occupancy tax
+3% Tourism tax
+The following reservation message snippet shows that the partner needs to remit both the taxes. The actual tax names and tax amounts of your properties will differ, depending on the specifics, such as the property’s location and tax configuration.
+
+Expand this section to view the OTA response example when the partner remits all taxes and fees.
+Split tax obligations and remittance
+Split tax obligations and remittance occur when the property has taxes and fees defined the same way as scenarios 3 and 4 in Summary of different combinations of Inclusive/Exclusive value, respectively, and uses Payments by Booking.com virtual credit card (VCC) payouts.
+
+Scenario	Guest View	Property View	Payments by Booking behaviour
+3	Inclusive	Exclusive	- Fees/tax was collected from the guest during booking.
+- Fees/tax is withheld and will be paid directly to the authorities and not to property.
+4	Inclusive	Inclusive	- Fees/tax was collected from the guest during booking.
+- Fees/tax will be paid out to property.
+Consider the following scenario - Property ABC has the following tax configurations:
+
+Booking.com remits:
+
+5% Local Community Impact Fee
+1.5% Recreation and Public Improvement Promotion Tax
+1.5% Parks Recreation and Community Economic Development Tax
+Partner needs to remit:
+
+2% Tourism Tax
+The following reservation message snippet shows the taxes remitted by Booking.com versus by the property. The actual tax names and tax amounts of your properties will differ, depending on the specifics, such as the property’s location and tax configuration.
+
+Expand this section to view the OTA response example when split tax obligations and remittance occurs.
+Contact us
+For questions about capability assessment or to schedule one, contact your Partner Business Manager/Account Manager or send us an email at pcp.capability.assessment@booking.com.
+
+If you have questions about testing, contact the Connectivity Support team.
+
+Was this page helpful?

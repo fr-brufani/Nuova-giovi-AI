@@ -1,0 +1,147 @@
+Understanding the Reservations API
+The Reservations API enables you to process property reservations made using the Booking.com channels.
+
+What is a reservation?
+A reservation represents the booking of one or more room nights at a property. Each reservation is a unique booking created by a guest using the Booking.com channels. Reservations API keeps you updated on your bookings by sending a sequence of messages, also known as reservation messages.
+
+The messages are classified as new booking confirmation, modification to an existing booking, or cancellation. Regardless of the category, the reservations API provides the data in a common format. A reservation may include several units of rooms, apartments or villas. Each reservation or booking is specific to exactly one property.
+
+What can the Reservations API do?
+Once a property completes the connection with your system, you can use the Reservations API to retrieve bookings.
+
+Using the Reservations API, you can:
+
+Provide complete details about the booking to the accommodation host, to ensure flawless service to the guest.
+Confirm the booking and update all copies of your inventory, to avoid overbooking while also maximizing your availability in the Booking.com channel.
+Introducing the Reservations delivery system
+To provide a seamless reservations delivery mechanism to Connectivity providers, Booking.com employs multiple components in its reservations delivery system.
+
+Although the Reservations API is the most crucial part of the system, there are other equally important components that help deliver the most optimum reservations solution. Some of these components are described in great detail in the following sections.
+
+Booking.com channels - Booking.com channels such as web or mobile that guests use to make a reservation.	
+Message dispatcher - The system that consolidates reservation messages specific to providers in a dedicated queue and keeps track of whether the reservations were retrieved by the providers in a stipulated time.	Fallback emails - If providers fail to retrieve or acknowledge reservations messages on time, the Message dispatcher sends the reservations as an email to the property. The Message dispatcher also sends the reservations as an email to the property when the reservation satisfies one of the following conditions:
+- Booked with Non-XML rates.
+- Booked with roomrates that are not mapped.
+- Booked when the connection with the property was inactive.
+Non-connectivity emails - The Message dispatcher also sends non-connectivity emails such as reservations with non-XML based rates.
+Property - The host with bookable units.	Connectivity provider - The business entity that uses the Booking.com Connectivity solutions.
+Machine Account - Credentials that providers use and manage to access the reservations API endpoints.	Reservations API - Reservations API backend. You can use the reservations API endpoints to retrieve reservations and acknowledge processing them using the OTA XML endpoints.
+Provider portal - The administration portal that providers can use to enable or disable reservations features.	Status emails - Providers can also receive status emails through the provider portal.
+The following diagram shows a simplified view of all the components that make up the reservations delivery system.
+
+High-level reservations delivery system
+
+Figure 1. Reservations delivery system showing Booking.com's reservations components.
+
+Solutions to process reservations
+To process reservations, Booking.com provides two sets of endpoints using the following two specifications:
+
+OTA XML specifications (OTA_HotelResNotif & OTA_HotelResModifyNotif): A complete and fault-tolerant reservations processing solution following the specification from the OpenTravel Alliance (OTA). Use this solution to retrieve and acknowledge processing the reservations.
+B.XML specifications (/reservations): A simple and light-weight solution to retrieve reservations following Booking.com's XML specifications. Use this solution to retrieve the property reservations. Acknowledging that you successfully processed the reservation is currently not supported with this solution.
+The next section outlines the high-level steps involved in processing reservations using the two solutions and helps you identify the right choice for your business needs.
+
+Capability matrix between OTA XML and B.XML endpoints
+The following table lists the capabilities supported by both the OTA XML and the B.XML endpoints.
+
+Reservation action	Reservation type	OTA XML Endpoint	B.XML Endpoint
+Retrieve reservations			
+New reservations	GET /OTA_HotelResNotif	POST /reservations
+Modified reservations	GET /OTA_HotelResModifyNotif	POST /reservations
+Cancelled reservations	GET /OTA_HotelResModifyNotif	POST /reservations
+Acknowledge reservations			
+New reservations	POST /OTA_HotelResNotif	Acknowledge action is not supported.
+Modified reservations	POST /OTA_HotelResModifyNotif	Acknowledge action is not supported.
+Cancelled reservations	POST /OTA_HotelResModifyNotif	Acknowledge action is not supported.
+Introducing the OTA XML solution
+Use this solution that supports the OTA XML specification to implement a fault-tolerant reservations processing system. Only the OTA XML solution provides an endpoint that enables you to confirm whether or not you have processed a reservation successfully.
+
+By acknowledging reservations:
+
+You communicate to Booking.com whether your system has processed the reservations successfully. This helps to prevent missed reservations.
+Booking.com reservations system can remove the acknowledged reservations from the list of reservations to be sent via a fallback email. For more information on the fallback mechanism, see Introducing the reservations fallback mechanism.
+Alternately, you may communicate to Booking.com that an error occurred during processing on your end. In this case, the reservation is not canceled and the property still needs to be notified. We send a fallback email to the property immediately, and we keep a permanent record of the issue.
+The OTA solution provides two different endpoints to:
+
+Retrieve and acknowledge new reservations
+Retrieve and acknowledge modified or cancelled reservations Modified or cancelled reservation message implies that there were changes to the reservation after you have acknowledged the original reservation message.
+API responses use identical schema
+The two OTA endpoints return responses using the same schema, although with updated information when returning a modified or cancelled reservation compared to a new reservation.
+
+Retrieving and acknowledging new reservations using OTA
+Figure 2 shows the high-level steps for you to retrieve and acknowledge new reservations.
+
+Reservations API OTA endpoints
+
+Figure 2. Retrieving and acknowledging new reservations using OTA_HotelResNotif endpoint.
+
+Proper implementation of the acknowledgement step eliminates chances that any data has been overlooked: GET OTA_HotelResNotif will repetitively return bookings until they are acknowledged. Make sure to handle this repeated data, and avoid creating duplicate bookings.
+
+For specific recommendations, see Retrieving new reservations.
+
+Retrieving and acknowledging modified or cancelled reservations using OTA
+Figure 3 shows the high-level steps for you to retrieve and acknowledge modified or cancelled reservations.
+
+Modified reservations API OTA endpoints
+
+Figure 3. Retrieving and acknowledging modified or cancelled reservations using OTA_HotelResModifyNotif endpoint.
+
+The flow for modifications and cancellations works just like new bookings.
+
+It can be run as a parallel task at a lower priority level.
+
+For specific recommendations, see Retrieving modified/cancelled reservations.
+
+Introducing the B.XML solution
+The B.XML endpoint enables you to retrieve reservations of any type (new, modified or cancelled) using a single endpoint. Currently, the B.XML solution does not support acknowledging reservations. Once the endpoint call completes, Booking.com assumes that the partner will be prepared for the guest.
+
+Retrieving new, modified or cancelled reservations using BXML
+Figure 4 shows the high-level steps for you to retrieve new, modified or cancelled reservations using the B.XML endpoint.
+
+Reservations API B.XML endpoints
+
+Figure 4. Retrieving new, modified or cancelled reservations using B.XML endpoints.
+
+For specific recommendations, see Retrieving reservations using B.XML.
+
+Introducing the reservations fallback mechanism
+Figure 5 & 6 show a simplified view of the Booking.com reservations system's fallback mechanism depending on whether you use the OTA XML or B.XML solution. Booking.com consolidates all your reservations and their updates in a dedicated queue allowing you to retrieve and process these reservations periodically. However, if you do not successfully acknowledge (OTA) or retrieve (B.XML) reservation(s) within a certain timeout period (30 minutes) after the reservation's creation, modification, or cancellation, our system forwards the reservations to the property as an email. This makes our next-best effort to ensure that a property never misses a reservation or updates. However, to successfully process a fallback email, the property must complete the following offline booking flow:
+
+Find the email in the Reservations Contact inbox configured in the Booking.com Extranet.
+Open the email and follow the link to the property's Booking.com Extranet account (requires access).
+Manually update your system as needed using the details visible on Booking.com Extranet.
+You can increase the timeout period from 30 minutes to 24 hours by contacting the Connectivity Support team. Extending your acknowledgement period can increase the size of your reservation queue and the number of overbookings you may experience.
+
+For OTA calls
+Figure 5 outlines the steps that the reservations delivery system at Booking.com takes to handle OTA endpoints.
+
+Reservations in OTA endpoints
+
+Figure 5. Understanding how Booking.com handles reservations and updates when providers use OTA endpoints.
+
+For B.XML calls
+Figure 6 outlines the steps that the reservations delivery system at Booking.com takes to handle B.XML endpoints.
+
+Reservations in B.XML endpoints
+
+Figure 6. Understanding how Booking.com handles reservations and updates when providers use B.XML endpoints.
+
+Introducing the reservations features
+Apart from the preset schema supported by both the OTA and B.XML endpoints, you can enable additional elements in the API schema. Additional schema elements can enable you to get or send additional details in the response or request respectively. You can also alter the behaviour of an existing element or the API endpoint altogether. For example, when using the OTA endpoints, you can enable the property reservation response token feature to capture additional information such as ResID_Source="BOOKING.COM" and ResID_Type="18" in the schema.
+
+💡 To manage additional schema elements for reservations, log in to the Provider portal and enable the appropriate features in Feature Management under the Administration tab.
+
+Retrieving reservations summary
+Use the /reservationssummary endpoint to retrieve reservations messages that were not picked up earlier. This endpoint is useful to retrieve all reservations that were made prior to the property being connected to your system.
+
+You will only receive the basic details for each reservation such as: guest name, reservation ID, room ID, arrival and departure dates, room information (e.g. meal plan), price per day and total price. You can use the OTA XML or B.XML solutions to retrieve the full details by providing the reservation ID.
+
+For more information, see Retrieving reservations summary.
+
+
+Quick Actions
+→ To view the steps involved in implementing the OTA solution, see Understanding the OTA reservations process.
+→ To view the steps involved in implementing the B.XML solution, see Understanding the B.XML reservations process.
+
+Going live
+Before you go live with your API integration, you'll need to meet certain requirements. For more information, see Going Live.
+

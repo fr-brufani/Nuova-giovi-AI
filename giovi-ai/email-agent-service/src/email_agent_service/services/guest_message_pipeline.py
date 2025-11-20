@@ -21,18 +21,22 @@ class GuestMessageContext:
         property_id: str,
         reservation_id: str,
         property_name: Optional[str] = None,
+        property_data: Optional[dict] = None,
         client_name: Optional[str] = None,
         client_email: Optional[str] = None,
         conversation_history: Optional[list[dict]] = None,
+        is_test: bool = False,
     ):
         self.host_id = host_id
         self.client_id = client_id
         self.property_id = property_id
         self.reservation_id = reservation_id
         self.property_name = property_name
+        self.property_data = property_data or {}
         self.client_name = client_name
         self.client_email = client_email
         self.conversation_history = conversation_history or []
+        self.is_test = is_test
 
 
 class GuestMessagePipelineService:
@@ -146,8 +150,8 @@ class GuestMessagePipelineService:
         client_name = client_data.get("name") if client_data else None
         client_email = client_data.get("email") if client_data else None
 
-        # Recupera conversazione precedente
-        conversation_history = self._get_conversation_history(property_id, client_id)
+        # Recupera conversazione precedente (esclude messaggi test per produzione)
+        conversation_history = self._get_conversation_history(property_id, client_id, is_test=False)
 
         return GuestMessageContext(
             host_id=host_id,
@@ -155,6 +159,7 @@ class GuestMessagePipelineService:
             property_id=property_id,
             reservation_id=reservation_id,
             property_name=property_name,
+            property_data=property_data or {},
             client_name=client_name,
             client_email=client_email,
             conversation_history=conversation_history,
@@ -358,11 +363,17 @@ class GuestMessagePipelineService:
         self,
         property_id: str,
         client_id: str,
+        is_test: bool = False,
     ) -> list[dict]:
         """
         Recupera la storia della conversazione per questo cliente e property.
         
         La conversazione è salvata in: properties/{propertyId}/conversations/{clientId}/messages
+        
+        Args:
+            property_id: ID property
+            client_id: ID client
+            is_test: Se True, filtra solo messaggi test. Se False, esclude messaggi test.
         """
         try:
             messages_ref = (
@@ -378,10 +389,18 @@ class GuestMessagePipelineService:
             query = messages_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10)
             docs = list(query.get())
 
-            # Inverti ordine (dal più vecchio al più recente)
+            # Inverti ordine (dal più vecchio al più recente) e filtra per isTest
             messages = []
             for doc in reversed(docs):
                 data = doc.to_dict()
+                msg_is_test = data.get("isTest", False)
+                
+                # Filtra in base al flag is_test
+                if is_test and not msg_is_test:
+                    continue  # Se cerchiamo test, salta non-test
+                if not is_test and msg_is_test:
+                    continue  # Se cerchiamo non-test, salta test
+                
                 messages.append({
                     "sender": data.get("sender", "unknown"),
                     "text": data.get("text", ""),

@@ -109,7 +109,6 @@ class PropertyMatchResponse(BaseModel):
 class PropertyMatchRequest(BaseModel):
     source_property_id: str = Field(..., alias="sourcePropertyId")
     target_property_id: str = Field(..., alias="targetPropertyId")
-    create_mapping: bool = Field(True, alias="createMapping")
 
 
 class PropertyMatchResult(BaseModel):
@@ -422,15 +421,7 @@ def match_properties(
         to_property_id=target["id"],
     )
 
-    mapping_id = None
-    extracted_name = source.get("name")
-    if payload.create_mapping and extracted_name:
-        mapping_id = mappings_repo.create_mapping(
-            host_id=host_id,
-            extracted_name=extracted_name,
-            action="map",
-            target_property_id=target["id"],
-        )
+    # NON creiamo più mapping automatici - l'utente può fare il matching manualmente quando necessario
 
     properties_repo.delete_property(source["id"])
 
@@ -439,7 +430,7 @@ def match_properties(
         deletedPropertyId=source["id"],
         reservationsUpdated=reservations_updated,
         clientsUpdated=clients_updated,
-        mappingId=mapping_id,
+        mappingId=None,  # Non creiamo più mapping automatici
     )
 
 
@@ -492,7 +483,7 @@ def batch_match_properties(
         total_reservations += reservations_count
         total_clients += clients_count
 
-        # Crea mapping se richiesto
+        # Crea mapping se richiesto (per evitare duplicati in futuro)
         extracted_name = source.get("name")
         if match_item.create_mapping and extracted_name:
             mappings_repo.create_mapping(

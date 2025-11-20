@@ -1,0 +1,46 @@
+Why have my reservations not been retrieved correctly?
+When your reservations aren’t retrieved correctly, we send a fallback message via email both to you and the property in question.
+
+What is a fallback message?
+We send fallback messages any time your system cannot pick up a new reservation, modification or cancellation message. In each case, your system has a maximum of 30 minutes to pick up the new messages, and if it doesn’t, we’ll send you a fallback message via email.
+
+Please note that we don’t push reservations to your interface or have a webhook actively ping you. Instead, in order to avoid fallbacks, overbookings and pricing mismatches, we recommend you configure your system to pull messages every 30 seconds, if possible.
+
+For more information, read How can I retrieve failed reservation messages.
+
+Find here examples on summary emails you receive for fallbacks.
+
+What other factors can cause a reservation not to be received via XML?
+Fallbacks aren’t the only reason you may not receive your reservations through XML. Here are some others:
+
+Non-XML rates: it’s possible to configure rates as non-XML, at the request of the property. We recommend you check if the rate in question has been configured as a non-XML rate.
+Mapping error: we recommend you check that the rooms and rates were correctly mapped before you retrieved the reservation confirmation.
+Connection not confirmed: errors can also arise when properties haven’t completed the auto sign-up process. Sometimes you may have confirmed the connection, but the property hasn’t yet done so from their side. We recommend you check the Properties section of your Provider Portal. If the connection status says ‘XML Active’, it means both sides have confirmed, and the connection is fully established.
+Enqueuing not enabled for modifications/cancellations: please check if modifications and cancellations were enqueued.
+You can check reservation retrieval details through the reservation timeline tool. This is in the Provider Portal, under the Reports tab. Read more about the Reservation Timeline tool.
+
+How can I retrieve failed reservation messages?
+Sometimes reservations aren’t picked up correctly. How you retrieve them depends if the property was connected to your system when you retrieved the reservation confirmation.
+
+If the property was connected to your system when the reservation was made, you can send a reservation request that includes last_change.
+
+You will receive all the information related to those reservations except the credit card details. For security reasons, we only send this information in the first pull.
+
+To see how to use last_change, see Retrieving reservations using B.XML or Retrieving new reservations for OTA solutions.
+
+If the property was not connected when the reservation was made, you can see all reservations made previously by making a ‘reservationssummary’ call.
+
+You will only receive the following basic details for each reservation:
+
+guest name
+reservation ID
+room ID
+arrival and departure dates
+room information (e.g. meal plan)
+price per day
+total price
+How can I see the XML logs for a reservation?
+Unfortunately, due to certain regulations (such as GDPR), Booking.com can’t send hard copies of XML logs via email. However, what we can do is provide you with time stamps and our RUID codes.
+
+Please note that we delete all XML logs after 90 days.
+

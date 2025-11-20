@@ -33,9 +33,17 @@ def create_app() -> FastAPI:
     )
 
     # CORS middleware - permette chiamate dal frontend
+    # Permette tutte le origini (in produzione potrebbe essere più restrittivo)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:8080", "http://localhost:3000", "http://127.0.0.1:8080", "http://127.0.0.1:3000"],
+        allow_origins=[
+            "http://localhost:8080",
+            "http://localhost:3000",
+            "http://127.0.0.1:8080",
+            "http://127.0.0.1:3000",
+            "https://giovi-ai.web.app",
+            "https://giovi-ai.firebaseapp.com",
+        ],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

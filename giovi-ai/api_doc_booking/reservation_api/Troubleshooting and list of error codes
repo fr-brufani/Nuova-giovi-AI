@@ -1,0 +1,17 @@
+Working with errors
+This section captures a list of common HTTP errors you might encounter and possible solutions to fix them.
+
+HTTP Error Code	Error Text	Reason	Possible Fix
+HTTP 400	Hotel reservation has transaction message of the wrong type	Possible reasons are, you are trying to:
+- acknowledge a message that is no longer the latest for that given reservation
+- acknowledge a message using the wrong endpoint. For example, acknowledging a modification via the new reservations endpoint.	Query the Reservations API again to fetch the latest message. Use the POST OTA_HotelResNotif endpoint to acknowledge a new reservation or use the POST OTA_HotelResModifyNotif endpoint to acknowledge a modification or a cancellation.
+HTTP 403	Access denied for hotel	Possible reasons are, you are trying to:
+- retrieve reservations for a property with the wrong hotel ID.
+- send requests using machine account that do not have access to the specified hotel ID.
+- retrieve reservations for a property which is no longer connected to your interface.	Make sure to specify the correct hotel ID or check your machine account credentials. You can check which property IDs are connected to which machine accounts under ‘Machine Accounts’ in the Provider Portal. In addition, you can check the connection status of properties in the ‘Properties’ tab in the Provider Portal, using the property ID.
+HTTP 404	Hotel reservation was not found	This error can only occur while requesting a reservation by specifying the reservation ID in the request. Possible reasons are:
+- The specified reservation does not exist.
+- The reservation does exist, but the property is no longer connected to the provider.	The second scenario is very unlikely and the only possibile fix is to retrieve the reservation using the extranet.
+HTTP 409	Response token 'token' for hotel reservation 'ID' does not match. please pull again."	This message implies that there were changes to the reservation details since you last retrieved the message. You can see this message only if the feature OTA hotel reservation response token (ota_res_response_token) is on. You can turn it on by using the Provider portal.	You must retrieve the reservation details again by specifying the reservation ID in the OTA_HotelResNotif or OTA_HotelResModifyNotif call. When acknowleding such messages, make sure to copy and paste both the <HotelReservationID> elements from the GET response.
+HTTP 410	Hotel reservation is no longer available for delivery	This error can only occur while trying to retrieve a very old reservation by specifying the reservation ID in the request.	Check if the queried reservation ID is correct. Try querying a different reservation message by its ID.
+HTTP 500	Internal server error	Possible reason may be that Booking.com systems are experiencing temporary outage.	Try calling the endpoint after some time.

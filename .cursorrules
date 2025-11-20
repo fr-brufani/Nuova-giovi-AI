@@ -128,6 +128,7 @@ Quando completi una task, fornisci un **riepilogo chiaro**:
 - ✅ Eventuali problemi riscontrati e come risolti
 - ✅ Cosa richiede verifica manuale (se applicabile)
 - ✅ Eventuali credenziali/configurazioni necessarie
+- ❌ Non creare nuovi file Markdown (o documenti simili) solo per fornire spiegazioni: rispondi direttamente nella conversazione, salvo richiesta esplicita dell'utente.
 
 ### Evitare Gergo Tecnico Eccessivo
 - Usa termini tecnici quando necessario, ma spiega quando appropriato
@@ -148,7 +149,7 @@ Questo progetto è "Giovi AI", un sistema di gestione di alloggi.
 Gli agenti NON devono concentrarsi o modificare:
 - `giovi-ai/core-service/` - NON pertinente per il lavoro corrente
 - `giovi-ai/giovi/gemini-proxy-service/` - NON pertinente per il lavoro corrente
-- Altri servizi non esplicitamente menzionati
+- Altri servizi di cloud run o server simili 
 
 ### 📁 Frontend
 Il frontend si trova in:

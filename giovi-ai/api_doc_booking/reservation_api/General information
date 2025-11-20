@@ -1,0 +1,81 @@
+General information
+Why have I received a modification after the guest’s check-in date?
+Sometimes you might get an XML message notifying you of a modification to a booking after the guest has already checked in. There are two reasons for this:
+
+The hotelier has modified the booking via the extranet. This usually happens when the hotelier has spoken to the guest about changes to their reservation. Hoteliers can only modify bookings once the check-in date has passed.
+Booking.com’s Customer Service team has modified the booking. This usually happens at the request of the guest, and it’s usually because the guest wants to shorten their stay once they’ve checked in.
+What should I do in case of a cancellation?
+When a guest cancels a reservation, you can retrieve the cancellation using OTA or B_XML. We will include any applicable cancellation fee in the XML message, although Booking.com won’t charge the guest.
+
+If the property is on Payments by Booking payments model and receives a cancellation which requires a refund to the guest, the refund process will be done automatically within 10 business days.
+
+When a room is cancelled, we will automatically add it back to the property’s available inventory. For more information, check out What is auto-replenishment and how does it work.
+
+For more information about how cancellations appear in your back-end in OTA, see Acknowledging modified or cancelled reservations. For the one in B_XML, read our section on cancellations for B_XML users.
+
+What is transliteration and how can I activate it?
+Transliteration is a way of converting the scripts of different languages into one you’re more familiar with. This could be useful to anyone who needs to read guests’ names or addresses more easily. This could be you, your colleagues or your hotel partners.
+
+The transliteration software at Booking.com uses the ASCII characters in the XML to determine the language. It then transliterates the guests’ names and addresses into Latin script. Please note that words will not be translated into your language, but transliterated into your script.
+
+Transliteration is available for both B_XML and OTA formats. To activate this option, please get in touch with the Booking.com Connectivity Support team for your region. Click here to find out how.
+
+Once you activate transliteration, we will transliterate the following scripts by default:
+
+Latin
+Cyrillic
+Greek
+Han
+Hangul
+Hiragana
+Katakana
+However, you can disable selected languages if needed. Click here to request the deactivation of transliteration.
+
+Why does an XML message show the wrong number of guests?
+When a reservation is retrieved, the number of guests is always included in the XML message. Sometimes you might spot what looks like a discrepancy between the information in the reservation, the rate booked and how many guests are arriving at a property.
+
+Mismatch between searched and booked occupancy
+One reason is that there is a mismatch between the searched occupancy and the booked occupancy.
+
+Searched occupancy refers to the information that the booker has entered in any of our search fields when looking for a property, and also on the property page itself when looking for availability. This is information that the booker enters for the whole reservation, regardless of how many rooms they end up booking.
+
+Booked occupancy refers to the second stage of the book funnel, when the booker has already selected which rooms they want and the searched information is now allocated into those rooms. This is a combination of the searched occupancy, divided into the roomrate occupancy of the selected roorm(s).
+
+Skipped searched occupancy
+There are also situations in which the search is skipped, such as modifying a reservation (search happened previously). In this case the original information about children will be lost, and we will only send the selected roomrate occupancy in the XML messages.
+
+Pricing type applied
+Another reason is that in most cases, this is down to the type of pricing type the property is using, and the rate selected by the guest when making the reservation.
+
+For standard pricing, the room rate reflects maximum room occupancy. The rate doesn’t drop if fewer people stay. The exception to this, within standard pricing, is the single-use option, where a property can configure a different rate for single guests staying in a room which in theory should have a higher occupancy. However, it is also possible to configure different rates for different occupancies. For example, the property can configure different rates on their triple room that correspond to one, two, or three guests.
+
+Property-defined child age limit
+In addition, when it comes to children, the property can set the maximum age that children can stay for free in a room. If children are under this age limit, they won’t be counted in the total number of guests.
+
+Are bookers allowed to specify which guests go into which rooms for multi-room reservations?
+Booking.com does not require the booker to specify which guests go into which rooms, so our system does an approximation based on the search input and the selected roomrates.
+
+Usually in group bookings, what the booker can select does not match exactly with what they searched for, and in these instances our system will drop the search information such as the number of guests and ages of children from the XML message, and thus this information might be missing.
+
+Furthermore, the booker's initial plan for assigning people to their designated rooms may differ from our system's prediction.
+
+How can I see the ages of children in a reservation?
+If you need to access the ages of the children in a reservation, you can use the Include room-level guest count (guestcount_per_room) feature as a guide. This feature shows you the number of adults and children (along with their ages) per room in the reservation that the guest entered into the search before making a booking.
+
+Please note that the information in the feature will not necessarily correspond to the ages selected by the guest when they were making their initial search. Likewise, the number of guests will not necessarily correspond to the number of guests that arrive. However, the actual number should be less than or equal to the maximum occupancy for the room(s) reserved.
+
+What is a reservation hold and how can I request one?
+A reservation hold is a feature which we hold reservations for the time specified by you, when you have planned system outages or maintenance. This means that during that specified period, we won’t send fallbacks (emails or faxes) to properties, even if you haven't picked up the bookings after 30 minutes. Reservation holds can be useful to you because they allow you to retrieve your bookings once your system is back up again.
+
+In case you have planned maintenance or outages, you can set up your own hold. To do this, go to your Provider Portal, click on Company Settings and select Scheduled Outage Holds. Take a look at our self-help guide about how to set up a reservation hold.
+
+Note:
+
+You can’t set reservation holds for more than eight hours at a time.
+The hold will automatically stop at the end time you specify to us in your request. However, we recommend you start calling the endpoint again as soon as your system is back online. In case you no longer need the reservation hold, you can also remove it via the Provider Portal.
+If you don’t have access to this tool or need to set up a hold for longer than eight hours, contact us at least 48 hours before your scheduled outage. You’ll need to tell us the start date and time, the end date and time, and what time zone you’re in.
+
+What if my outage is because of an emergency?
+If your system is down because of an emergency, have a look at our article on emergency procedures.
+
+

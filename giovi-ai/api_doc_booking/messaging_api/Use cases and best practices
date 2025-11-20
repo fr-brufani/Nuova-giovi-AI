@@ -1,0 +1,62 @@
+Use cases and best practices
+Which use case you decide to follow depends on whether you save the messages in your system or not.
+
+Saving messages in your system
+If you decide to save the messages in your system, you can use the following flows:
+
+Property starts conversation flow.
+Guest starts conversation flow.
+Property starts conversation
+If the property wants to start the conversation and you have the reservation id, follow these high-level steps:
+
+Retrieve the empty conversation by reservation id.
+In the response you can find the conversation id.
+Enable property to send message(s) to the guest.
+(Optional) Add an attachment to the message.
+Periodically retrieve messages from the queue to enable property to see whether the guest has replied.
+(Recommended) Tag a message as read by property to inform the guest.
+Enable property to reply to new messages if needed.
+(Recommended) If a property does not require a reply from the guest or wants to inform the guest a reply is not needed, tag the conversation as no reply needed to inform the guest.
+If the property wants to start the conversation and you do not have the reservation id, follow these high-level steps:
+
+Retrieve a list of all property conversations, which are in order of most recent activity.
+Retrieve the empty conversation by conversation id.
+Periodically retrieve messages from the queue to enable property to see whether the guest has replied.
+(Recommended) Tag a message as read by property to inform the guest.
+Enable property to reply to new messages if needed.
+(Recommended) If a property does not require a reply from the guest or wants to inform the guest a reply is not needed, tag the conversation as no reply needed to inform the guest.
+Guest starts conversation
+If the guest started the conversation, follow these high-level steps:
+
+Periodically retrieve messages from the queue to enable property to see whether the guest has sent a message.
+(Recommended) Tag a message as read by property to inform the guest.
+Enable property to reply to the guest's message(s).
+(Optional) Add an attachment to the message.
+Enable property to reply to new messages if needed.
+(Recommended) If a property does not require a reply from the guest or wants to inform the guest a reply is not needed, tag the conversation as no reply needed to inform the guest.
+Not saving messages in your system
+If you decide not to save the messages in your system, you can use the following flows:
+
+Property starts conversation flow.
+Guest starts conversation flow.
+Property starts conversation
+If the property wants to start the conversation, follow these high-level steps:
+
+Retrieve a list of all property conversations, which are in order of most recent activity.
+Retrieve the empty conversation by conversation id.
+Enable property to send message(s) to the guest.
+(Optional) Add an attachment to the message.
+Periodically retrieve conversation again to see whether guest has replied.
+(Recommended) Tag a message as read by property to inform the guest.
+Enable property to reply to new messages if needed.
+(Recommended) If a property does not require a reply from the guest or wants to inform the guest a reply is not needed, tag the conversation as no reply needed to inform the guest.
+Guest starts conversation
+If the guest started the conversation, follow these high-level steps:
+
+Retrieve a list of all property conversations, which are in order of most recent activity.
+Enable property to send message(s) to the guest using conversation id.
+(Optional) Add an attachment to the message.
+Periodically retrieve conversation again to see whether guest has replied.
+(Recommended) Tag a message as read by property to inform the guest.
+Enable property to reply to new messages if needed.
+(Recommended) If a property does not require a reply from the guest or wants to inform the guest a reply is not needed, tag the conversation as no reply needed to inform the guest.

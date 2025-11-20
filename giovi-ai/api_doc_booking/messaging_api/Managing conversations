@@ -1,0 +1,713 @@
+Managing conversations
+A conversation is a collection of messages between two participants: Guest and property. Each new reservation triggers the creation of an empty conversation. The /conversations endpoints enable you to do the following:
+
+Posting a message to a conversation.
+Retrieving all conversations (with most recent message) per property.
+Retrieving a specific conversation by conversation id.
+Retrieving a specific conversation by reservation id.
+Only links approved in the messaging security link setting are returned in API response
+Our messaging security link setting in the Extranet enables properties to specify which links can be shared with their guests in messages. We show the approved links and remove unapproved links in the messages to guests and the API responses. For more information about the Extranet setting, see About the messaging security link setting.
+
+Posting a message to a conversation
+
+
+POST
+https://supply-xml.booking.com/messaging/properties/{property_id}/conversations/{conversation_id}
+The POST /properties/{property_id}/conversations/{conversation_id} request enables you to post a message with or without attachment to a specific conversation. You cannot send an attachment without message content.
+
+→ Before posting an attachment, make sure to upload the attachment. To upload attachments, see uploading attachments.
+
+Use cases
+You can encounter the following two scenarios:
+
+Guest starts conversation.
+Property starts conversation.
+→ To learn more about the two use cases, and how they differ depending on whether you decide to store messages or not, see use cases and best practices.
+
+Guests without account receive an email
+If a guest does not have an account and the property starts a conversation, the system sends an email to which the guest can reply.
+
+Path parameters
+The following table describes what elements you must add as query parameters:
+
+Element	Description	Type	Required/Optional	Notes
+property_id	Specifies the ID of the property.	string	required	
+conversation_id	Specifies the ID of the conversation you want to post a message to.	string	required	
+Body request parameters
+The following table describes what elements you must add in the request body:
+
+Element	Description	Type	Required/Optional	Notes
+message	Contains the information related to the message that you want to post to the conversation.	object	required	
+: content	Specifies the content of the message.	string	required	
+: attachment_ids	Specifies the ids of the attachment.	array	optional	You must use the attachment_id that you retrieved when uploading an attachment.
+Request body example
+The following is a request body example:
+
+
+
+{
+  "message": {
+      "content": "Hola,Toni! Como estas huey?",
+      "attachment_ids": ["795e5w90-0419-11eb-a306-e506dfed6417", "5ertwf11e445t06ewfe3fgh50094"]
+  }
+}
+Response body example
+The following is a successful response body example:
+
+
+
+{
+  "errors": [],
+  "warnings": [],
+  "meta": {
+      "ruid": "UmFuZG9tSVYkc2RlIyh9YYuVGLmv13PU2CPBInBo6tmR2olhYRQJnBxQ28c+302tG2NR8bgV4z78HUvSFMcHY/AsImiUYbjP"
+  },
+  "data": {
+      "guest_has_account": true,
+      "message_id": "a547bac0-e156-11ea-9735-f5b2c8769b48",
+      "ok": "true"
+  }
+}
+Response body parameters
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response data.	object	
+: ok	Indicates whether the request was successfull.	boolean	
+: message_id	Specifies the ID of the sent message.	string	
+: guest_has_account	Indicates whether the gues has a Booking.com account.	string	If the value is false, then an email is sent to the guest.
+Retrieving all conversations per property
+
+
+GET
+https://supply-xml.booking.com/messaging/properties/{property_id}/conversations
+The GET /properties/{property_id}/conversations request enables you to retrieve all conversations per property (with the most recent or latest message per conversation, and therefore not all of them).
+
+New activity could change order
+The conversations are returned in a descending order (most recent first). If a participant adds a new message to a conversation, this might change the order of the conversations you retrieve.
+
+Comparing response changes between v1.0 and v1.2
+The GET /properties/{property_id}/conversations endpoint has two versions currently. The following are the possible changes when migrating from v1.0 to v1.2.
+
+Default API behaviour (v1.0)	New API behaviour (v1.2)	Notes
+Does not support self-service requests.	Supports self-service requests. For example, after booking a reservation when a guest sends a self-service request, you can use Messaging API to retrieve the message.	
+Does not include field message_type in the response.	Includes field message_type for all messages.	
+Does not include attributes object in the response.	Includes an optional attributes object within message entities in the response.	
+Does not include guest name in the response.	Includes guest name in the metadata.name field of the guest participant entity.	Guest names are not provided in Request-to-Book (RtB) conversations until a reservation is confirmed. Once the booking is created, the guest's name will appear for that conversation, applying to all messages within it, including both historical and new communications.
+Path parameters
+The following table describes what elements you must add in the request path:
+
+Element	Description	Type	Required/Optional	Notes
+property_id	Specifies the ID of the property you want to retrieve conversations for.	string	optional	
+Query parameters
+The following table describes what elements you can add as query parameters:
+
+Element	Description	Type	Required/Optional	Notes
+page_id	Specifies the ID of the page you want to retrieve.	string	optional	Each page returns a maximum of 50 conversations.
+Response body examples
+The following is a successful response body example using v1.2:
+
+
+
+{
+    "data": {
+        "ok": "true",
+        "conversations": [
+            {
+                "participants": [
+                    {
+                        "metadata": {
+                            "type": "guest",
+                            "name": "Test Booker"
+                        },
+                        "participant_id": "5fe782b1-6545-55b7-8b75-588945b5f960"
+                    },
+                    {
+                        "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                        "metadata": {
+                            "type": "property",
+                            "id": 6378711
+                        }
+                    }
+                ],
+                "conversation_reference": "3454799008",
+                "messages": [
+                    {
+                        "message_id": "fc7db690-3ba2-11eb-a68b-c77d6a75020f",
+                        "message_type": "free_text",
+                        "timestamp": "2020-12-11T11:21:17.177Z",
+                        "sender_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                        "content": "hello there 2"
+                    }
+                ],
+                "access": "read_write",
+                "conversation_id": "a7dd5868-670c-597f-a5b8-8f6d917614bf",
+                "conversation_type": "reservation"
+            },
+            {
+                "participants": [
+                    {
+                        "metadata": {
+                            "type": "guest",
+                            "name": "Test Booker"
+                        },
+                        "participant_id": "5fe782b1-6545-55b7-8b75-588945b5f960"
+                    },
+                    {
+                        "metadata": {
+                            "type": "property",
+                            "id": 6378711
+                        },
+                        "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327"
+                    }
+                ],
+                "access": "read_write",
+                "messages": [
+                    {
+                        "sender_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                        "content": "Property message without attachment2020-12-10T10:15:04.960Z : f8fc39c9-3ab5-423f-865e-67fb45ce9893",
+                        "timestamp": "2020-12-10T10:15:05.275Z",
+                        "message_id": "92a3d0b0-3ad0-11eb-9e18-f9d108fb0e90",
+                        "message_type": "automatically_sent_template",
+                        "attributes": {
+                            "template_id": "12345",
+                            "template_name": "Welcome Template"
+                        }
+                    }
+                ],
+                "conversation_id": "2411ff94-d40b-5ccf-bd08-aa7ddb6a80c8",
+                "conversation_reference": "3836522009",
+                "conversation_type": "reservation"
+            }
+        ],
+        "next_page_id": "0bec3400-ec41-11ea-8080-808080808080"
+    },
+    "errors": [],
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YaHxRoj3d1s8ziyA7veDF0xKZcTLf9qryJ+iKAPc3DbYr0iQlTOb6ql3F5iP2/ie6QejvtMLyFHB"
+    },
+    "warnings": []
+}
+The following is a successful response body example using v1.0:
+
+
+
+{
+    "data": {
+        "ok": "true",
+        "conversations": [
+            {
+                "participants": [
+                    {
+                        "metadata": {
+                            "type": "guest"
+                        },
+                        "participant_id": "5fe782b1-6545-55b7-8b75-588945b5f960"
+                    },
+                    {
+                        "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                        "metadata": {
+                            "type": "property",
+                            "id": 6378711
+                        }
+                    }
+                ],
+                "conversation_reference": "3454799008",
+                "messages": [
+                    {
+                        "message_id": "fc7db690-3ba2-11eb-a68b-c77d6a75020f",
+                        "timestamp": "2020-12-11T11:21:17.177Z",
+                        "sender_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                        "content": "hello there 2"
+                    }
+                ],
+                "access": "read_write",
+                "conversation_id": "a7dd5868-670c-597f-a5b8-8f6d917614bf",
+                "conversation_type": "reservation"
+            },
+            {
+                "participants": [
+                    {
+                        "metadata": {
+                            "type": "guest"
+                        },
+                        "participant_id": "5fe782b1-6545-55b7-8b75-588945b5f960"
+                    },
+                    {
+                        "metadata": {
+                            "type": "property",
+                            "id": 6378711
+                        },
+                        "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327"
+                    }
+                ],
+                "access": "read_write",
+                "messages": [
+                    {
+                        "sender_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                        "content": "Property message without attachment2020-12-10T10:15:04.960Z : f8fc39c9-3ab5-423f-865e-67fb45ce9893",
+                        "timestamp": "2020-12-10T10:15:05.275Z",
+                        "message_id": "92a3d0b0-3ad0-11eb-9e18-f9d108fb0e90"
+                    }
+                ],
+                "conversation_id": "2411ff94-d40b-5ccf-bd08-aa7ddb6a80c8",
+                "conversation_reference": "3836522009",
+                "conversation_type": "reservation"
+            }
+        ],
+        "next_page_id": "0bec3400-ec41-11ea-8080-808080808080"
+    },
+    "errors": [],
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YaHxRoj3d1s8ziyA7veDF0xKZcTLf9qryJ+iKAPc3DbYr0iQlTOb6ql3F5iP2/ie6QejvtMLyFHB"
+    },
+    "warnings": []
+}
+
+Response body elements
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response data.	object	
+: ok	Indicates whether the request was successfull.	string	
+: conversations	Contains the conversation elements.	array	
+:: access	Specifies the access level for the conversation.	string	Possible values: read_only or read_write.
+:: conversation_id	Specifies the unique ID of a conversation.	string	
+:: conversation_reference	Specifies the ID of the reservation or Booking Request Object of the conversation type this conversation is referring to.	integer	For conversations with pre-reservation messages, the Booking Request Object id serves as the conversation_reference until the booking is confirmed.
+:: conversation_type	Specifies the type of the conversation.	string	Possible values: reservation or request_to_book.
+:: participants	Contains information about the conversation participants.	array	
+::: participant_id	Specifies the participant ID of a participant.	string	
+::: metadata	Contains information about a participant.	object	
+:::: type	Specifies the type of the participant.	string	
+:::: id	Specifies the property ID if the participant is a property.	string	
+:::: name	Specifies the guest name if the participant is a guest.	string	Returned only when the request includes an Accept-version header with a value set to 1.2.
+:: messages	Contains the message elements.	array	
+::: message_id	Specifies the unique ID of a message.	string	
+::: message_type	Specifies the type of the message.	string	Returned only when the request includes an Accept-version header with a value set to 1.2.
+Possible values are:
+- free_text: A message composed of plain text.
+- email: An email message.
+- automatically_sent_template: A message automatically sent from a message template configured by the property via the extranet Messaging Preferences page.
+- self_service_event: A structured message for self-service actions.
+- request_to_book_event: A request-to-book event. You can find information on the request status in the content field, which denotes the request as expired, accepted by the property, confirmed by the guest or rejected, etc.
+::: content	Specifies the content of the message.	string	
+::: timestamp	Specifies the time when the message was sent.	string	Follows the ISO 8601 standard in local time: YYYY-MM-DDThh:mm:ss.mmm.
+::: sender_id	Specifies the ID of the participant that sent the message.	string	
+::: attributes	Contains the message attributes.	object	Returned only when the request includes an Accept-version header with a value set to 1.2.
+:::: self_service_topic	Contains the self-service topic for messages that represent self-service events.	string	Possible values include:
+- checkin
+- checkout
+- change_dates_nr
+- cancel_booking
+- booking_basic_waive_fee
+- parking
+- free_text_parking
+- bed_type
+- extra_crib
+- extra_bed
+:::: template_id	Contains the identifier of the message template used that was configured by the property via the extranet Messaging Preferences page.	string	
+:::: template_name	Contains the name of the message template used that was configured by the property via the extranet Messaging Preferences page.	string	
+:: tags	Contains the tag elements on the conversation level.	object	
+::: no_reply_needed	Contains the information related to the no_reply_needed tag.	object	
+:::: set	Specifies whether the no_reply_needed tag is set.	boolean	
+Retrieving a specific conversation
+You can retrieve a specific conversation with all its messages in the following two ways:
+
+By specifying the conversation id.
+By specifying both the conversation type and its reference ID (which currently is always reservation id).
+New activity might cause loss of messages
+If a new message was added to the conversation when you call the second page, you might miss out on that message.
+
+Retrieving a specific conversation by conversation id
+
+
+GET
+https://supply-xml.booking.com/messaging/properties/{property_id}/conversations/{conversation_id}
+The GET /properties/{property_id}/conversations/{conversation_id} request enables you to retrieve a specific conversation with all its messages by conversation id. The messages you retrieve are in descending order (most recent first).
+
+Comparing response changes between v1.0 and v1.2
+The GET /properties/{property_id}/conversations/{conversation_id} endpoint has two versions currently. The following are the possible changes when migrating from v1.0 to v1.2.
+
+Default API behaviour (v1.0)	New API behaviour (v1.2)	Notes
+Does not support self-service requests.	Supports self-service requests. For example, after booking a reservation when a guest sends a self-service request, you can use Messaging API to retrieve the message.	
+Does not include field message_type in the response.	Includes field message_type for all messages.	
+Does not include attributes object in the response.	Includes an optional attributes object within message entities in the response.	
+Does not include guest name in the response.	Includes guest name in the metadata.name field of the guest participant entity.	Guest names are not provided in Request-to-Book (RtB) conversations until a reservation is confirmed. Once the booking is created, the guest's name will appear for that conversation, applying to all messages within it, including both historical and new communications.
+Path parameters
+The following table describes what elements you must add in the request path:
+
+Element	Description	Type	Required/Optional	Notes
+property_id	Specifies the ID of the property you want to retrieve the conversation for.	string	required	
+conversation_id	Specifies the ID of the conversation you want to retrieve.	string	required	
+Query parameters
+The following table describes what elements you can add as query parameters:
+
+Element	Description	Type	Required/Optional	Notes
+page_id	Specifies the ID of the page you want to retrieve.	string	optional	Each page returns a maximum of 50 messages. You must use next_page_id from response here to retrieve the next page of messages.
+Response body examples
+The following is a successful response body example using v1.2:
+
+
+
+{
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YQzdwh+280lx897rDZF1JIZYdbF3XzxqMYPN87IIbYDpF4gg5ppLWSo9FTHqy5069iHVvB2blrvu"
+    },
+    "errors": [],
+    "warnings": [],
+    "data": {
+        "conversation": {
+            "participants": [
+                {
+                    "metadata": {
+                        "type": "guest",
+                        "name": "Test Booker"
+                    },
+                    "participant_id": "5fe782b1-6545-55b7-8b75-588945b5f960"
+                },
+                {
+                    "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                    "metadata": {
+                        "id": 6378711,
+                        "type": "property"
+                    }
+                }
+            ],
+            "messages": [
+                {
+                    "message_id": "17b0e930-490b-11eb-aa2f-77d68f9d163f",
+                    "message_type": "free_text",
+                    "attachment_ids": [
+                        "f2526680-18f6-11eb-a45f-114c8501fcdb"
+                    ],
+                    "sender_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                    "content": "Hello world.",
+                    "timestamp": "2020-12-28T12:49:15.587Z"
+                },
+                {
+                    "tags": {
+                        "read": {
+                            "set": true,
+                            "participants": [
+                                "5fe782b1-6545-55b7-8b75-588945b5f960"
+                            ]
+                        }
+                    }    
+                }
+            ],
+            "conversation_reference": "2232015613",
+            "tags": {
+                "no_reply_needed": {
+                    "set": true
+                }
+            },
+            "conversation_type": "reservation",
+            "access": "read_write",
+            "conversation_id": "267eef2d-43fe-5b94-afef-63de2ee4d6f8"
+        },
+        "next_page_id": "74fdb6d0-4083-11eb-ac3f-89046bdff5d4",
+        "ok": "true"
+    }
+}
+The following is a successful response body example using v1.0:
+
+
+
+{
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YQzdwh+280lx897rDZF1JIZYdbF3XzxqMYPN87IIbYDpF4gg5ppLWSo9FTHqy5069iHVvB2blrvu"
+    },
+    "errors": [],
+    "warnings": [],
+    "data": {
+        "conversation": {
+            "participants": [
+                {
+                    "metadata": {
+                        "type": "guest"
+                    },
+                    "participant_id": "5fe782b1-6545-55b7-8b75-588945b5f960"
+                },
+                {
+                    "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                    "metadata": {
+                        "id": 6378711,
+                        "type": "property"
+                    }
+                }
+            ],
+            "messages": [
+                {
+                    "message_id": "17b0e930-490b-11eb-aa2f-77d68f9d163f",
+                    "attachment_ids": [
+                        "f2526680-18f6-11eb-a45f-114c8501fcdb"
+                    ],
+                    "sender_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                    "content": "Hello world.",
+                    "timestamp": "2020-12-28T12:49:15.587Z"
+                },
+                {
+                    "tags": {
+                        "read": {
+                            "set": true,
+                            "participants": [
+                                "5fe782b1-6545-55b7-8b75-588945b5f960"
+                            ]
+                        }
+                    }    
+                }
+            ],
+            "conversation_reference": "2232015613",
+            "tags": {
+                "no_reply_needed": {
+                    "set": true
+                }
+            },
+            "conversation_type": "reservation",
+            "access": "read_write",
+            "conversation_id": "267eef2d-43fe-5b94-afef-63de2ee4d6f8"
+        },
+        "next_page_id": "74fdb6d0-4083-11eb-ac3f-89046bdff5d4",
+        "ok": "true"
+    }
+}
+Response body parameters
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response data.	object	
+: ok	Indicates whether the request was successfull.	string	
+: next_page_id	Specifies the ID of the next page with messages.	string	
+: conversation	Contains the conversation elements.	object	
+:: participants	Contains information about the conversation participants.	array	
+::: participant_id	Specifies the participant ID of a participant.	string	
+::: metadata	Contains information about a participant.	object	
+:::: type	Specifies the type of the participant.	string	
+:::: id	Specifies the property ID if the participant is a property.	string	
+:::: name	Specifies the guest name if the participant is a guest.	string	Returned only when the request includes an Accept-version header with a value set to 1.2.
+:: messages	Contains the message elements.	array	
+::: message_id	Specifies the unique ID of a message.	string	
+::: message_type	Specifies the type of the message.	string	Returned only when the request includes an Accept-version header with a value set to 1.2.
+Possible values are:
+- free_text: A message composed of plain text.
+- email: An email message.
+- automatically_sent_template: A message automatically sent from a message template configured by the property via the extranet Messaging Preferences page.
+- self_service_event: A structured message for self-service actions.
+- request_to_book_event: A request-to-book event. You can find information on the request status in the content field, which denotes the request as expired, accepted by the property, confirmed by the guest or rejected, etc.
+::: content	Specifies the content of the message.	string	
+::: timestamp	Specifies the time when the message was sent.	string	Follows the ISO 8601 standard in local time: YYYY-MM-DDThh:mm:ss.mmm.
+::: sender_id	Specifies the ID of the participant that sent the message.	string	
+::: tags	Contains the tag elements on the conversation level.	object	
+:::: read	Contains information related to the read tag.	object	
+::::: set	Specifies whether the read tag is set.	boolean	
+::::: participants	Contains the participants IDs for whom the tag is set.	boolean	
+::: attributes	Contains message attributes.	object	Returned only when the request includes an Accept-version header with a value set to 1.2.
+:::: self_service_topic	Contains the self-service topic for messages that represent self-service events.	string	Possible values include:
+- checkin
+- checkout
+- change_dates_nr
+- cancel_booking
+- booking_basic_waive_fee
+- parking
+- free_text_parking
+- bed_type
+- extra_crib
+- extra_bed
+:::: template_id	Contains the identifier of the used message template configured by the property via the extranet Messaging Preferences page.	string	
+:::: template_name	Contains the name of the used message template configured by the property via the extranet Messaging Preferences page.	string	
+:: conversation_id	Specifies the unique ID of a conversation.	string	
+:: conversation_reference	Specifies the ID of the reservation or Booking Request Object of the conversation type this conversation is referring to.	integer	For conversations with pre-reservation messages, the Booking Request Object id serves as the conversation_reference until the booking is confirmed.
+:: conversation_type	Specifies the type of the conversation.	string	Possible values: reservation or request_to_book.
+Retrieving a specific conversation by conversation type
+
+
+GET
+https://supply-xml.booking.com/messaging/properties/{property_id}/conversations/type/{conversation_type}
+The GET /properties/{property_id}/conversations/type/{conversation_type} request enables you to retrieve a specific conversation with all its messages by reservation id. The messages you retrieve are in descending order (most recent first).
+
+Comparing response changes between v1.0 and v1.2
+The GET /properties/{property_id}/conversations/type/{conversation_type} endpoint has two versions currently. The following are the possible changes when migrating from v1.0 to v1.2.
+
+Default API behaviour (v1.0)	New API behaviour (v1.2)	Notes
+Does not support self-service requests. This means that when a guest sends a self-service request after a reservation this does not show up in the Messaging API.	Supports self-service requests.	
+Does not include field message_type in the response.	Includes field message_type for all messages.	
+Does not include attributes object in the response.	Includes an optional attributes object within message entities in the response.	
+Does not include guest name in the response.	Includes guest name in the metadata.name field of the guest participant entity.	Guest names are not provided in Request-to-Book (RtB) conversations until a reservation is confirmed. Once the booking is created, the guest's name will appear for that conversation, applying to all messages within it, including both historical and new communications.
+Path parameters
+The following table describes what elements you must add in the request path:
+
+Element	Description	Type	Required/Optional	Notes
+property_id	Specifies the ID of the property you want to retrieve the conversation for.	string	required	
+conversation_type	Specifies the type of the conversation you want to retrieve.	string	required	Possible values:
+reservation
+request_to_book - [Applicable only for properties in Request to Book (RtB) booking model]: Enables communication between the partner and the guest during the request to book process, before the reservation is created. For more information, see Pre-reservation messaging.
+Query parameters
+The following table describes what elements you must add in the request path:
+
+Element	Description	Type	Required/Optional	Notes
+conversation_reference	Specifies the unique ID of the conversation type this conversation is referring to.	integer	required	For now the references are all reservation ids.
+page_id	Specifies the ID of the page you want to retrieve.	string	optional	Each page returns 50 messages. You must use next_page_id from response here to retrieve the next page of messages.
+Response body examples
+The following is a successful response body example using v1.2:
+
+
+
+{
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YbEJoqqZlpoSNapQcFDDn7IQIiP8Fy+AQqRBdOOw1EqmKh5XgGol7nz1QsVflaMXCqoeOJxb/A6l"
+    },
+    "data": {
+        "conversation": {
+            "conversation_type": "reservation",
+            "access": "read_write",
+            "conversation_id": "e62d0589-ce61-5a36-9649-36b5fed9491d",
+            "participants": [
+                {
+                    "metadata": {
+                        "type": "guest",
+                        "name": "Test Booker"
+                    },
+                    "participant_id": "7da17c1b-52e9-5158-be5d-99cf789ed130"
+                },
+                {
+                    "metadata": {
+                        "type": "property",
+                        "id": 6378711
+                    },
+                    "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327"
+                }
+            ],
+            "messages": [
+                {
+                    "message_id": "6469d370-45bb-11eb-8ecb-fb998203e06b",
+                    "message_type": "email",
+                    "attachment_ids": [
+                        "f2526680-18f6-11eb-a45f-114c8501fcdb"
+                    ],
+                    "timestamp": "2020-12-24T07:41:11.079Z",
+                    "sender_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                    "content": "Test message without attachment and with reply 2020-12-24 08:41:04.23864"
+                },
+                {
+                    "tags": {
+                        "read": {
+                            "set": true,
+                            "participants": [
+                                "5fe782b1-6545-55b7-8b75-588945b5f960"
+                            ]
+                        }
+                    }    
+                }
+            ],
+            "conversation_reference": "3257971028"
+        },
+        "ok": "true"
+    },
+    "warnings": [],
+    "errors": []
+}
+The following is a successful response body example using v1.0:
+
+
+
+{
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YbEJoqqZlpoSNapQcFDDn7IQIiP8Fy+AQqRBdOOw1EqmKh5XgGol7nz1QsVflaMXCqoeOJxb/A6l"
+    },
+    "data": {
+        "conversation": {
+            "conversation_type": "reservation",
+            "access": "read_write",
+            "conversation_id": "e62d0589-ce61-5a36-9649-36b5fed9491d",
+            "participants": [
+                {
+                    "metadata": {
+                        "type": "guest"
+                    },
+                    "participant_id": "7da17c1b-52e9-5158-be5d-99cf789ed130"
+                },
+                {
+                    "metadata": {
+                        "type": "property",
+                        "id": 6378711
+                    },
+                    "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327"
+                }
+            ],
+            "messages": [
+                {
+                    "message_id": "6469d370-45bb-11eb-8ecb-fb998203e06b",
+                    "attachment_ids": [
+                        "f2526680-18f6-11eb-a45f-114c8501fcdb"
+                    ],
+                    "timestamp": "2020-12-24T07:41:11.079Z",
+                    "sender_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                    "content": "Test message without attachment and with reply 2020-12-24 08:41:04.23864"
+                },
+                {
+                    "tags": {
+                        "read": {
+                            "set": true,
+                            "participants": [
+                                "5fe782b1-6545-55b7-8b75-588945b5f960"
+                            ]
+                        }
+                    }    
+                }
+            ],
+            "conversation_reference": "3257971028"
+        },
+        "ok": "true"
+    },
+    "warnings": [],
+    "errors": []
+}
+
+Response body parameters
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response data.	object	
+: ok	Indicates whether the request was successfull.	string	
+: next_page_id	Specifies the ID of the next page with messages.	string	
+: conversation	Contains the conversation elements.	object	
+:: participants	Contains the information on the conversation participants.	array	
+::: participant_id	Specifies the participant ID of a participant.	string	
+::: metadata	Contains information of a participant.	object	
+:::: type	Specifies the type of the participant.	string	
+:::: id	Specifies the property ID if the participant is a property.	string	
+:::: name	Specifies the guest name if the participant is a guest.	string	Returned only when the request includes an Accept-version header with a value set to 1.2.
+:: messages	Contains the message elements.	array	
+::: message_id	Specifies the unique ID of a message.	string	
+::: message_type	Specifies the type of the message.	string	Returned only when the request includes an Accept-version header with a value set to 1.2.
+Possible values are:
+- free_text: A message composed of plain text.
+- email: An email message.
+- automatically_sent_template: A message automatically sent from a message template configured by the property via the extranet Messaging Preferences page.
+- self_service_event: A structured message for self-service actions.
+- request_to_book_event: A request-to-book event. You can find information on the request status in the content field, which denotes the request as expired, accepted by the property, confirmed by the guest or rejected, etc.
+::: content	Specifies the content of the message.	string	
+::: timestamp	Specifies the time when the message was sent.	string	Follows the ISO 8601 standard in local time: YYYY-MM-DDThh:mm:ss.mmm.
+::: sender_id	Specifies the ID of the participant that sent the message.	string	
+::: tags	Contains the tag elements on the conversation level.	object	
+:::: read	Contains information related to the read tag.	object	
+::::: set	Specifies whether the read tag is set.	boolean	
+::::: participants	Contains the participants ids for whom the tag is set.	boolean	
+::: attributes	Contains the message attributes.	object	Returned only when the request includes an Accept-version header with a value set to 1.2.
+:::: self_service_topic	Contains the self-service topic for messages that represent self-service events.	string	Possible values include:
+- checkin
+- checkout
+- change_dates_nr
+- cancel_booking
+- booking_basic_waive_fee
+- parking
+- free_text_parking
+- bed_type
+- extra_crib
+- extra_bed
+:::: template_id	Contains the identifier of the message template used that was configured by the property via the extranet Messaging Preferences page.	string	
+:::: template_name	Contains the name of the message template used that was configured by the property via the extranet Messaging Preferences page.	string	
+:: conversation_id	Specifies the unique ID of a conversation.	string	
+:: conversation_reference	Specifies the ID of the reservation or Booking Request Object of the conversation type this conversation is referring to.	integer	For conversations with pre-reservation messages, the Booking Request Object id serves as the conversation_reference until the booking is confirmed.
+:: conversation_type	Specifies the type of the conversation.	string	Possible values: reservation or request_to_book.
+

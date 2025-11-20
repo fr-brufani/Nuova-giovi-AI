@@ -1,0 +1,397 @@
+Managing tags
+This section describes what tags are, which are available, and how to use them.
+
+What are tags?
+Tags are labels you can attach to and remove from conversations and messages. On the message level you can also specify to which participant(s) the tag applies to.
+
+Currently you can use the following two tags:
+
+message_read (or read): To mark the message(s) as read and which participant(s) have read the message(s).
+no_reply_needed: To mark the conversation as no reply needed in case the conversation does not require any response from any participant.
+Who sees what?
+If you set up a tag, it shows up in your messaging interface only. This means that tags enable you to inform properties whether, for example, the message is already read by the property or that a conversation no longer requires a reply. To emphasise, the tags in this section do not show up on the guest side.
+
+What can you do with tags?
+You can either use the dedicated endpoints for each tag (attaching and removing), which we recommend, or use the configurable endpoint that enables you to set the tags up yourself.
+
+→ To tag a conversation as no reply needed, see tagging a conversation as no reply needed.
+→ To remove the no_reply_needed tag, see removing the no reply needed tag.
+→ To tag messages as read, see tagging messages as read.
+→ To remove the message_read tag, see removing the message read tag.
+
+Retrieving tags
+
+
+GET
+https://supply-xml.booking.com/messaging/properties/{property_id}/tags
+The GET /properties/{property_id}/tags request enables you to retrieve all the available tags, including information on how to use each.
+
+Response body example
+The following is a successful response body example:
+
+
+
+{
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YZ/T6pHZy8K7wEoZsU9NOQYJDChBVgP4fH9Bq7NcY4SbU1Ag/EbPXntZYYnnn5lcHR/ew0pgz0pw"
+    },
+    "errors": [],
+    "warnings": [],
+    "data": {
+        "tags": [
+            {
+                "usage": "internal, can only be retrieved with conversation",
+                "tag": "pending_none",
+                "description": "Conversation does not need a reply from any of the participants"
+            },
+            {
+                "usage": " You can add this tag to and remove it from conversations using a dedicated endpoint. For more detailed information, see the documentation.",
+                "description": "The conversation does not require a reply from any of the participants,",
+                "tag": "no_reply_needed"
+            },
+            {
+                "usage": "You can add this tag to and remove it from messages using a dedicated endpoint. For more detailed information, see the documentation.",
+                "tag": "read",
+                "description": "A participant has read the message."
+            },
+            {
+                "tag": "delivered",
+                "description": "Message has been delivered",
+                "usage": "internal, can only be retrieved with conversation"
+            },
+            {
+                "tag": "replied",
+                "description": "Message has been replied to by participant",
+                "usage": "internal, can only be retrieved with conversation"
+            },
+            {
+                "usage": "internal, can only be retrieved with conversation",
+                "tag": "pending_guest",
+                "description": "Conversation needs reply from guest"
+            },
+            {
+                "tag": "pending_property",
+                "description": "Conversation needs reply from property",
+                "usage": "internal, can only be retrieved with conversation"
+            },
+            {
+                "usage": "internal, can only be retrieved with conversation",
+                "description": "Message has been sent",
+                "tag": "sent"
+            }
+        ]
+    }
+}
+Response body elements
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response object.	object	
+: tags	Contains the tag objects.	array	
+:: description	Specifies what the tag does.	string	
+:: tag	Specifies the name of the tag.	string	
+:: usage	Specifies how you can use the tag.	string	Internal tags are set by the system. Therefore you cannot set these yourself.
+Tagging a conversation as no reply needed
+
+
+PUT https://supply-xml.booking.com/messaging/properties/{property_id}/conversations/{conversation_id}/tags/no_reply_needed
+The PUT /properties/{property_id}/conversations/{conversation_id}/tags/no_reply_needed request enables you to directly tag a conversation as no reply needed.
+
+→ If you want to remove the tag, see removing the no reply needed tag.
+
+Path parameters
+The following table describes the path parameters you must add:
+
+Element	Description	Type	Required/Optional	Notes
+property_id	Specifies the ID of the property.	integer	required	
+conversation_id	Specifies the ID of the conversation you want to tag as no reply needed.	string	required	
+Response body example
+The following is a successful response body example:
+
+
+
+{
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YaTyRj25f/2waH4F5BtL0NKrW3FqoZ+th18vbM/yHSuXx70j9WHWGVrI722rbVcB34S2muv+oaTK"
+    },
+    "data": {
+        "tag": "no_reply_needed",
+        "is_set": true
+    },
+    "warnings": [],
+    "errors": []
+}
+Response body elements
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response object.	object	
+: tag	Specifies the name of the tag.	string	
+: is_set	Indicates whether the tag is set.	boolean	
+Removing the no reply needed tag
+
+
+DELETE https://supply-xml.booking.com/messaging/properties/{property_id}/conversations/{conversation_id}/tags/no_reply_needed
+The DELETE /properties/{property_id}/conversations/{conversation_id}/tags/no_reply_needed request enables you to directly remove the no_reply_needed tag from a conversation.
+
+Path parameters
+The following table describes the path parameters you must add:
+
+Element	Description	Type	Required/Optional	Notes
+property_id	Specifies the ID of the property.	integer	required	
+conversation_id	Specifies the ID of the conversation you want to remove the no reply needed tag for.	string	required	
+Response body example
+The following is a successful request body example:
+
+
+
+{
+    "data": {
+        "is_set": false,
+        "tag": "no_reply_needed"
+    },
+    "errors": [],
+    "warnings": [],
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YSs/tamw9Yvt4Ue6PTNzksHMMKT/1d9rl+beop+69SW6Se44sharH3Qok1aomt4ONpSb4OkShiI+"
+    }
+}
+Response body elements
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response object.	object	
+: tag	Specifies the name of the tag.	string	
+: is_set	Indicates whether the tag is set.	boolean	
+Tagging messages as read
+
+
+PUT https://supply-xml.booking.com/messaging/properties/{property_id}/conversations/{conversation_id}/tags/message_read
+The PUT /properties/{property_id}/conversations/{conversation_id}/tags/message_read request enables you to directly tag one or multiple messages as read. You must also specify to which participant(s) the tag applies to.
+
+→ If you want to remove a tag, see removing the message read tag.
+
+Path parameters
+The following table describes the path parameters you must add:
+
+Element	Description	Type	Required/Optional	Notes
+property_id	Specifies the ID of the property.	integer	required	
+conversation_id	Specifies the ID of the conversation in which you want to tag messages as message_read..	string	required	
+Request body parameters
+The following table describes the request body parameters you must add:
+
+Element	Description	Type	Required/Optional	Notes
+message_ids	Contains the message_ids that you want to tag as read.	array	required	
+participant_id	Specifies the ID of the participant that you want to tag as having read the message(s).	string	required	
+Request body example
+The following is a successful request body example:
+
+
+
+{
+    "message_ids": [ 
+      "d5e90400-3010-11eb-b0d2-b1907cf0cc44"
+    ],
+    "participant_id": "5fe782b1-6545-55b7-8b75-588945b5f960"
+  }
+Response body example
+The following is a successful response body example:
+
+
+
+{
+    "errors": [],
+    "data": {
+        "tag": "read",
+        "is_set": true
+    },
+    "warnings": [],
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YY2a4pMH7yUf8vg+S0DYMTptupqdQtpH9gmRydqd9LlQyoTh4a1xUOva2lRmOngIZDrM612NZqlr"
+    }
+}
+Response body elements
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response object.	object	
+: tag	Specifies the name of the tag.	string	
+: is_set	Indicates whether the tagging was successful.	boolean	
+Removing the message read tag
+
+
+DELETE https://supply-xml.booking.com/messaging/properties/{property_id}/conversations/{conversation_id}/tags/message_read
+The DELETE /properties/{property_id}/conversations/{conversation_id}/tags/message_read request enables you to directly remove the message_read tag from one or more messages. You can also specify for which participants you want to remove the tag for.
+
+Path parameters
+The following table describes the path parameters you must add:
+
+Element	Description	Type	Required/Optional	Notes
+property_id	Specifies the ID of the property.	integer	required	
+conversation_id	Specifies the ID of the conversation.	string	required	
+Request body parameters
+The following table describes the request body parameters you must add:
+
+Element	Description	Type	Required/Optional	Notes
+message_ids	Contains the message_ids that you want to remove the tag message_read for.	array	required	
+participant_id	Specifies the ID of the participant that you want to remove the tag message_read for.	string	required	
+Request body example
+The following is a successful request body example:
+
+
+
+{
+    "message_ids": [ 
+      "d5e90400-3010-11eb-b0d2-b1907cf0cc44"
+    ],
+    "participant_id": "5fe782b1-6545-55b7-8b75-588945b5f960"
+  }
+Response body example
+The following is a successful response body example:
+
+
+
+{
+    "errors": [],
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YY2a4pMH7yUf6VIaXx97zh7qxI5J14m0qku/3uEJSNjl9zFc9XMlCcAVCqvrlw5QIrbVQqzhbjQK"
+    },
+    "warnings": [],
+    "data": {
+        "tag": "read",
+        "is_set": false
+    }
+}
+Response body elements
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response object.	object	
+: tag	Specifies the name of the tag.	string	
+: is_set	Indicates whether the tagging was successful.	boolean	
+Setting tags
+This endpoint is for testing purposes
+This endpoint is experimental and exists to gather feedback on its usability. It is recommended to use the dedicated endpoints.
+
+
+
+POST https://supply-xml.booking.com/messaging/properties/{property_id}/conversations/{conversation_id}/tags
+The POST /properties/{property_id}/conversations/{conversation_id}/tags request enables you to set tags to conversations, messages, or participants. You have to specify which tag you want to set.
+
+To set the read tag, you must specify all request body parameters
+
+To set the no_reply_needed tag, you must only specify the tag.
+
+→ If you want to remove a tag, see removing tags.
+
+Path parameters
+The following table describes the path parameters you must add:
+
+Element	Description	Type	Required/Optional	Notes
+property_id	Specifies the ID of the property.	integer	required	
+conversation_id	Specifies the ID of the conversation.	string	required	
+Request body parameters
+The following table describes the request body parameters you can add:
+
+Element	Description	Type	Required/Optional	Notes
+message_ids	Contains the message_ids that you want to tag.	array	optional	Required for read.
+participant_id	Specifies the ID of the participant that you want to tag.	string	optional	Required for read.
+tag	Specifies the tag you want to set.	string	required	
+Request body example
+The following is a successful request body example:
+
+
+
+{
+    "message_ids": [ 
+      "d5e90400-3010-11eb-b0d2-b1907cf0cc44"
+    ],
+    "tag": "read",
+    "participant_id": "5fe782b1-6545-55b7-8b75-588945b5f960"
+  }
+Response body example
+The following is a successful response body example:
+
+
+
+{
+    "errors": [],
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YbTDHm6UfFUcKbwM9glsIeb6pHvv53bkKkVjAIDhHaAvLg/faRlu70V14kUF8H32NGOPDGGi7Ber"
+    },
+    "warnings": [],
+    "data": {
+        "tag": "read",
+        "is_set": true
+    }
+}
+Response body elements
+The following table describes the response elements:
+
+The following table describes the request body parameters you must add:
+
+Element	Description	Type	Notes
+data	Contains the response object.	object	
+: tag	Specifies the name of the tag.	string	
+: is_set	Indicates whether the tagging was successful.	boolean	
+Removing tags
+This endpoint is for testing purposes
+This endpoint is experimental and exists to gather feedback on its usability. It is recommended to use the dedicated endpoints.
+
+
+
+DELETE https://supply-xml.booking.com/messaging/properties/{property_id}/conversations/{conversation_id}/tags
+The DELETE /properties/{property_id}/conversations/{conversation_id}/tags request enables you to remove tags from conversations, messages, or participants. You have to specify which tag you want to remove.
+
+To remove the read tag, you must specify all request body parameters
+
+To remove the no_reply_needed tag, you must only specify the tag request body parameter.
+
+Path parameters
+The following table describes the path parameters you must add:
+
+Element	Description	Type	Required/Optional	Notes
+property_id	Specifies the ID of the property.	integer	required	
+conversation_id	Specifies the ID of the conversation.	string	required	
+Request body parameters
+The following table describes the request body parameters you must add:
+
+Element	Description	Type	Required/Optional	Notes
+message_ids	Contains the message_ids that you want to remove a tag from.	array	optional	
+participant_id	Specifies the ID of the participant that you want to remove a tag from.	string	optional	
+tag	Specifies the tag you want to remove.	string	required	
+Request body example
+The following is a successful request body example:
+
+
+
+{
+    "message_ids": [ 
+      "d5e90400-3010-11eb-b0d2-b1907cf0cc44"
+    ],
+    "tag": "no_reply_needed",
+    "participant_id": "5fe782b1-6545-55b7-8b75-588945b5f960"
+  }
+Response body example
+The following is a successful response body example:
+
+
+
+{
+    "errors": [],
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YbTDHm6UfFUcgE4kGgqDuWJehFUu8nCzbK7IDWS3x2ejUGodVbqheoMWzJnvG3nXc69gZBPY79wP"
+    },
+    "data": {
+        "is_set": false,
+        "tag": "no_reply_needed"
+    },
+    "warnings": []
+}
+Response body elements
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response object.	object	
+: tag	Specifies the name of the tag.	string	
+: is_set	Indicates whether the removing of the tag was successful.	boolean	

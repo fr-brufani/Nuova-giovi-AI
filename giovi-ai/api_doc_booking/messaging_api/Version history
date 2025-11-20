@@ -1,0 +1,149 @@
+Version history
+This topic lists the supported versions and a description of their behaviour. A newer version includes the behaviour of all previous versions.
+
+Version 1.2
+Adding new field message_type for all messages
+The message_type field indicates the specific type of message. Possible values include:
+
+free_text: A message composed of plain text.
+email: An email message.
+automatically_sent_template: A message automatically sent from a message template configured by the property via the extranet Messaging Preferences page. To learn more about message templates, see Setting up and scheduling templates.
+self_service_event: A structured message for self-service requests.
+request_to_book_event: A request-to-book event. You can find information on the request status in the content field, which denotes the request as expired, accepted by the property, confirmed by the guest or rejected, etc. To learn more about Request to Book, see Manage holiday rentals with Booking.com’s Request to Book feature.
+For detailed information regarding updates to the relevant endpoints, check the following documentation:
+
+GET /messages/latest
+GET /properties/{property_id}/conversations
+GET /properties/{property_id}/conversations/{conversation_id}
+GET /properties/{property_id}/conversations/type/{conversation_type}
+GET /messages/search/result/{job_id}
+Including new attributes object
+We've introduced an optional attributes object within message entities in the response. This object provides additional details depending on the message_type:
+
+self_service_topic: Available for special and structured messages from self-service requests, indicating the following topics:
+checkin
+checkout
+change_dates_nr
+cancel_booking
+booking_basic_waive_fee
+parking
+free_text_parking
+bed_type
+extra_crib
+extra_bed
+template_id: Included for messages automatically sent from a message template configured by the property via the extranet Messaging Preferences page, providing the identifier of the template used. To learn more about message templates, see Setting up and scheduling templates.
+template_name: Included for messages automatically sent from a message template configured by the property via the extranet Messaging Preferences page, giving the name of the template.
+For detailed information regarding updates to the relevant endpoints, check the following documentation:
+
+GET /messages/latest
+GET /properties/{property_id}/conversations
+GET /properties/{property_id}/conversations/{conversation_id}
+GET /properties/{property_id}/conversations/type/{conversation_type}
+GET /messages/search/result/{job_id}
+Response body example
+The following shows the relevant information of a successful response body example:
+
+
+
+{
+    "content": "Dear Booker! Welcome to Relax Hotel and enjoy your stay!",
+    "message_id": "445082c0-3480-11ef-944b-3fb458583f03",
+    "message_type": "automatically_sent_template",
+    "sender_id": "11abe06e-df2a-5dc3-9d44-cb65a49704ed",
+    "timestamp": "2024-06-27T12:24:57.836Z",
+    "attachment_ids": [],
+    "attributes": {
+        "template_id": "10914788",
+        "template_name": "Welcome Template"
+    }
+}
+Adding guest name in metadata.name
+We've added the guest's name to the metadata.name field of the guest participant entity. You'll find this within the message or conversation objects.
+
+Guest name is optional
+The guest name might not be set in some cases. So this field is optional. In addition, guest names are not provided in Request-to-Book (RtB) conversations until a reservation is confirmed. Once the booking is confirmed, the guest's name will appear for that conversation, applying to all messages within it, including both historical and new communications.
+
+For detailed information regarding updates to the relevant endpoints, check the following documentation:
+
+GET /messages/latest
+GET /properties/{property_id}/conversations
+GET /properties/{property_id}/conversations/{conversation_id}
+GET /properties/{property_id}/conversations/type/{conversation_type}
+GET /messages/search/result/{job_id}
+Response body examples
+The following shows the relevant information in the sender object of a successful response body example:
+
+
+
+{
+    "message_id": "234d4e10-3550-11f0-90b1-3535a200ccd0",
+    "reply_to": "11abe06e-df2a-5dc3-9d44-cb65a49704ed",
+    "timestamp": "2025-05-20T07:57:55.000Z",
+    "conversation": {
+        "property_id": "1383087",
+        "conversation_id": "e0408095-cd9c-5505-ac1b-e012a5ab9dda",
+        "conversation_type": "reservation",
+        "conversation_reference": "4312539378"
+    },
+    "attachment_ids": [],
+    "sender": {
+        "participant_id": "5faa30f0-3a62-5673-a0ab-aa3d4df91a57",
+        "metadata": {
+            "participant_type": "GUEST",
+            "name": "Test Booker"
+        }
+    },
+    "content": "This is a test message from a guest"
+}
+The following shows the relevant information in the conversation participants object of a successful response body example:
+
+
+
+{
+    "conversation_id": "e0408095-cd9c-5505-ac1b-e012a5ab9dda",
+    "conversation_type": "reservation",
+    "conversation_reference": "4702057229",
+    "access": "read_only",
+    "participants": [
+        {
+            "participant_id": "11abe06e-df2a-5dc3-9d44-cb65a49704ed",
+            "metadata": {
+                "type": "property",
+                "id": "1383087"
+            }
+        },
+        {
+            "participant_id": "5dfb68f0-7c51-5f57-a49f-0f59976cdea6",
+            "metadata": {
+                "type": "guest",
+                "name": "Test Booker"
+            }
+        }
+    ],
+    "messages": [...]
+}
+Supporting Self-Service request messages
+We've added messages for self-service requests (special and structured requests) to the response to all endpoints with a GET method in v1.2, except the GET /messages/latest endpoint. These messages follow the same format as standard messages. Their message_type field is set to self_service_event. For more information, see Understanding self-service requests.
+
+Retrieving Self-Service Messages via the `GET /messages/latest` endpoint
+To receive self-service messages through the GET /messages/latest endpoint, you must activate the Enable special and structured requests (enable_self_services_messaging) feature in the Provider Portal. Note that this endpoint doesn't support retrieving these messages via a version header. After enabling this feature, self-service messages will automatically be included in responses for the following endpoints, irrespective of the API version in use:
+- GET /messages/latest
+- GET /messages/search/result/{job_id}
+- GET /properties/{property_id}/conversations
+- GET /properties/{property_id}/conversations/{conversation_id}
+- GET /properties/{property_id}/conversations/type/{conversation_type}
+If you need help with this setting, reach out to Connectivity Support.
+
+For detailed information regarding self-service request updates to the relevant endpoints, check the following documentation:
+
+GET /messages/latest
+GET /messages/search
+GET /messages/search/result/{job_id}
+GET /properties/{property_id}/conversations
+GET /properties/{property_id}/conversations/{conversation_id}
+GET /properties/{property_id}/conversations/type/{conversation_type}
+Version 1.1
+This version is reserved and does not introduce any changes to the existing endpoint behaviour.
+
+Version 1.0
+This is the default version and does not introduce any changes to the existing endpoint behaviour.

@@ -162,6 +162,116 @@ Esportata il: 2025-11-14
 
 ---
 
+### 8. `cleaningAgencies/` (Collection Root)
+**Path**: `cleaningAgencies/{agencyId}`
+
+**Campi principali**:
+- `agencyId` (string) - coincide con l'UID Firebase del proprietario dell'account agenzia
+- `hostId` (string | null) - property manager che ha collegato l'agenzia
+- `displayName` (string)
+- `email` (string)
+- `phone` (string)
+- `baseLocation` (map: `{ address, city, country, lat, lng }`)
+- `skillsOffered` (array<string>)
+- `defaultShiftStart` / `defaultShiftEnd` (string HH:mm)
+- `schemaVersion` (number, default 1)
+- `createdAt` / `updatedAt` (Timestamp)
+
+**Subcollections**:
+- `invitations/{invitationId}` - inviti o link di onboarding per nuovi operatori
+
+---
+
+### 9. `cleaningStaff/` (Collection Root)
+**Path**: `cleaningStaff/{staffId}`
+
+**Campi principali**:
+- `agencyId` (string)
+- `displayName` (string)
+- `email` (string)
+- `phone` (string)
+- `status` (string) - `active | inactive | invited`
+- `skills` (array<string>) - riferimenti a `cleaningSkills`
+- `homeBase` (map: `{ lat, lng }`)
+- `availability` (map) - es: `{ monday: ['08:00-12:00', '15:00-18:00'] }`
+- `lastAssignmentAt` (Timestamp | null)
+- `createdAt` / `updatedAt`
+
+**Subcollections**:
+- `timesheets/{date}` - timbrature e ore lavorate
+
+**Indice consigliato**: `(agencyId ASC, status ASC)`
+
+---
+
+### 10. `cleaningSkills/` (Collection Root)
+**Path**: `cleaningSkills/{skillId}`
+
+**Campi principali**:
+- `agencyId` (string | null) - `null` per skill globali
+- `name` (string)
+- `description` (string)
+- `icon` (string)
+- `createdAt` / `updatedAt`
+
+---
+
+### 11. `cleaningJobs/` (Collection Root)
+**Path**: `cleaningJobs/{jobId}`
+
+**Campi principali**:
+- `agencyId` (string)
+- `hostId` (string)
+- `propertyId` (string)
+- `reservationId` (string | null)
+- `status` (string) - `pending | scheduled | in_progress | completed | cancelled`
+- `scheduledDate` (string YYYY-MM-DD)
+- `plannedStart` / `plannedEnd` (Timestamp)
+- `actualStart` / `actualEnd` (Timestamp)
+- `estimatedDurationMinutes` (number)
+- `skillsRequired` (array<string>)
+- `notes` (string)
+- `source` (string) - `email_agent | manual | sync`
+- `planId` (string | null) - riferimento a `cleaningPlans`
+- `createdAt` / `updatedAt`
+
+**Indice consigliato**: `(agencyId ASC, scheduledDate DESC, status ASC)`
+
+---
+
+### 12. `cleaningPlans/` (Collection Root)
+**Path**: `cleaningPlans/{planId}`
+
+**Campi principali**:
+- `agencyId` (string)
+- `date` (string YYYY-MM-DD)
+- `status` (string) - `draft | processing | ready | published`
+- `solverVersion` (string)
+- `inputJobs` (array<string>)
+- `assignments` (array<map>) - `[{ jobId, staffId, startTime, endTime, travelMinutes }]`
+- `metrics` (map) - `totalDistanceKm`, `utilisation`, ecc.
+- `createdAt` / `updatedAt`
+
+**Subcollections**:
+- `events/{eventId}` - log di generazione piano
+
+---
+
+### 13. `cleaningRoutes/` (Collection Root)
+**Path**: `cleaningRoutes/{routeId}`
+
+**Campi principali**:
+- `agencyId` (string)
+- `planId` (string)
+- `staffId` (string)
+- `date` (string)
+- `stops` (array<map>) - `[{ jobId, propertyId, eta, lat, lng }]`
+- `distanceKm` (number)
+- `travelTimeMinutes` (number)
+- `generatedAt` (Timestamp)
+
+---
+
 ## Relazioni tra Collections
 
 ```
@@ -176,6 +286,17 @@ reservations/{reservationId}
 
 clients/{clientId}
   └─> assignedHostId → hosts/{hostId}
+
+cleaningAgencies/{agencyId}
+  ├─> cleaningStaff/{staffId} (tramite campo agencyId)
+  ├─> cleaningJobs/{jobId}
+  ├─> cleaningPlans/{planId}
+  └─> cleaningRoutes/{routeId}
+
+cleaningJobs/{jobId}
+  ├─> properties/{propertyId}
+  ├─> reservations/{reservationId} (se collegata)
+  └─> cleaningPlans/{planId}
 ```
 
 ---
@@ -187,6 +308,7 @@ clients/{clientId}
 3. **Reservations**: Collection root `reservations/` con riferimenti a `propertyId` e `clientId`
 4. **Hosts**: Collection root `hosts/` - property manager che si registrano
 5. **Filtri**: Tutte le query filtrano per `hostId` per isolare i dati per host
+6. **Cleaning Agency**: tutte le nuove collezioni usano `agencyId` per l'isolamento dati; le regole Firestore devono consentire accesso solo ai documenti dell'agenzia autenticata.
 
 ## ⚠️ Collection Deprecata
 

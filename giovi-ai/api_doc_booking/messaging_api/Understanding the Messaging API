@@ -1,0 +1,161 @@
+Understanding the Messaging API
+The Messaging API enables you to let properties communicate with their guests.
+
+What is possible with the Messaging API?
+The Messaging API enables you to do the following:
+
+Retrieve messages and conversations in multiple ways.
+Send (and reply to) text messages.
+Reply to free text special requests.
+Upload, download, and send attachments.
+Tag conversations as no reply needed.
+Tag messages as read.
+Querying and retrieving historical messages and conversations.
+[Only available from version 1.2] Support the following special and structured requests (self-service requests):
+Manage pre-reservation messages sent during the Request-to-Book (RtB) process, before a reservation is created. This functionality is only available if you have the Enable Messaging API RTB (messaging_api_rtb_enabled) feature enabled.
+Support self-service requests. Only available from version 1.2.
+Understanding self-service requests
+Self-service requests are structured requests that guests can make after a reservation has been confirmed. You can receive these requests via the Messaging API, using v1.2 with the feature Enable special and structured requests (enable_self_services_messaging) enabled. The Messaging API enables you to respond to self-service requests with free-text messages, except for Date change and Cancel for less self-service requests which require response via the Extranet.
+
+We currently support the following self-service requests:
+
+Check-in/out time: Guests can request to change their check-in or check-out times.
+Date change: Guests can request to change their reservation dates.
+Cancel for less: Guests can request to waive cancellation fee.
+Parking: Guests can inquire about or request parking availability.
+Bed preference: Guests can specify their preferred bed type.
+Extra crib: Guests can request an additional crib for their stay.
+Extra bed: Guests can request an additional bed.
+Limitations for self-service requests
+The following limitations apply to some self-service requests:
+
+Parking request testing
+It's not possible to make and test Parking requests in our test environments.
+
+API responses and extranet deactivation
+Any message sent by the property via the API following a self-service request is considered the response:
+
+Check-in/out time
+Bed preference
+Extra crib
+Extra bed
+Sending a message through the API will deactivate the property's ability to respond via the extranet, though they will still receive an email notification about the guest's request. We recommend prioritizing responses to these specific requests via the API.
+
+Reply to Date change and Cancel for less self-service requests
+Properties must respond to Date change and Cancel for less self-service requests via the extranet, by selecting a reply among the available options.
+
+Duplicate messages in the extranet
+The property might temporarily see duplicate self-service request messages in the extranet. This is due to some messages pending migration to a new platform.
+
+Discrepancy in automatic responses
+If properties respond to self-service requests via the extranet, the system generates automatic messages. The content of these automatic responses will differ between the extranet and what's retrieved via the API.
+
+Main URL and use of shortened endpoint paths
+The Messaging API's main URL is https://supply-xml.booking.com/messaging. All shortened endpoint paths imply that you must add the main URL. For example: /messages becomes https://supply-xml.booking.com/messaging/messages in an actual request.
+
+Authentication
+The Messaging API uses the same authentication methods as other APIs.
+
+For new machine accounts you additionally need to enable access to the /messages/latest endpoint specifically.
+
+For more information, see Enable or reset messaging queue.
+
+Versioning
+The Messaging API supports versioning by receiving an Accept-Version header.
+
+Header parameter
+Header	Description	Type	Required/
+Optional	Notes
+Accept-Version	Specify the version number to get the API functionality specific to that version.	string	optional	Currently supports version 1.0 (default) and version 1.2. We have reserved version 1.1, and it does not change the endpoint behaviour.
+For more information, see the Version history page.
+Sample header
+
+
+POST 'https://supply-xml.booking.com/messaging/messages/latest' \
+--header 'Accept-Version: 1.2' \
+--header 'Authorization: Basic THVjLVNhbXVlbMblmRAdlOCghQ29qaU9pNmxlWSpIWXU9OigvS2meQpQ12puj' \
+--header 'Content-Type: application/json'
+When can properties send messages to guests?
+Properties can send messages to guests within the following time frames:
+
+From the time of booking until 7 days after the guest checkout.
+From the time of booking until 7 days after the booking is cancelled.
+If the guest messages about the booking, the property gets an additional 14-day window to reply to the guest irrespective of when the booking was cancelled or when the guest checked out.
+
+Currently, guests can send messages to properties from the time of booking till 66 days after the checkout.
+
+Self-assessment tutorial
+In this self-assessment tutorial you use the Messaging API to:
+
+Start a conversation with a guest.
+Retrieve a guest's reply.
+Send a message with an attachment.
+Tag conversations.
+Who is this for?
+You should follow this tutorial if you're any of the following:
+
+A developer who works for an existing Connectivity Partner that intends to implement the Messaging API.
+A developer who wants to estimate the time needed to implement the Messaging API.
+A developer who wants to test the functionalities of the Messaging API.
+If you want to pass certification for the Messaging API finish the tutorial and send an email to Connectivity Support with your provider ID and the specified proof (indicated in the tutorial).
+
+Tutorial requirements
+To follow this tutorial, you need a test property with an active connection that has at least one room type with availability and prices.
+
+Getting started
+Temporary change of tutorial requirements
+Booking.com has temporarily removed the possibility for guests to send attachments via messages. Therefore, before we enable the function for guests again, you don’t need to perform the following during the self-assessment:
+
+send an attachment as the guest in step 3
+retrieve the attachment you sent with the message in step 5
+Go through the following steps:
+
+Go to https://secure.booking.com/book.html?test=1;hotel_id={property_id}. Ensure that you use your test property's ID to replace {property_id}
+
+Create a test reservation by providing all the required reservation details. (If you need to add credit card information, you can use 4111111111111111.)
+This is reservation one.
+
+Message the property with an attachment as the guest using the app (or desktop).
+
+Create another test reservation, but this time do not send a message as the guest.
+This is reservation two.
+
+Regarding reservation one, perform the following actions:
+
+Retrieve the message you sent as a guest.
+Retrieve the attachment you sent with the message.
+Tag the message as read.
+Reply to the guest's message as the property.
+
+You need to show RUIDs of the above actions and screenshots of what it looks like in your system.
+
+Regarding reservation two, perform the following actions:
+
+Retrieve the (emtpy) conversation.
+Start conversation with a guest by sending a message to the conversation.
+Tag conversation as no reply needed.
+
+You need to show RUIDs of the above actions and screenshots of what it looks like in your system.
+
+Optional Steps: Self-Service Requests (v1.2)
+To test self-service requests using API version 1.2, follow these steps:
+
+Create a new test reservation. As the guest, include your estimated arrival time in the Your arrival time session during the booking process and send a free text message to the property via the app (or desktop).
+This will be referred to as "Reservation A".
+
+Regarding reservation A, perform the following actions:
+
+Retrieve guest messages for Reservation A using API v1.2.
+Prioritize the reply to the guest's "Check-in time" self-service request by sending a free text message from the property via API.
+(Note: Once you send the initial reply message, the system considers it a complete response to the self-service request and deactivates the property's ability to respond via the extranet.)
+After completing the above action, reply to the guest's free text message from the property via API.
+As the
+ guest, initiate a Date change self-service request for Reservation A using the app (or desktop).
+
+Regarding reservation A, perform the following actions:
+
+Retrieve the Date change self-service message using API v1.2. The expected response will include the text: "From Booking.com: This guest wants to modify their booking. Because of the way this request was sent, please respond via the extranet. Note: Replies sent through any other channel will not be recorded" along with the relevant dates.
+Reply to the Date change self-service request as the property via the extranet.
+(Note: You must inform properties within the messaging interface that Date change and Cancel for less self-service requests require replies via the extranet.)
+Going live
+Before you go live with your API integration, you'll need to meet certain requirements. For more information, see Going Live.

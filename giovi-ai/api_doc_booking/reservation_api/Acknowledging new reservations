@@ -1,0 +1,111 @@
+Acknowledging new reservations
+Booking.com maintains all incoming reservations specific to a provider using a dedicated queue. For OTA implementation, Booking.com waits until you acknowledge receiving the reservations successfully before removing the acknowledged reservations from the queue. Otherwise, Booking.com forwards the missed reservations as an email to the property after a specific time period.
+
+By acknowledging reservations, you confirm:
+
+Retrieving the most updated reservation details.
+Processing the retrieved reservation.
+To acknowledge new reservations
+
+
+POST 
+https://secure-supply-xml.booking.com/hotels/ota/OTA_HotelResNotif
+Use the POST OTA_HotelResNotif endpoint to acknowledge a new reservation. When acknowledging you can send one of the following status:
+
+Successfully processed - Booking.com acknowledges and removes the reservation from the queue.
+Unsuccessfully processed - Booking.com keeps the reservations in the queue until you acknowledge successfully or until the timeout period.
+Use the POST OTA_HotelResNotif endpoint to acknowledge processing the reservations.
+
+Confirm each reservation
+Make sure to confirm every reservation message in separate requests or in one request using the HotelReservationID tag multiple times.
+
+Request body parameters
+The following table describes the elements you can add in the request body:
+
+Element	Attribute	Description	Type	Required/
+Optional	Notes
+OTA_HotelResNotifRS		Root element.	object	required	
+TimeStamp		datetime	required	
+Target		Enumerated string	required	
+> HotelReservations			object	required	
+>> HotelReservation			object	required	
+>>> ResGlobalInfo			object	required	
+>>>> HotelReservationIDs		Contains the reservation IDs for acknowledgement.	object	required	
+>>>>> HotelReservationID		Contains individual reservation ID for acknowledgement	object	required	
+ResID_Value	Specifies the Booking.com reservation ID.	integer/alphanumeric	required	See the <HotelReservationIDs> element in the GET OTA_HotelResNotif response.
+The following instructions are applicable only when the OTA hotel reservation response token (ota_res_response_token) feature is enabled.
+To acknowledge a reservation that was changed since you last retrieved the reservation details, you must provide an additional HotelReservationID element with an alphanumeric value in the ResID_Value.
+You can copy and paste both the HotelReservationID elements from the GET call.
+ResID_Source	Specify the reservation source. Only applicable when the OTA hotel reservation response token feature is enabled.	object	optional	
+ResID_Type	Specifies the Booking.com Reservation type. Only applicable when the OTA hotel reservation response token feature is enabled.	enumerated string	optional	Make sure to copy and paste the <HotelReservationID> elements under the <HotelReservationIDs> from the GET response. See the OTA_HotelResNotif endpoint response.
+Can contain the following values:
+- 14: To acknowledge a new reservation
+- 18: To acknowledge a reservation that was modified since the last retrieval. When using this value, make sure to provide both the ResID_Values.
+> Success		Specifies successful processing of the reservation.	object	required if Errors is not specified	
+> Errors		Contains the error details in case of failure to process the reservation.	object	required if HotelReservations is not specified	
+>> Error		Contains information about individual errors.	object		
+Code	Specifies the error code.	string	Accepts the value: 193.	
+RecordID	Specifies the Booking.com reservation ID.	string		
+ShortText	Specifies a short error description.	string		
+Request body example
+This section contains request body examples for acknowledging both the successful and unsuccessful processing of reservations.
+
+Acknowledging successful Processing
+The following is a request body example to acknowledge successful processing:
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<OTA_HotelResNotifRS TimeStamp="2021-11-13T10:09:55" Target="Production">
+    <Success/>
+    <HotelReservations>
+       <HotelReservation>
+          <ResGlobalInfo>
+             <HotelReservationIDs>
+                <HotelReservationID ResID_Value="2354004229"/>
+             </HotelReservationIDs>
+          </ResGlobalInfo>
+       </HotelReservation>
+    </HotelReservations>
+</OTA_HotelResNotifRS>
+Acknowledging unsuccessful Processing
+The following is a request body example to acknowledge unsuccessful processing:
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<OTA_HotelResNotifRS TimeStamp="2022-10-03T10:09:55" Target="Production">
+    <Errors>
+        <Error Code="193" RecordID="1568716590" ShortText="Cancellation process failed"/>
+    </Errors>
+</OTA_HotelResNotifRS>
+<!-- RUID: [UmFuZG9tSVYkc2RlIyh9Yce1+/cI+G+pb7C0OSjMDvMV8eZlQpzLr3zTwMpAkL86fWfi+yaaYNfMbXer+VcX8uSZ5qjAiL7X5e5c3M8PjyY=] -->
+Response body example
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<OTA_HotelResNotifRS xmlns="http://www.opentravel.org/OTA/2003/05" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opentravel.org/OTA/2003/05 OTA_HotelResNotifRS.xsd" TimeStamp="2022-10-03T13:41:45+00:00" Target="Production" Version="2.001">
+<Success />
+
+</OTA_HotelResNotifRS>
+<!-- RUID: [UmFuZG9tSVYkc2RlIyh9YQMydIV8Fx+o2Wqv/rSFjVhPQmNTNQOh0DHFllDlnQOBEtga8499WE8bMlo2GY/YYsGg5ebeklLwRietn9CAsVs=] -->
+
+Response body elements
+The following table describes the response elements:
+
+Element	Attribute	Description	Type	Notes
+OTA_HotelResNotifRS		Root element.	object	
+> Success		Contains the success status of the request.	object	
+> Errors		Contains the error details.	object	
+>> Error		Contains information about individual errors.	object	
+Type	Specifies the error type.	string	
+Code	Specifies the error code.	string	
+Status	Specifies the reservation's processing status.	string	
+ShortText	Specifies a short description of the error.	string	
+RUID		Specifies the Booking.com RUID string, which is an encoded string used by the Booking.com staff to trace back any updates made before.	object	Whenever the Connectivity Partner wishes the XML-Team to look at any logfiles for debugging or the like; the RUID string needs to be provided. This will enable the Booking.com technical staff to provide Connectivity Partners with support.
+Quick Actions
+→ For troubleshooting information, see Troubleshooting and list of error codes.
+
+
+
+

@@ -1,0 +1,108 @@
+Understanding the OTA reservations process
+Although retrieving and acknowledging reservations using OTA endpoints is a simple 2-step process, it is important to consider certain corner cases while implementing the system to create a high-reliability service.
+
+The following sections capture a few common implementation scenarios and outline the steps to handle unexpected events.
+
+Retrieving reservations successfully (Ideal conditions)
+The following 2 process flow diagrams show the steps to retrieve and acknowledge new, modified, or cancelled reservations that do not change and when all systems are functioning optimally.
+
+Click on the diagram to see it in full screen. To return to the topic, click the browser's back button.
+
+Retrieve and acknowledge new reservations		Retrieve and acknowledge modified/cancelled reservations
+1. Provider calls the OTA_HotelResNotif endpoint within the timeout period to retrieve all reservations made since the last GET call.
+2. Booking.com returns an OTA_HotelResNotifRQ object with the reservations details.
+3. Provider integrates booking into their system and updates inventory.
+4. Provider calls the POST OTA_HotelResNotif endpoint to acknowledge processing the reservations.
+5. Booking.com returns a successful OTA_HotelResNotifRS message.
+6. Provider implements a short delay and begins the cycle again. We recommend leaving 20 seconds between GET OTA_HotelResNotif calls.		1. Provider calls the OTA_HotelResModifyNotif endpoint within the timeout period to retrieve modified/cancelled reservations made since the last GET call.
+2. Booking.com returns an OTA_HotelResModifyNotifRQ object with the reservations details.
+3. Provider integrates reservation changes into their system and updates inventory, if necessary.
+4. Provider calls the POST OTA_HotelResModifyNotif endpoint within the timeout period.
+5. Booking.com returns a successful OTA_HotelResModifyNotifRS message.
+6. Provider implements a short delay and begins the cycle again. We recommend leaving 20 seconds between GET OTA_HotelResModifyNotif calls.
+Encountering a modification or cancellation while acknowledging a new reservation
+The following process flow diagrams show the steps to retrieve and acknowledge a new reservation that was modified or cancelled before you could acknowledge.
+
+You can follow the same steps with the exception of the endpoints to retrieve and acknowledge a modified reservation that was once again modified or cancelled before you could acknowledge. The only change is in the endpoint. Instead of using OTA_HotelResNotif, you must use the OTA_HotelResModifyNotif endpoint.
+
+Click on the diagram to see it in full screen. To return to the topic, click the browser's back button.
+
+Encountering modification while acknowledging new reservations		Encountering cancellation while acknowledging new reservations
+1. Provider calls the OTA_HotelResNotif endpoint within the timeout period to retrieve all reservations made since the last GET call.
+2. Booking.com returns an OTA_HotelResNotifRQ object with the reservations details.
+3. Provider integrates reservation changes into their system and updates inventory.
+4. Provider acknowledges processing the reservation.
+5. Booking.com returns a successful OTA_HotelResNotifRS message. Make sure to call the OTA_HotelResModifyNotif endpoint to retrieve the reservation modification details.		1. Provider calls the OTA_HotelResNotif endpoint within the timeout period to retrieve all reservations made since the last GET call.
+2. Booking.com returns an OTA_HotelResNotifRQ object with the reservations details.
+3. Provider integrates reservation changes into their system and updates inventory.
+4. Provider acknowledges processing the reservation by calling the POST OTA_HotelResNotif endpoint.
+5. Booking.com returns a successful OTA_HotelResNotifRS message. Make sure to call the OTA_HotelResModifyNotif endpoint to retrieve the reservation modification details.
+Encountering a cancellation while acknowledging a modified reservation
+The following process diagram shows the steps to retrieve a modified reservation that was then cancelled right after you acknowledge processing it.
+
+You must enable a feature to see the 409 error
+The following steps are applicable only when you enable the feature: OTA hotel reservation response token (ota_res_response_token) using the Provider portal. If you do not enable this feature, then you can follow the steps outlined in the previous section.
+
+Click on the diagram to see it in full screen. To return to the topic, click the browser's back button.
+
+Encountering a cancellation while acknowledging a modified reservation		
+1. Provider calls the OTA_HotelResModifyNotif endpoint within the timeout period.
+2. Booking.com returns an OTA_HotelResNotifRQ object with the reservations details.
+3. Provider integrates reservation changes into their system and updates inventory, if necessary.
+4. Provider calls the POST OTA_HotelResModifyNotif endpoint to acknowledge the reservation.
+5. Booking.com returns a 409 error.
+6. Provider calls the GET OTA_HotelResModifyNotif endpoint with the specific reservation ID and hotel ID to get the latest changes.
+7. Booking.com returns the modified reservation message with two ResID_Value(s).
+8. Provider acknowledges the changes by providing both the ResID_Value(s). For more information, see Acknowledging modified or cancelled reservation.
+9. Booking returns a successful OTA_HotelResModifyNotifRS message.
+Encountering a 500 error response while retrieving or acknowledging reservations
+The following 2 process flow diagrams show the steps to retrieve and acknowledge new, modified or cancelled reservations when Booking.com systems aren't functioning optimally.
+
+Click on the diagram to see it in full screen. To return to the topic, click the browser's back button.
+
+Get a 500 error response while retrieving and acknowledging new reservations		Get a 500 error response while retrieving and acknowledging modified/cancelled reservations
+1. Provider calls the GET OTA_HotelResNotif endpoint.
+2. Booking.com servers are temporarily unavailable. Provider gets an HTTP 500 error.
+3. Provider calls the GET OTA_HotelResNotif endpoint again or until a successful response.
+4. Booking.com returns an OTA_HotelResNotifRQ object with the reservations details.
+5. Provider integrates booking into their system and updates inventory.
+6. Provider calls the POST OTA_HotelResNotif endpoint.
+7. Booking.com servers are temporarily unavailable. Provider gets an HTTP 500 error.
+8. Provider calls the POST OTA_HotelResNotif endpoint again or until a successful response.
+9. Booking.com returns a successful OTA_HotelResNotifRS message.		1. Provider calls the OTA_HotelResModifyNotif endpoint within the timeout period.
+2. Booking.com servers are temporarily unavailable and so the Providers get an HTTP 500 error.
+3. Provider calls the GET OTA_HotelResModifyNotif endpoint again or until a successful response.
+4. Booking.com returns an OTA_HotelResModifyNotifRQ object with the reservations details.
+5. Provider integrates reservation changes into their system and updates inventory.
+6. Provider calls the POST OTA_HotelResNotif endpoint.
+7. Booking.com servers are temporarily unavailable. Provider gets an HTTP 500 error.
+8. Provider calls the POST OTA_HotelResModifyNotif endpoint again or until a successful response.
+9. Booking.com returns a successful OTA_HotelResModifyNotifRS message.
+Encountering system outage while retrieving or acknowledging reservations
+The following 2 process flow diagrams show the steps that lead to Booking.com systems triggering the fallback mechanism while retrieving or acknowledging new reservations.
+
+Click on the diagram to see it in full screen. To return to the topic, click the browser's back button.
+
+Experience system outage while retrieving new reservations	Experience system outage while acknowledging modified/cancelled reservations	
+1. Provider calls the OTA_HotelResNotif endpoint within the timeout period to retrieve all reservations made since the last GET call.
+2. Booking.com servers are temporarily unavailable. Provider gets an HTTP 500 error.
+3. Booking.com experiences extended system outage.
+4. Provider calls the OTA_HotelResNotif endpoint again.
+5. Booking.com systems are still unavailable. Provider gets a HTTP 500 error.
+6. Fallback mechanism is triggered and Booking.com sends the reservations directly to the property through email.
+1. Provider calls the OTA_HotelResNotif endpoint within the timeout period to retrieve all reservations made since the last GET call.
+2. Booking.com returns an OTA_HotelResNotifRQ object with the reservations details.
+3. Provider integrates booking into their system and updates inventory.
+4. Provider calls the POST OTA_HotelResNotif endpoint to acknowledge processing the reservations.
+5. Booking.com experiences system outage before acknowledging reservations. Provider gets a HTTP 500 error
+6. Fallback mechanism is triggered and Booking.com sends the reservations directly to the property through email.
+Quick Actions
+→ To retrieve new reservations using the OTA solution, see Retrieving new reservations.
+→ To acknowledge new reservations using the OTA solution, see Acknowledging new reservations.
+
+→ To retrieve modified or cancelled reservations using the OTA solution, see Retrieving modified or cancelled reservations.
+→ To acknowledge modified or cancelled reservations using the OTA solution, see Acknowledging modified or cancelled reservations.
+
+
+
+

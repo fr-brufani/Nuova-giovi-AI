@@ -1,0 +1,313 @@
+Uploading and downloading attachments
+Attachments can only be image types. You can do the following with attachments:
+
+Uploading an attachment less than or equal to 1MB.
+Uploading an attachment more than 1MB.
+Downloading an uploaded attachment.
+Retrieving the metadata of an uploaded attachment.
+Uploading an attachment to a conversation
+
+
+POST
+https://supply-xml.booking.com/messaging/properties/{property_id}/conversations/{conversation_id}/attachments
+The POST properties/{property_id}/conversations/{conversation_id}/attachments request enables you to upload an attachment (image type), which is less than or equal to 1MB, to a specific conversation.
+
+After successfully uploading an attachment, you still have to post a message to the specified conversation to send it. See posting a message to a conversation.
+
+Path parameters
+The following table describes what elements you must add in the path request:
+
+Element	Description	Type	Required/Optional	Notes
+conversation_id	Specifies the ID of the conversation you want to upload the attachment to.	string	required	
+property_id	Specifies the ID of the property.	integer	required	
+Request body parameters
+The following table describes what elements you must add in the request body:
+
+Element	Description	Type	Required/Optional	Notes
+attachment	Contains the attachment information.	object	required	Attachments can only be image types.
+: file_name	Specifies the name of the attachment.	string	required	
+: file_content	Specifies the content of the attachment.	string	required	You must encode the file in base64.
+: file_type	Specifies the type of the attachment.	string	required	Has to be a valid MIME type. Permitted values are image/jpeg and image/png.
+: file_size	Specifies the size of the attachment in bytes.	integer	required	The base64 decoded content must be less than or equal to 1MB.
+Request body example
+The following is a request body example:
+
+
+
+{
+  "attachment": {
+      "file_name": "food.jpeg",
+      "file_content": "bmd8dM1Zs2I2H2qvIMTHHvWMFIY9Z...HG09cKPxP+lSyAFsHoMAfgtap+W0cfgOP61gH/2Q==",
+      "file_type": "image/jpeg",
+      "file_size": 30220
+  }
+}
+Response body example
+The following is a successful response body example:
+
+
+
+{
+  "errors": [],
+  "warnings": [],
+  "data": {
+      "ok": "true",
+      "attachment_id": "795e5w90-0419-11eb-a306-e506dfed6417"
+  },
+  "meta": {
+      "ruid": "UmFuZG9tSVYkc2RlIyh9YeZtlXlfGFyaSXUVOZBxzuFBEyAuoUTymmZBQBL8HJp1Sg4KYsL4sCa9K1nyyjq2Wm4Mm5oc6GVh"
+  }
+}
+Response body elements
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response data.	object	
+: ok	Indicates whether the request was successfull.	boolean	
+: attachment_id	Specifies the ID of the attachment.	string	
+Uploading a large attachment to a conversation
+
+
+POST https://supply-xml.booking.com/messaging/properties/{property_id}/conversations/{conversation_id}/attachment_chunks
+The POST /properties/{property_id}/conversations/{conversation_id}/attachment_chunks request enables you to upload an attachment (image type), which is more than 1MB and less than or equal to 10MB, to a specific conversation. You must break apart the attachment file you want to upload into chunks less than 1MB.
+
+After successfully uploading an attachment, you still have to post a message to the specified conversation to send it. See posting a message to a conversation.
+
+Ideal workflow for uploading in chunks
+To make best use of this endpoint, follow these steps:
+
+Break the attachment into chunks less than or equal to 1MB.
+Upload the first attachment chunk with the action parameter set to start (and specifiy the name, size, and type of attachment).
+The response returns an upload ID that you must use to upload the remaining attachment chunks.
+Upload the remaining attachment chunks, except for the last one, with the action parameter set to resume.
+Upload the last attachment chunk with the action parameter set to finish.
+Start again when an error occurs
+If you run into an error when uploading chunks, you should start over again with action set to start (chunk number 0).
+
+Path parameters
+The following table describes what elements you must add in the request body:
+
+Element	Description	Type	Required/Optional	Notes
+conversation_id	Specifies the ID of the conversation you want to upload the attachment to.	string	required	
+property_id	Specifies the ID of the property.	integer	required	
+Request body parameters
+The following table describes what elements you must add in the request body:
+
+Element	Description	Type	Required/Optional	Notes
+attachment	Contains the attachment information.	object	required	Attachments can only be image types.
+: action	Specifies what the phase of the upload process is.	string	required	You must use start for the first attachment chunk, then use resume until the last chunk for which you must use finish.
+: upload_id	Specifies the ID of the upload that you retrieve after uploading the first chunk with start.	object	required*	* This element is only required with action set to resume and finish.
+: file_name	Specifies the name of the attachment.	string	required	
+: file_type	Specifies the type of the attachment.	string	required	Has to be a valid MIME type. Permitted values are image/jpeg and image/png.
+: file_size	Specifies the total size of the attachment in bytes.	integer	required	Must be more than 1 MB and less than or equal to 10MB.
+: chunk	Contains the attachment chunk content.	object	required	
+:: chunk_content	Specifies the content of the attachment chunk.	string	required	You must encode the file in base64.
+:: chunk_number	Specifies the number of the attachment chunk.	string	required	The attachment's chunk number starts at 0.
+:: chunk_size	Specifies the size of the attachment chunk in bytes.	string	required	The chunk must be less than or equal to 1MB.
+Request body example
+The following are request body examples for each stage in the uploading attachment chunks process:
+
+Start
+
+
+{
+  "attachment": {
+    "action": "start",
+    "chunk": {
+      "chunk_number": 0,
+      "chunk_content": "6jc4ONP6nZ2ZIO+/Ltt3oKb6jsR/kvafzKP...9SB9R2I9/1L2n0/4lH+pBd2taxoYxoa1o/2Q==",
+      "chunk_size": 887654
+    },
+    "file_type": "image/png",
+    "file_size": 2602519,
+    "file_name": "test.png"
+  }
+}
+Resume
+
+
+{
+  "attachment": {
+    "action": "resume",
+    "upload_id": "70f676b0-0fc0-11eb-bd1d-af10278183bb",
+    "chunk": {
+      "chunk_number": 1,
+      "chunk_content": "r34tr34jc4ONP6nZwdwfdv'+3oKb6jsR/kvafzKP...9SB9R2I9/1L2n0/4lH+pBd2taxoYxoa1o/dq=",
+      "chunk_size": 879543
+    },
+    "file_type": "image/png",
+    "file_size": 2602519,
+    "file_name": "test.png"
+  }
+}
+Finish
+
+
+{
+  "attachment": {
+    "action": "finish",
+    "upload_id": "70f676b0-0fc0-11eb-bd1d-af10278183bb",
+    "chunk": {
+      "chunk_number": 2,
+      "chunk_content": "dswqd+/Ltt3oKb6jsR/kvafzKP...9SB9R2I9/1L2n0/4lH+pBd2twefewfQ==",
+      "chunk_size": 835322
+    },
+    "file_type": "image/png",
+    "file_size": 2602519,
+    "file_name": "test.png"
+  }
+}
+Response body example with start
+The following is a successful response body example:
+
+
+
+{
+  "meta": {
+      "ruid": "UmFuZG9tSVYkc2RlIyh9YQVPzSJM7C3Qb40xAeaz3rHCVM8SwJA2okmkRCaFHScL+e0ZCOlFpCeu2/PCn/z9Z4OciPg57g5d"
+  },
+  "data": {
+      "attachment_id": null,
+      "upload_id": "ab88c360-0425-11eb-a250-9fc9f2abb407",
+      "ok": "true"
+  },
+  "warnings": [],
+  "errors": []
+}
+Response body example with resume
+The following is a successful response body example:
+
+
+
+{
+    "warnings": [],
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YbmJopTsBnWOJd/bcc/NhX1asY9SXpUBN8XseXC7RbmbOlQZBLpVS8jsYY4ItxirrSDtTbeUDg2b"
+    },
+    "errors": [],
+    "data": {
+        "ok": "true",
+        "upload_id": null,
+        "attachment_id": null
+    }
+}
+Response body example with finish
+The following is a successful response body example:
+
+
+
+{
+  "meta": {
+      "ruid": "UmFuZG9tSVYkc2RlIyh9YbmJopTsBnWOblzRm5qla6/doscqJol+h1DH2cL+0RcuM9wnUHudhoGNd6ISWjEep5nEcpCRzQYP"
+  },
+  "errors": [],
+  "warnings": [],
+  "data": {
+      "attachment_id": "8a9ee7f0-0fb1-11eb-aadc-81123ea571a8",
+      "ok": "true",
+      "upload_id": null
+  }
+}
+Response body parameters
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response data.	object	
+: ok	Indicates whether the request was successfull.	boolean	
+: attachment_id	Specifies the ID of the attachment.	string	The attachment_id parameter only returns a value with action set to finish, so when the attachment has finished uploading.
+: upload_id	Specifies the ID of the upload you need for uploading the chunks other than the first one.	string	After you uploaded the first attachment chunk with start, you must use the upload_id to upload the remaining chunks. The upload_id parameter only has a value with action set to start.
+Downloading an attachment
+
+
+GET
+https://supply-xml.booking.com/messaging/properties/{property_id}/conversations/{conversation_id}/attachments/{attachment_id}
+The GET /properties/{property_id}/conversations/{conversation_id}/attachments/{attachment_id} request enables you to download an attachment.
+
+You can use the from and to query parameters if you want to download an attachment in chunks.
+
+Attachment downloading has a size limit
+Maximum allowed size of a chunk is 5MB. If the size of the attachment is more than 5MB, please download in chunks by using the from and to query parameters.
+
+Use retrieve metadata for attachment information
+To retrieve relevant attachment metadata, such as size and name, use the retrieving meta data of an uploaded attachment.
+
+Path parameters
+The following table describes what elements you must add in the request body:
+
+Element	Description	Type	Required/Optional	Notes
+conversation_id	Specifies the ID of the conversation you want to download the attachment from.	string	required	
+property_id	Specifies the ID of the property.	integer	required	
+attachment_id	Specifies the ID of the attachment you want to download.	string	required	
+Query parameters
+The following table describes what elements you must add as query parameters:
+
+Element	Description	Type	Required/Optional	Notes
+from	Specifies the starting point of what byte numbers you want to download.	integer	optional	If you want to download an attachment larger than 1MB, set the value of from to 0. Do not add to unless you want to download in chunks.
+to	Specifies the ending point of what byte numbers you want to download.	integer	optional	
+Response body example
+The following is a successful response body example:
+
+
+
+{
+    "data": {
+        "ok": "true",
+        "file_content": "/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAYEBQYFBAYGBQY..dfcw7-ll",
+        "attachment_id": "8d6547c0-0428-11eb-a52f-03d56b16926b",
+        "conversation_id": "7e706d21-7bf3-53cf-b2fb-5ef6466971e0"
+    },
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YYvm4ShJdHC4K8EVWhg/6C+8QJoMS24Ixs0yA9+6DCBLOjVv6ZCZGG21hKCwt50kgH3Skiq+vcxo"
+    },
+    "errors": [],
+    "warnings": []
+}
+Response body parameters
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response data.	object	
+: ok	Indicates whether the request was successfull.	boolean	
+: attachment_id	Specifies the ID of the attachment.	string	
+: conversation_id	Specifies the ID of the conversation.	string	
+: file_content	Specifies the content of the attachment.	string	Encoded in base64.
+Retrieving the metadata of an uploaded attachment
+
+
+GET
+https://supply-xml.booking.com/messaging/properties/{property_id}/conversations/{conversation_id}/attachments/{attachment_id}/file_info
+The GET /properties/{property_id}/conversations/{conversation_id}/attachments/{attachment_id}/file_info request enables you to retrieve the metadata of a previously uploaded attachment.
+
+Path parameters
+The following table describes what elements you must add in the request body:
+
+Element	Description	Type	Required/Optional	Notes
+conversation_id	Specifies the ID of the conversation you want to upload the attachment to.	string	required	
+property_id	Specifies the ID of the property.	integer	required	
+attachment_id	Specifies the ID of the attachment you want to download.	string	required	
+Response body example
+The following is a successful response body example:
+
+
+
+{
+    "errors": [],
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YX1b+ZfQjV8pI0EjTeelZpab12oo9QKESHCr/tki/ynnbcRuMFr9fsxyc4AIzVD6J/vGTbBAkWW0"
+    },
+    "data": {
+        "file_type": "image/jpeg",
+        "file_name": "test.jpg",
+        "file_size": 655933
+    },
+    "warnings": []
+}
+Response body parameters
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response data.	object	
+: file_name	Specifies the name of the attachment.	string	
+: file_type	Specifies the type of the attachment.	string	
+: file_size	Specifies the total size of the attachment in bytes.	integer	
+

@@ -105,6 +105,7 @@ context = GuestMessageContext(
     property_id="property-789",
     reservation_id="reservation-789",
     property_name="Villa Bella Vista",
+    property_data={},
     client_name="Mario Rossi",
     client_email="mario.rossi@example.com",
 )

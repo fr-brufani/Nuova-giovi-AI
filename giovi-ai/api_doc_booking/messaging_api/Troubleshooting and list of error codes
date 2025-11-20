@@ -1,0 +1,17 @@
+Troubleshooting and list of error codes
+Working with errors
+This section captures a list of common HTTP errors you might encounter and possible solutions to fix them.
+
+HTTP Error Code	Error Text	Reason	Possible Fix
+HTTP 401	Access denied	The credentials provided in the request was not sufficient for a successful authentication check.	To fix a failed authentication request, see the Authentication page.
+HTTP 403	This account doesn't have access to this property	Possible reasons are, you are trying to send updates:
+- for a property with the wrong hotel ID.
+- using machine acco
+unt that do not have access to the specified hotel ID.
+- for a property which is no longer connected to your interface.	Make sure to specify the correct hotel ID or check your machine account credentials. You can then follow the steps:
+1. Check if the property is connected to you in the Provider Portal.
+2. Check if the connection status is active in the ‘Properties’ tab in the Provider Portal, using the property ID.
+3. Check if the property is added to the machine account you use under ‘Machine Accounts’ in the Provider Portal.
+To know more about how to use the Provider Portal for the above actions, take a look at this self-help guide.
+HTTP 429	To many requests	Possible reason may be that there are to many API calls to the Messaging API.	Try calling the endpoint after some time.
+HTTP 500	Internal server error	Possible reason may be that Booking.com systems are experiencing temporary outage.	Try calling the endpoint after some time.

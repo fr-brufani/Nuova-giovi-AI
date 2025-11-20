@@ -5,7 +5,6 @@ from email_agent_service.parsers.airbnb_message import AirbnbMessageParser
 from email_agent_service.parsers.base import EmailContent
 
 AIRBNB_CONFIRM_TEXT = """
-Subject: Prenotazione confermata - Edward Cadagin arriverà il 10 set
 CODICE DI CONFERMA HMYQBXYTNP
 Check-in mer 10 set
 Check-out ven 10 ott
@@ -13,8 +12,13 @@ TOTALE (EUR) 5.816,00 €
 IMPERIAL SUITE LUXURY PERUGIA PIENO CENTRO STORICO
 """
 
+AIRBNB_CONFIRM_NO_LABEL_TEXT = """
+CODICE DI CONFERMA HMM5AE9MXB
+gio 3 set 2026   sab 5 set 2026
+TOTALE (EUR) 318,00 €
+"""
+
 AIRBNB_CONFIRM_TEMPLATE_TEXT = """
-Subject: Prenotazione confermata - Francesco arriverà il 3 set
 CODICE DI CONFERMA HMM5AE9MXB
 Check-in         Check-out
                 =20
@@ -57,6 +61,7 @@ def test_airbnb_confirmation_parser():
     assert parsed.kind == "airbnb_confirmation"
     assert parsed.reservation is not None
     assert parsed.reservation.reservation_id == "HMYQBXYTNP"
+    assert parsed.reservation.guest_name == "Edward Cadagin"
     assert parsed.reservation.total_amount == 5816.00
     assert parsed.reservation.currency == "EUR"
 
@@ -77,6 +82,24 @@ def test_airbnb_confirmation_parser_handles_template_spacing():
     assert parsed.reservation.check_in is not None
     assert parsed.reservation.check_out is not None
     assert parsed.reservation.total_amount == 318.00
+
+
+
+def test_airbnb_confirmation_parser_extracts_dates_without_labels():
+    parser = AirbnbConfirmationParser()
+    content = build_message(
+        "Prenotazione confermata - Carlo Verdi arriverà il 3 set",
+        "Airbnb <automated@airbnb.com>",
+        AIRBNB_CONFIRM_NO_LABEL_TEXT,
+    )
+
+    assert parser.matches(content)
+    parsed = parser.parse(content)
+
+    assert parsed.reservation is not None
+    assert parsed.reservation.check_in is not None
+    assert parsed.reservation.check_out is not None
+    assert parsed.reservation.check_in < parsed.reservation.check_out
 
 def test_airbnb_message_parser():
     parser = AirbnbMessageParser()

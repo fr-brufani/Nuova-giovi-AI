@@ -1,0 +1,255 @@
+Searching messages
+Message queries enable you to search for messages by property or within a specified date range. These queries can be very intensive and slow, so you should only use the following endpoints when you missed or lost messages using the /messages/latest endpoint.
+
+Querying messages workflow
+To make best use of the message queries, you should:
+
+Set up a query to return a specific batch of messages.
+The endpoint returns a job id.
+Consult the status of the query with the job ID to see whether it is ready to be retrieved.
+Retrieve the batch of messages with the same call once the status changed to ready.
+Creating a message query to retrieve messages
+
+
+GET
+https://supply-xml.booking.com/messaging/messages/search
+The GET /messages/search request enables you to create a query to retrieve specific messages.
+
+Message queries expire after 48 hours
+After a message query is ready, the job ID expires after 48 hours. That means you must create a new message query if you want to retrieve those messages again.
+
+Comparing response changes between v1.0 and v1.2
+The GET /messages/search endpoint has two versions currently. The following are the possible changes when migrating from v1.0 to v1.2.
+
+Default API behaviour (v1.0)	New API behaviour (v1.2)	Notes
+Does not support self-service requests.	Supports self-service requests. For example, after booking a reservation when a guest sends a self-service request, you can use Messaging API to retrieve the message. The API adds self-service messages in the response to related GET /messages/search/result/{job_id} requests.	You must includes an Accept-version header with a value set to 1.2 in the request. Otherwise, responses to the GET /messages/search/result/{job_id} requests related to the search will not include self-service request messages.
+Query parameters
+At least one parameter required
+If you create a query, you must use at least one query parameter. If you do not, you receive a 400 response.
+
+The following table describes what elements you must add in the request path:
+
+Element	Description	Type	Required/Optional	Notes
+before	Specifies the date and time until when you want to retrieve messages.	string	optional	Follows the ISO 8601 standard in UTC: YYYY-MM-DDThh:mm:ss.mmmZ. Specified time is included. Should be a date in the past. Defaults to current date and time or 90 days after after time if present.
+
+For example, when the current date is Aug 18, 2025 with no after specified, the API retrieves messages from May 20, 2025 to Aug 18, 2025, covering a 90-day range. If an after date is specified as Jan 1, 2025, then the API retrieves messages from Jan 1, 2025 to Apr 1, 2025, maintaining the 90-day range. For a more recent date range, when after is specified as Aug 17, 2025, the API retrieves messages from Aug 17, 2025 to Aug 18, 2025, defaulting to current time instead of maintaining the 90 day range.
+
+The maximum date range is 90 days. However, we highly suggest specifying narrowing down the date range to the specific time you need to backfill messages for.
+after	Specifies the date and time after which you want to retrieve messages.	string	optional	Follows the ISO 8601 standard in UTC: YYYY-MM-DDThh:mm:ss.mmmZ. Specified time is included. Should be a date in the past. Defaults to 90 days before current date and time or before time if present.
+
+For example, when the current date is Aug 18, 2025 with no before specified, the API retrieves messages from May 20, 2025 to Aug 18, 2025. When a before date is specified as Aug 10, 2025, the API retrieves messages from May 12, 2025 to Aug 10, 2025, again maintaining the 90-day range.
+
+The maximum date range is 90 days. However, we highly suggest narrowing down the date range to the specific time you need to backfill messages for.
+property_id	Specifies the ID of the property you want to retrieve messages for.	string	optional	
+order_by	Indicates whether you want the messages order in ascending (oldest first) or descending (most recent first) order.	string	optional	Possible values: asc or desc.
+Response body example
+The following is a successful response body example:
+
+
+
+{
+  "data": {
+      "expires_at": "2021-01-01T14:52:38.860Z[GMT]",
+      "ok": true,
+      "job_id": "a934b220-4aae-11eb-83e9-8f4bc4c2528d"
+  },
+  "errors": [],
+  "warnings": [],
+  "meta": {
+      "ruid": "UmFuZG9tSVYkc2RlIyh9YYX5KO46o0C5R5CiotKrM4awgb8DeWP40oDQG6OR6x4lvYqbLiGYUQHR5EgyMmTTT8xAnK2feAdc"
+  }
+}
+Response body elements
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response object.	object	
+: ok	Indicates whether the request was successfull.	boolean	
+: job_id	Specifies the ID of the message query.	string	You need this ID to first consult the status of the message query.
+: expires_at	Specifies when the query expires.	string	The query expires after 48 hours.
+Retrieving the messages from message query
+
+
+GET
+https://supply-xml.booking.com/messaging/messages/search/result/{job_id}
+The GET /messages/search/result/{job_id} request enables you to retrieve the batch of messages with the job ID. If the query is not ready yet, you can retrieve the current status of the query.
+
+Comparing response changes between v1.0 and v1.2
+The GET /messages/search/result/{job_id} endpoint has two versions currently. The following are the possible changes when migrating from v1.0 to v1.2.
+
+Default API behaviour (v1.0)	New API behaviour (v1.2)	Notes
+Does not support self-service requests.	Supports self-service requests. For example, after booking a reservation when a guest sends a self-service request, you can use Messaging API to retrieve the message.	You must includes an Accept-version header with a value set to 1.2 in both the GET /messages/search and the related GET /messages/search/result/{job_id} requests. Otherwise, responses to the GET /messages/search/result/{job_id} requests related to the search will not include self-service request messages.
+Does not include field message_type in the response.	Includes field message_type for all messages.	
+Does not include attributes object in the response.	Includes an optional attributes object within message entities in the response.	
+Does not include guest name in the response.	Includes guest name in the sender object.	Guest names are not provided in Request-to-Book (RtB) conversations until a reservation is confirmed. Once the booking is created, the guest's name will appear for that conversation, applying to all messages within it, including both historical and new communications.
+Path parameters
+The following table describes what elements you must add in the request path:
+
+Element	Description	Type	Required/Optional	Notes
+job_id	Specifies the ID of the message query you must use to retrieve the messages.	integer	required	
+Query parameters
+The following table describes what elements you can add as a query:
+
+Element	Description	Type	Required/Optional	Notes
+page_id	Specifies the page number.	string	optional	
+Response body examples
+The following is a successful response body example using v1.2:
+
+
+
+{
+    "errors": [],
+    "data": {
+        "ok": true,
+        "messages": [
+            {
+                "content": "Hello World",
+                "property_id": "8011855",
+                "message_id": "ae3869e0-6bec-11ed-891d-51acf195687b",
+                "message_type": "free_text",
+                "timestamp": "2022-11-24T11:39:39.774Z",
+                "attachment_ids": [],
+                "sender": {
+                    "metadata": {
+                        "name": "A test Property",
+                        "participant_type": "hotel"
+                    },
+                    "participant_id": "f8b14984-c3cd-557e-9d72-1e8f3vady49d"
+                },
+                "conversation": {
+                    "conversation_type": "reservation",
+                    "conversation_id": "055ceb8d-e518-5e90-ad98-29d60e61f860",
+                    "conversation_reference": "3417130690"
+                }
+            },
+            {
+                "content": "Custom content. \nSupports new line and \"quotes\". ",
+                "property_id": "6314570",
+                "message_id": "3b9be6y0-85f4-11ed-8ed3-7d2f2a089692",
+                "message_type": "automatically_sent_template",
+                "attributes": {
+                    "template_id": "12345",
+                    "template_name": "Welcome Template"
+                },
+                "timestamp": "2022-12-27T14:39:13.694Z",
+                "attachment_ids": [],
+                "sender": {
+                    "metadata": {
+                        "name": "A test Hotel",
+                        "participant_type": "hotel"
+                    },
+                    "participant_id": "6589db7a-5325-5ec4-b4fe-90398c928c22"
+                },
+                "conversation": {
+                    "conversation_id": "26e11a6f-9843-5a1f-8876-48bd8ea54d32",
+                    "conversation_reference": "2371422380",
+                    "conversation_type": "reservation"
+                }
+            }
+        ],
+        "next_page_id": ""
+    },
+    "warnings": [],
+    "meta": {
+        "ruid": "UmFuZG090l7VYkc2RlIyh9YbXOFK03PYclTnK6wVHEieAtwtRloZgirf59kGDml0PlwGoYZxgZfjKg4Lcq0qqDeVBucNNdoZSD"
+    }
+}
+The following is a successful response body example using v1.0:
+
+
+
+{
+    "errors": [],
+    "data": {
+        "ok": true,
+        "messages": [
+            {
+                "content": "Hello World",
+                "property_id": "8011855",
+                "message_id": "ae3869e0-6bec-11ed-891d-51acf195687b",
+                "timestamp": "2022-11-24T11:39:39.774Z",
+                "attachment_ids": [],
+                "sender": {
+                    "metadata": {
+                        "name": "A test Property",
+                        "participant_type": "hotel"
+                    },
+                    "participant_id": "f8b14984-c3cd-557e-9d72-1e8f3vady49d"
+                },
+                "conversation": {
+                    "conversation_type": "reservation",
+                    "conversation_id": "055ceb8d-e518-5e90-ad98-29d60e61f860",
+                    "conversation_reference": "3417130690"
+                }
+            },
+            {
+                "content": "Custom content. \nSupports new line and \"quotes\". ",
+                "property_id": "6314570",
+                "message_id": "3b9be6y0-85f4-11ed-8ed3-7d2f2a089692",
+                "timestamp": "2022-12-27T14:39:13.694Z",
+                "attachment_ids": [],
+                "sender": {
+                    "metadata": {
+                        "name": "A test Hotel",
+                        "participant_type": "hotel"
+                    },
+                    "participant_id": "6589db7a-5325-5ec4-b4fe-90398c928c22"
+                },
+                "conversation": {
+                    "conversation_id": "26e11a6f-9843-5a1f-8876-48bd8ea54d32",
+                    "conversation_reference": "2371422380",
+                    "conversation_type": "reservation"
+                }
+            }
+        ],
+        "next_page_id": ""
+    },
+    "warnings": [],
+    "meta": {
+        "ruid": "UmFuZG090l7VYkc2RlIyh9YbXOFK03PYclTnK6wVHEieAtwtRloZgirf59kGDml0PlwGoYZxgZfjKg4Lcq0qqDeVBucNNdoZSD"
+    }
+}
+Response body parameters
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response data.	object	
+: ok	Indicates whether the request was successfull.	string	
+: next_page_id	Specifies the ID of the next page of messages.	string	Empty string means the page is the last page of results.
+: messages	Contains the message elements.	array	
+:: message_id	Specifies the unique ID of a message.	string	
+:: message_type	Specifies the type of the message.	string	Returned only when the request includes an Accept-version header with a value set to 1.2.
+Possible values are:
+- free_text: A message composed of plain text.
+- email: An email message.
+- automatically_sent_template: A message automatically sent from a message template configured by the property via the extranet Messaging Preferences page.
+- self_service_event: A structured message for self-service actions.
+- request_to_book_event: A request-to-book event. You can find information on the request status in the content field, which denotes the request as expired, accepted by the property, confirmed by the guest or rejected, etc.
+:: content	Specifies the content of the message.	string	
+:: timestamp	Specifies the time when the message was sent.	string	Follows the ISO 8601 standard in UTC: YYYY-MM-DDThh:mm:ss.mmmZ.
+:: attachment_ids	Contains the IDs of the attachment.	array	
+:: attributes	Contains the message attributes.	object	Returned only when the request includes an Accept-version header with a value set to 1.2.
+::: self_service_topic	Contains the self-service topic for messages that represent self-service events.	string	Possible values include:
+- checkin
+- checkout
+- change_dates_nr
+- cancel_booking
+- booking_basic_waive_fee
+- parking
+- free_text_parking
+- bed_type
+- extra_crib
+- extra_bed
+::: template_id	Contains the identifier of the message template used that was configured by the property via the extranet Messaging Preferences page.	string	
+::: template_name	Contains the name of the message template used that was configured by the property via the extranet Messaging Preferences page.	string	
+:: property_id	Specifies the ID of the property.	string	
+:: sender	Contains information on the participant that sent the message.	object	
+::: participant_id	Specifies the participant ID of a participant.	string	
+
+::: metadata	Contains information of a participant.	object	
+:::: participant_type	Specifies the type of the participant.	string	Possible values are hotel or guest.
+:::: name	Specifies the name of the property.	string	
+:: conversation	Contains the conversation elements.	array	
+::: conversation_id	Specifies the unique ID of a conversation.	string	
+::: conversation_reference	Specifies the ID of the reservation or Booking Request Object this conversation is referring to.	integer	For conversations with pre-reservation messages, the Booking Request Object id serves as the conversation_reference until the booking is confirmed.
+::: conversation_type	Specifies the type of the conversation.	string	Possible values: reservation or request_to_book.

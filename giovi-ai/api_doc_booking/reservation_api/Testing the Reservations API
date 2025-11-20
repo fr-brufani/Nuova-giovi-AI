@@ -1,0 +1,25 @@
+Testing the Reservations API
+How can I make test reservations?
+You can try out our tutorial to create a test reservation.
+
+What are the reservation details I need to show to properties in my system?
+You need to show the following reservation details in your system to the properties:
+
+Booking.com reservation ID
+Reservation status
+Time stamps of reservation creation and latest change
+Booker details: name, alias email address, phone number, Genius status
+Guest names
+Number of guests, and a breakdown by number of adults and children
+Room name and room type ID (RoomTypeCode in OTA and room>id in BXML)
+Rate name and rate ID, including meal plan and cancellation policy
+Promotions applied
+Rate-rewriting
+Add-ons booked by the guest
+Check-in and check-out date
+Price per room night
+Additional taxes and fees
+Total price including all taxes and fees
+Smoking preference
+Additional information and special requests made by the guest
+Credit card data (in a PCI-compliant format)

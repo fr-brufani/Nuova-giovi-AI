@@ -1,23 +1,17 @@
 {
-  "flutter": {
-    "platforms": {
-      "android": {
-        "default": {
-          "projectId": "giovi-ai",
-          "appId": "1:228376111127:android:d4f070c90943b139c8d452",
-          "fileOutput": "android/app/google-services.json"
-        }
-      },
-      "dart": {
-        "lib/firebase_options.dart": {
-          "projectId": "giovi-ai",
-          "configurations": {
-            "android": "1:228376111127:android:d4f070c90943b139c8d452",
-            "web": "1:228376111127:web:e0b19d32638e3f6cc8d452"
-          }
-        }
+  "hosting": {
+    "public": "frontend/giovi-ai-working-app/dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
       }
-    }
+    ]
   },
   "functions": [
     {
@@ -32,19 +26,6 @@
         "*.local"
       ]
     }
-  ],
-  "hosting": {
-    "public": "frontend/giovi-ai-working-app/dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
+  ]
 }
+

@@ -1,0 +1,285 @@
+Managing messages
+This section describes all the possible actions related to messaging between properties and guests after the guest makes a reservation.
+
+Deprecation notice
+We are soon going to deprecate retrieving latest messages by using the GET /messages/latest endpoint and confirming their retrieval using the PUT /messages endpoint. Use the Connectivity Notification Service to receive notifications of newly created messages. For more information, see Managing notifications.
+
+Enable or reset messaging queue
+The Messaging API queues messages on the machine-account level. This means that the queue is shared between all the properties added to the same machine account.
+
+When migrating your machine account to use the token-based authentication, and for any new machine account, you must enable access to the /messages/latest endpoint in order to use it. This creates a new messaging queue for the machine account. To do this:
+
+Navigate to the Provider Portal.
+Go to Administration > Machine account.
+Select the Endpoint access tab.
+Enable access to the /messages/latest endpoint.
+To reset the messaging queue and clear all messages:
+
+Disable access to the endpoint for the machine account. See the above steps.
+Wait approximately one hour.
+Re-enable access to the endpoint.
+Duplicate messaging queues
+Enabling the /messages/latest endpoint across multiple machine accounts that include the same properties can lead to messages getting duplicated in multiple queues.
+
+Retrieving and confirming retrieval of messages
+Every message is part of a specific conversation, which exists between two participants: Property and Guest. To make best use of this messaging queue you should:
+
+Retrieve messages from the queue.
+Confirm the successful retrieval of those messages.
+This removes the retrieved messages from the queue.
+Follow steps one and two until the queue is empty.
+→ If you have missed or lost messages because of an outage or any other issue, you must retrieve those messages with message queries. See searching messages.
+
+Use a cron job to handle duplicate messages
+It is possible that you retrieve messages you have already confirmed. To avoid storing duplicate messages, use a cron job that periodically filters these out.
+
+Retrieving messages
+
+
+GET
+https://supply-xml.booking.com/messaging/messages/latest
+The GET /messages/latest request enables you to retrieve messages from a message queue on the machine account level. Every request retrieves a maximum of 100 messages.
+
+Only links approved in the messaging security link setting are returned in API response
+Our messaging security link setting in the Extranet enables properties to specify which links can be shared with their guests in messages. We show the approved links and remove unapproved links in the messages to guests and the API responses. For more information about the Extranet setting, see About the messaging security link setting.
+
+Comparing response changes between v1.0 and v1.2
+The GET /messages/latest endpoint has two versions currently. The following are the possible changes when migrating from v1.0 to v1.2.
+
+Default API behaviour (v1.0)	New API behaviour (v1.2)	Notes
+Does not support self-service requests.	Supports self-service requests. For example, after booking a reservation when a guest sends a self-service request, you can use Messaging API to retrieve the message.	To receive self-service messages through the GET /messages/latest endpoint, you must activate the Enable special and structured requests (enable_self_services_messaging) feature in the Provider Portal.
+Does not include field message_type in the response.	Includes field message_type for all messages.	
+Does not include attributes object in the response.	Includes an optional attributes object within message entities in the response.	
+Does not include guest name in the response.	Includes guest name in the name field within the sender object.	Guest names are not provided in Request-to-Book (RtB) conversations until a reservation is confirmed. Once the booking is created, the guest's name will appear for that conversation, applying to all messages within it, including both historical and new communications.
+Response body examples
+The following is a successful response body example using v1.2:
+
+
+
+{
+  "meta": {
+      "ruid": "UmFuZG9tSVYkc2RlIyh9YYuVGLmv13PUyJxscfB0hkeHNTLsLGWx80EBzv17yAX3aPO0RTlx5doV49/NRR4qak1qNsDGbilP"
+  },
+  "warnings": [],
+  "data": {
+      "messages": [
+          {
+              "sender": {
+                  "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                  "metadata": {
+                      "participant_type": "property",
+                      "name": "Test Property"
+                  }
+              },
+              "timestamp": "2020-08-17T16:54:19.270Z",
+              "conversation": {
+                  "conversation_type": "reservation",
+                  "conversation_id": "f3a9c29d-480d-5f5b-a6c0-65451e335353",
+                  "conversation_reference": "3812391309"
+              },
+              "message_id": "4ad42260-e0aa-11ea-b1cb-0975761ce091",
+              "message_type": "free_text",
+              "content": "Property message 4f523a42-dc9a-40a5-9ab7-fd2db124cd62",
+              "attachment_ids": [ "522a4d03-bb1b-4e89-af88-e16dd2375d74" ]
+          },
+          {
+              "sender": {
+                  "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                  "metadata": {
+                      "participant_type": "property",
+                      "name": "Test Property"
+                  }
+              },
+              "timestamp": "2020-08-17T16:57:09.124Z",
+              "conversation": {
+                  "conversation_id": "f3a9c29d-480d-5f5b-a6c0-65451e335353",
+                  "conversation_type": "reservation",
+                  "conversation_reference": "3812391309"
+              },
+              "message_id": "b011cc40-e0aa-11ea-b928-810a184a831c",
+              "message_type": "automatically_sent_template",
+              "attributes": {
+                  "template_id": "12345",
+                  "template_name": "Welcome Template"
+              },
+              "content": "Property message 53fef484-ec48-487f-acb6-5086ef87da29",
+              "attachment_ids": []
+
+          },
+          {
+              "conversation": {
+                  "conversation_id": "f3a9c29d-480d-5f5b-a6c0-65451e335353",
+                  "conversation_type": "reservation",
+                  "conversation_reference": "3812391309"
+              },
+              "message_id": "485f18d0-e0ac-11ea-8397-c17827e93026",
+              "message_type": "free_text",
+              "attachment_ids": [],
+              "content": "Property message 81ec552a-7c13-416e-a58e-937283ab6bfc",
+              "sender": {
+                  "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                  "metadata": {
+                      "participant_type": "property",
+                      "name": "Test Property"
+                  }
+              },
+              "timestamp": "2020-08-17T17:08:34.141Z"
+          }
+      ],
+      "ok": true,
+      "number_of_messages": 3,
+      "timestamp": "2020-08-18T14:59:26.41"
+  },
+  "errors": []
+}
+The following is a successful response body example using v1.0:
+
+
+
+{
+    "meta": {
+        "ruid": "UmFuZG9tSVYkc2RlIyh9YYuVGLmv13PUyJxscfB0hkeHNTLsLGWx80EBzv17yAX3aPO0RTlx5doV49/NRR4qak1qNsDGbilP"
+    },
+    "warnings": [],
+    "data": {
+        "messages": [
+            {
+                "sender": {
+                    "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                    "metadata": {
+                        "participant_type": "property"
+                    }
+                },
+                "timestamp": "2020-08-17T16:54:19.270Z",
+                "conversation": {
+                    "conversation_type": "reservation",
+                    "conversation_id": "f3a9c29d-480d-5f5b-a6c0-65451e335353",
+                    "conversation_reference": "3812391309"
+                },
+                "message_id": "4ad42260-e0aa-11ea-b1cb-0975761ce091",
+                "content": "Property message 4f523a42-dc9a-40a5-9ab7-fd2db124cd62",
+                "attachment_ids": [ "522a4d03-bb1b-4e89-af88-e16dd2375d74" ]
+            },
+            {
+                "sender": {
+                    "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                    "metadata": {
+                        "participant_type": "property"
+                    }
+                },
+                "timestamp": "2020-08-17T16:57:09.124Z",
+                "conversation": {
+                    "conversation_id": "f3a9c29d-480d-5f5b-a6c0-65451e335353",
+                    "conversation_type": "reservation",
+                    "conversation_reference": "3812391309"
+                },
+                "message_id": "b011cc40-e0aa-11ea-b928-810a184a831c",
+                "content": "Property message 53fef484-ec48-487f-acb6-5086ef87da29",
+                "attachment_ids": []
+  
+            },
+            {
+                "conversation": {
+                    "conversation_id": "f3a9c29d-480d-5f5b-a6c0-65451e335353",
+                    "conversation_type": "reservation",
+                    "conversation_reference": "3812391309"
+                },
+                "message_id": "485f18d0-e0ac-11ea-8397-c17827e93026",
+                "attachment_ids": [],
+                "content": "Property message 81ec552a-7c13-416e-a58e-937283ab6bfc",
+                "sender": {
+                    "participant_id": "9f6be5fd-b3a8-5691-9cf9-9ab6c6217327",
+                    "metadata": {
+                        "participant_type": "property"
+                    }
+                },
+                "timestamp": "2020-08-17T17:08:34.141Z"
+            }
+        ],
+        "ok": true,
+        "number_of_messages": 3,
+        "timestamp": "2020-08-18T14:59:26.41"
+    },
+    "errors": []
+  }
+  
+  
+Response body elements
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+data	Contains the response object.	object	
+: ok	Indicates whether the request was successfull.	boolean	
+: timestamp	Specifies the time of the request.	string	Follows the ISO 8601 standard in UTC: YYYY-MM-DDThh:mm:ss.mmmZ.
+: number_of_messages	Specifies the number of messages that you retrieved from the message queue.	integer	
+: messages	Contains the messages that you retrieved from the message queue.	array	
+:: message_id	Specifies the unique ID of a message.	string	
+:: message_type	Specifies the type of the message.	string	Returned only when the request includes an Accept-version header with a value set to 1.2.
+Possible values are:
+- free_text: A message composed of plain text.
+- email: An email message.
+- automatically_sent_template: A message automatically sent from a message template configured by the property via the extranet Messaging Preferences page.
+- self_service_event: A structured message for self-service actions.
+- request_to_book_event: A request-to-book event. You can find information on the request status in the content field, which denotes the request as expired, accepted by the property, confirmed by the guest or rejected, etc.
+:: content	Specifies the content of the message.	string	
+:: timestamp	Specifies the time when the message was sent.	string	Follows the ISO 8601 standard in UTC: YYYY-MM-DDThh:mm:ss.mmmZ.
+:: reply_to	Specifies the ID of the participant to which the message is sent to.	string	
+:: attachment_ids	Contains the IDs of the attachments, which are part of the message.	array	
+:: attributes	Contains the message attributes.	object	Returned only when the request includes an Accept-version header with a value set to 1.2.
+::: self_service_topic	Contains the self-service topic for messages that represent self-service events.	string	Possible values include:
+- checkin
+- checkout
+- change_dates_nr
+- cancel_booking
+- booking_basic_waive_fee
+- parking
+- free_text_parking
+- bed_type
+- extra_crib
+- extra_bed
+::: template_id	Contains the identifier of the message template used that was configured by the property via the extranet Messaging Preferences page.	string	
+::: template_name	Contains the name of the message template used that was configured by the property via the extranet Messaging Preferences page.	string	
+:: sender	Contains information related to the participant that sent the message.	object	
+::: participant_id	Specifies the ID of the participant that sent the message.	string	
+::: metadata	Contains additional information on the participant that sent the message.	object	
+:::: name	Specifies the name of the participant that sent the message.	string	Returned for guest participants when the request includes an Accept-version header with a value set to 1.2.
+:::: participant_type	Specifies the type of the participant that sent the message.	string	Possible values are property or GUEST.
+:::: email_alias	Specifies the email of the participant that sent the message.	string	
+:: conversation	Contains information related to the conversation to which the message belongs.	object	
+::: property_id	Specifies the property ID of the property to which the conversation applies.	integer	
+::: conversation_id	Specifies the ID of the conversation.	string	
+::: conversation_reference	Specifies the ID of the reservation or Booking Request Object to which this conversation applies.	string	For conversations with pre-reservation messages, the Booking Request Object id serves as the conversation_reference until the booking is confirmed.
+::: conversation_type	Specifies the type of the conversation.	string	Possible values: reservation or request_to_book.
+Confirming the retrieval of messages
+
+
+PUT https://supply-xml.booking.com/messaging/messages
+The PUT /messages request enables you to confirm the successfull retrieval of messages, removing those messages from the queue. Therefore this step is necessary to retrieve the remaining messages.
+
+→ If you want to understand the user flow, see retrieving and confirming retrieval of messages.
+
+Query parameters
+The following table describes the query parameters you must add:
+
+Element	Description	Type	Required/Optional	Notes
+number_of_messages	Specifies the amount of messages you want to confirm you retrieved.	integer	required	You can find the value of number_of_messages in the response body when you retrieve latest messages.
+Response body example
+The following is a successful response body example:
+
+
+
+{
+  "data": {
+      "ok": true
+  },
+  "warnings": [],
+  "meta": {
+      "ruid": "UmFuZG9tSVYkc2RlIyh9YYuVGLmv13PUghc+S+Hxf8kDDmE9pIcRJDlql5z0me9U/HXdkK5kNTwJ8bDjF+xIG9WsKhazErNd"
+  },
+  "errors": []
+}
+Response body elements
+The following table describes the response elements:
+
+Element	Description	Type	Notes
+ok	Indicates whether the request was successfull.	boolean	

@@ -1,7 +1,7 @@
 # 📊 Riepilogo Stato Progetto Email Agent Service
 
-**Data:** 14 Novembre 2025  
-**Stato Attuale:** Step 1-4 ✅ Completati | Step 5-8 ⏳ Da Implementare
+**Data:** 20 Novembre 2025  
+**Stato Attuale:** Step 1-4 ✅ Completati | Step 5-8 ⏳ Da Implementare | **Nuovo Modulo Agenzie in corso**
 
 ---
 
@@ -352,6 +352,56 @@
 
 ---
 
-**Ultimo Aggiornamento:** 14 Novembre 2025  
+**Ultimo Aggiornamento:** 20 Novembre 2025  
 **Prossimo Step:** Step 5 - Gmail Watch
+
+---
+
+## 🧽 Nuovo Modulo Agenzie di Pulizie (MVP)
+
+### Obiettivo
+Offrire alle agenzie partner un portale operativo dedicato per staff, lavori e pianificazione, mantenendo lo stesso stack (Firebase + React + FastAPI) e condividendo gli stessi dati degli host/property manager.
+
+### Flussi Utente Principali
+1. **Login**  
+   - Property Manager (`role: property_manager`) → UI attuale  
+   - Agenzia di Pulizie (`role: cleaning_agency`) → nuovo percorso `/agency/*`
+2. **Dashboard**  
+   - KPI: staff attivo, lavori programmati/completati, percorsi ottimizzati.  
+3. **Gestione Staff**  
+   - CRUD operatori, competenze associate, disponibilità giornaliera.  
+4. **Lavori & Pianificazione**  
+   - Lista lavori importati (da email-agent-service o manuali), stati (in attesa, in corso, completati).  
+   - Generazione piano giornaliero con algoritmo VRP semplificato che rispetta vincoli di checkout e competenze.  
+5. **Percorsi Ottimizzati**  
+   - Visualizzazione di rotte e tempi stimati per ogni squadra/operatore.  
+6. **Competenze**  
+   - Catalogo competenze richieste dagli host, assegnazione allo staff e matching con i lavori.
+
+### Scope Tecnico MVP
+- **Backend dedicato (`giovi-ai/agency-service`)**  
+  - FastAPI + Firebase Admin SDK  
+  - Endpoints REST per: stats dashboard, staff, lavori, piani, percorsi, competenze  
+  - Scheduler/worker per generare piani e sincronizzarsi con email-agent-service.
+- **Firestore**  
+  - Nuove collezioni: `cleaningAgencies`, `cleaningStaff`, `cleaningJobs`, `cleaningPlans`, `cleaningRoutes`, `cleaningSkills`.  
+  - Tutte indicizzate per `agencyId` e collegate agli host/property esistenti.
+- **Frontend (`/agency/*`)**  
+  - Layout con sidebar dedicata e pagine: Dashboard, Staff, Lavori, Pianificazione, Percorsi, Competenze.  
+  - Hook React Query (`useAgencyStats`, `useCleaningJobs`, ecc.) collegati al nuovo servizio.
+- **Sicurezza**  
+  - Guardie di ruolo lato frontend + regole Firestore mirate per impedire accessi trasversali.
+- **Ops**  
+  - Feature flag per rollout graduale, telemetria KPI e checklist QA/E2E aggiornate.
+
+### Deliverable Chiave
+1. Documentazione aggiornata (`FIRESTORE_STRUCTURE.md`, playbook onboarding agenzia).  
+2. Nuovo servizio FastAPI con test minimi e integrazione CI.  
+3. UI completa e navigabile per le agenzie.  
+4. Hook di sincronizzazione iniziale con email-agent-service per popolare la coda lavori.
+
+**Responsabile:** Team Platform  
+**Stato:** 🚧 In sviluppo (20/11)  
+**Prossimi step immediati:** modellazione dati, scaffolding servizio e first release UI dashboard.
+
 
