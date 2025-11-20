@@ -8,6 +8,12 @@ from email_agent_service.app import create_app
 from email_agent_service.config.settings import get_settings
 from email_agent_service.repositories.host_email_integrations import HostEmailIntegrationRecord
 from email_agent_service.api.routes.integrations import get_oauth_service, get_backfill_service
+from email_agent_service.models import (
+    GmailBackfillPreviewResponse,
+    GmailIntegrationStartResponse,
+    PropertyPreview,
+    ReservationPreview,
+)
 from email_agent_service.services.integrations.oauth_service import (
     OAuthStateExpiredError,
     OAuthStateNotFoundError,
@@ -56,10 +62,35 @@ class FakeOAuthService:
 class FakeBackfillService:
     def __init__(self):
         self.called_with = None
+        self.preview_called_with = None
 
-    def run_backfill(self, host_id: str, email: str):
-        self.called_with = (host_id, email)
+    def run_backfill(self, host_id: str, email: str, force: bool = False, firestore_client=None):
+        self.called_with = (host_id, email, force)
         return []
+
+    def run_preview(self, host_id: str, email: str, force: bool = False, firestore_client=None):
+        self.preview_called_with = (host_id, email, force)
+        return GmailBackfillPreviewResponse(
+            processed=1,
+            properties=[
+                PropertyPreview(
+                    name="Imported Property",
+                    occurrences=1,
+                    matchedPropertyIds=[],
+                    sampleReservationIds=["abc-123"],
+                )
+            ],
+            reservations=[
+                ReservationPreview(
+                    reservationId="abc-123",
+                    propertyName="Imported Property",
+                    guestName="Foo Bar",
+                    checkIn=None,
+                    checkOut=None,
+                    kind="airbnb_confirmation",
+                )
+            ],
+        )
 
 
 def test_start_gmail_integration_returns_authorization_url(client, monkeypatch):
@@ -139,7 +170,43 @@ def test_backfill_endpoint(client):
 
     assert response.status_code == 200
     assert response.json() == {"processed": 0, "items": []}
-    assert fake_service.called_with == ("host-xyz", "host@example.com")
+    assert fake_service.called_with == ("host-xyz", "host@example.com", False)
+
+    client.app.dependency_overrides.clear()
+
+
+def test_backfill_preview_endpoint(client):
+    fake_service = FakeBackfillService()
+    client.app.dependency_overrides[get_backfill_service] = lambda: fake_service
+
+    response = client.post(
+        "/integrations/gmail/host@example.com/backfill/preview",
+        params={"host_id": "host-xyz"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "processed": 1,
+        "properties": [
+            {
+                "name": "Imported Property",
+                "occurrences": 1,
+                "matchedPropertyIds": [],
+                "sampleReservationIds": ["abc-123"],
+            }
+        ],
+        "reservations": [
+            {
+                "reservationId": "abc-123",
+                "propertyName": "Imported Property",
+                "guestName": "Foo Bar",
+                "checkIn": None,
+                "checkOut": None,
+                "kind": "airbnb_confirmation",
+            }
+        ],
+    }
+    assert fake_service.preview_called_with == ("host-xyz", "host@example.com", False)
 
     client.app.dependency_overrides.clear()
 

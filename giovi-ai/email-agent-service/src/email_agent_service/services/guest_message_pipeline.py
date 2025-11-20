@@ -51,15 +51,25 @@ class GuestMessagePipelineService:
         self,
         parsed_email: ParsedEmail,
         host_id: str,
+        is_new_reservation: bool = False,
     ) -> tuple[bool, Optional[str]]:
         """
         Verifica se un messaggio guest deve essere processato (auto-reply abilitato).
+        
+        Args:
+            parsed_email: Email parsata
+            host_id: ID dell'host
+            is_new_reservation: Se True, il messaggio è allegato a una nuova prenotazione
         
         Returns:
             tuple[should_process, client_id]: True se deve essere processato, ID del cliente
         """
         if parsed_email.kind not in ["booking_message", "airbnb_message"]:
-            return False, None
+            # Se è una conferma con messaggio, gestiscila come nuovo messaggio da prenotazione
+            if parsed_email.kind in ["airbnb_confirmation", "scidoo_confirmation"] and parsed_email.guest_message:
+                is_new_reservation = True
+            else:
+                return False, None
 
         if not parsed_email.guest_message:
             logger.warning(f"[PIPELINE] Messaggio guest senza guestMessage: {parsed_email.metadata.gmail_message_id}")
@@ -80,14 +90,21 @@ class GuestMessagePipelineService:
             )
             return False, None
 
-        # Verifica autoReplyEnabled
+        # Se è un messaggio da nuova prenotazione, verifica il flag dell'host
+        if is_new_reservation:
+            host_auto_reply_enabled = self._check_host_auto_reply_to_new_reservations(host_id)
+            if not host_auto_reply_enabled:
+                logger.info(f"[PIPELINE] Auto-reply a nuove prenotazioni disabilitato per host {host_id}")
+                return False, client_id
+
+        # Verifica autoReplyEnabled del cliente
         auto_reply_enabled = self._check_auto_reply_enabled(client_id)
 
         if not auto_reply_enabled:
             logger.info(f"[PIPELINE] Auto-reply disabilitato per cliente {client_id}")
             return False, client_id
 
-        logger.info(f"[PIPELINE] ✅ Messaggio guest da processare: clientId={client_id}, reservationId={reservation_id}")
+        logger.info(f"[PIPELINE] ✅ Messaggio guest da processare: clientId={client_id}, reservationId={reservation_id}, isNewReservation={is_new_reservation}")
         return True, client_id
 
     def extract_context(
@@ -217,10 +234,24 @@ class GuestMessagePipelineService:
                 return False
 
             client_data = client_doc.to_dict()
-            # Default: True se non specificato
-            return client_data.get("autoReplyEnabled", True)
+            # Default: False per nuovi clienti
+            return client_data.get("autoReplyEnabled", False)
         except Exception as e:
             logger.error(f"[PIPELINE] Errore verifica autoReplyEnabled per {client_id}: {e}", exc_info=True)
+            return False
+
+    def _check_host_auto_reply_to_new_reservations(self, host_id: str) -> bool:
+        """Verifica se l'host ha abilitato auto-reply per messaggi in nuove prenotazioni."""
+        try:
+            host_doc = self._firestore_client.collection("hosts").document(host_id).get()
+            if not host_doc.exists:
+                return False
+
+            host_data = host_doc.to_dict()
+            # Default: False (non abilitato di default)
+            return host_data.get("autoReplyToNewReservations", False)
+        except Exception as e:
+            logger.error(f"[PIPELINE] Errore verifica autoReplyToNewReservations per host {host_id}: {e}", exc_info=True)
             return False
 
     def _find_reservation(self, host_id: str, reservation_id: str, thread_id: Optional[str] = None, source: Optional[str] = None) -> Optional[dict]:

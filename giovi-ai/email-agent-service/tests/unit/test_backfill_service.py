@@ -73,6 +73,15 @@ class FakeProcessedRepo:
         self.items.add((integration_email, message_id))
 
 
+class FakePersistenceService:
+    def __init__(self):
+        self.saved = []
+
+    def save_parsed_email(self, parsed_email, host_id: str):
+        self.saved.append((host_id, parsed_email.kind))
+        return {"saved": True}
+
+
 def test_backfill_service_parses_messages(monkeypatch):
     body = """
     Subject: Confermata - Prenotazione ID 5958915259 - Booking
@@ -116,6 +125,7 @@ def test_backfill_service_parses_messages(monkeypatch):
         integration_repository=FakeIntegrationRepo(record),
         processed_repository=FakeProcessedRepo(),
         parsing_engine=engine,
+        persistence_service=FakePersistenceService(),
     )
 
     results = service.run_backfill(host_id="host-123", email="host@example.com")
@@ -126,3 +136,55 @@ def test_backfill_service_parses_messages(monkeypatch):
     assert first.reservation is not None
     assert first.reservation.reservation_id == "5958915259"
 
+
+def test_backfill_service_preview(monkeypatch):
+    body = """
+    Subject: Confermata - Prenotazione ID 5958915259 - Booking
+    Nome Ospite=09Brufani Francesco
+    Struttura Richiesta=09Piazza Danti Perugia Centro
+    Data di Check-in=0915/01/2026
+    Data di Check-out=0918/01/2026
+    Ospiti=092 Adulti
+    Totale Prenotazione: 349,55 €
+    """
+    email_bytes = build_email_bytes(
+        "Confermata - Prenotazione ID 5958915259 - Booking",
+        "reservation@scidoo.com",
+        "host@example.com",
+        body,
+    )
+
+    gmail_service = FakeGmailService(email_bytes)
+    engine = EmailParsingEngine(
+        [
+            BookingConfirmationParser(),
+            BookingMessageParser(),
+            AirbnbConfirmationParser(),
+            AirbnbMessageParser(),
+        ]
+    )
+    record = HostEmailIntegrationRecord(
+        email="host@example.com",
+        host_id="host-123",
+        provider="gmail",
+        encrypted_access_token=Fernet(get_settings().token_encryption_key.encode()).encrypt(b"token").decode(),
+        encrypted_refresh_token=None,
+        scopes=[
+            "https://www.googleapis.com/auth/gmail.readonly",
+        ],
+        token_expiry=None,
+    )
+
+    service = GmailBackfillService(
+        gmail_service=gmail_service,
+        integration_repository=FakeIntegrationRepo(record),
+        processed_repository=FakeProcessedRepo(),
+        parsing_engine=engine,
+        persistence_service=FakePersistenceService(),
+    )
+
+    preview = service.run_preview(host_id="host-123", email="host@example.com")
+
+    assert preview.processed == 1
+    assert preview.reservations[0].reservation_id == "5958915259"
+    assert preview.reservations[0].property_name in (None, "Piazza Danti Perugia Centro")

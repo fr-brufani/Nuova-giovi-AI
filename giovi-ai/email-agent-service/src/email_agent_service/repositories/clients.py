@@ -106,6 +106,7 @@ class ClientsRepository:
             "createdAt": firestore.SERVER_TIMESTAMP,
             "lastUpdatedAt": firestore.SERVER_TIMESTAMP,
             "importedFrom": imported_from,
+            "autoReplyEnabled": False,  # Default: autoreply disabilitato per nuovi clienti
         }
 
         if name:
@@ -121,4 +122,79 @@ class ClientsRepository:
 
         new_doc_ref.set(client_data)
         return new_doc_ref.id, True
+
+    def reassign_property(
+        self,
+        host_id: str,
+        from_property_id: str,
+        to_property_id: str,
+    ) -> int:
+        """Aggiorna tutti i clienti assegnati alla property di origine."""
+        clients_ref = self._client.collection("clients")
+        query = (
+            clients_ref.where("assignedHostId", "==", host_id)
+            .where("assignedPropertyId", "==", from_property_id)
+        )
+        docs = list(query.get())
+        updated = 0
+        for doc in docs:
+            doc.reference.set(
+                {
+                    "assignedPropertyId": to_property_id,
+                    "lastUpdatedAt": firestore.SERVER_TIMESTAMP,
+                },
+                merge=True,
+            )
+            updated += 1
+        return updated
+
+    def unassign_property(
+        self,
+        host_id: str,
+        property_id: str,
+    ) -> int:
+        """Rimuove l'associazione dei clienti a una property (imposta assignedPropertyId a null).
+        
+        Returns:
+            Numero di clienti aggiornati.
+        """
+        clients_ref = self._client.collection("clients")
+        query = (
+            clients_ref.where("assignedHostId", "==", host_id)
+            .where("assignedPropertyId", "==", property_id)
+        )
+        docs = list(query.get())
+        updated = 0
+        for doc in docs:
+            doc.reference.set(
+                {
+                    "assignedPropertyId": firestore.DELETE_FIELD,
+                    "lastUpdatedAt": firestore.SERVER_TIMESTAMP,
+                },
+                merge=True,
+            )
+            updated += 1
+        return updated
+
+    def delete_by_property(
+        self,
+        host_id: str,
+        property_id: str,
+    ) -> int:
+        """Elimina tutti i clienti associati a una property.
+        
+        Returns:
+            Numero di clienti eliminati.
+        """
+        clients_ref = self._client.collection("clients")
+        query = (
+            clients_ref.where("assignedHostId", "==", host_id)
+            .where("assignedPropertyId", "==", property_id)
+        )
+        docs = list(query.get())
+        deleted = 0
+        for doc in docs:
+            doc.reference.delete()
+            deleted += 1
+        return deleted
 

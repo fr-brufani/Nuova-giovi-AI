@@ -13,6 +13,18 @@ TOTALE (EUR) 5.816,00 €
 IMPERIAL SUITE LUXURY PERUGIA PIENO CENTRO STORICO
 """
 
+AIRBNB_CONFIRM_TEMPLATE_TEXT = """
+Subject: Prenotazione confermata - Francesco arriverà il 3 set
+CODICE DI CONFERMA HMM5AE9MXB
+Check-in         Check-out
+                =20
+gio 3 set 2026   sab 5 set 2026
+                =20
+16:00            11:00
+TOTALE (EUR) 318,00 €
+MAGGIORE SUITE - DUOMO DI PERUGIA
+"""
+
 AIRBNB_MESSAGE_TEXT = """
 Gentile Lorenzo, grazie mille per le informazioni. Abbiamo un'altra domanda.
 Tradotto automaticamente. Segue il messaggio originale:
@@ -48,6 +60,23 @@ def test_airbnb_confirmation_parser():
     assert parsed.reservation.total_amount == 5816.00
     assert parsed.reservation.currency == "EUR"
 
+
+def test_airbnb_confirmation_parser_handles_template_spacing():
+    parser = AirbnbConfirmationParser()
+    content = build_message(
+        "Prenotazione confermata - Francesco arriverà il 3 set",
+        "Airbnb <automated@airbnb.com>",
+        AIRBNB_CONFIRM_TEMPLATE_TEXT,
+    )
+
+    assert parser.matches(content)
+    parsed = parser.parse(content)
+
+    assert parsed.reservation is not None
+    assert parsed.reservation.reservation_id == "HMM5AE9MXB"
+    assert parsed.reservation.check_in is not None
+    assert parsed.reservation.check_out is not None
+    assert parsed.reservation.total_amount == 318.00
 
 def test_airbnb_message_parser():
     parser = AirbnbMessageParser()

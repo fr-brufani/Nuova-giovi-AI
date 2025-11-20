@@ -1,17 +1,22 @@
 from __future__ import annotations
 
 import base64
+import logging
+import time
 from datetime import timezone
 from typing import Optional
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import Resource, build
+from googleapiclient.errors import HttpError
 
 from ..config.settings import get_settings
 from ..repositories import HostEmailIntegrationRepository
 from ..repositories.host_email_integrations import HostEmailIntegrationRecord
 from ..utils.crypto import decrypt_optional_text, decrypt_text
+
+logger = logging.getLogger(__name__)
 
 
 class GmailService:
@@ -39,8 +44,47 @@ class GmailService:
         
         return credentials
 
+    def _refresh_credentials_if_needed(self, integration: HostEmailIntegrationRecord, credentials: Credentials) -> None:
+        """Refresh delle credenziali se necessario, con retry e timeout più lunghi."""
+        if credentials.valid:
+            return
+        
+        if not credentials.refresh_token:
+            raise ValueError("Refresh token non disponibile. È necessario riconnettere l'integrazione Gmail.")
+        
+        logger.info("[GMAIL_SERVICE] Token scaduto, tentativo refresh...")
+        
+        # Crea un Request object con timeout più lungo
+        request = Request()
+        max_retries = 3
+        retry_delay = 2  # secondi
+        
+        for attempt in range(max_retries):
+            try:
+                credentials.refresh(request)
+                logger.info(f"[GMAIL_SERVICE] ✅ Token refresh riuscito (tentativo {attempt + 1})")
+                
+                # Salva il nuovo token in Firestore
+                if credentials.token:
+                    from ..utils.crypto import encrypt_text
+                    encrypted_token = encrypt_text(credentials.token)
+                    self._integration_repo.update_access_token(integration.email, encrypted_token)
+                    logger.info("[GMAIL_SERVICE] Nuovo access token salvato in Firestore")
+                
+                return
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    logger.warning(f"[GMAIL_SERVICE] ⚠️ Refresh fallito (tentativo {attempt + 1}/{max_retries}): {e}. Retry tra {retry_delay}s...")
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+                else:
+                    logger.error(f"[GMAIL_SERVICE] ❌ Refresh fallito dopo {max_retries} tentativi: {e}")
+                    raise
+
     def _gmail(self, integration: HostEmailIntegrationRecord) -> Resource:
         credentials = self._build_credentials(integration)
+        # Refresh delle credenziali se necessario prima di creare il service
+        self._refresh_credentials_if_needed(integration, credentials)
         service = build("gmail", "v1", credentials=credentials, cache_discovery=False)
         return service
 
@@ -52,22 +96,58 @@ class GmailService:
         page_token: Optional[str] = None,
         max_results: int = 100,
     ) -> dict:
-        gmail = self._gmail(integration)
-        request = (
-            gmail.users()
-            .messages()
-            .list(userId="me", q=query, pageToken=page_token, maxResults=max_results)
-        )
-        return request.execute()
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                gmail = self._gmail(integration)
+                request = (
+                    gmail.users()
+                    .messages()
+                    .list(userId="me", q=query, pageToken=page_token, maxResults=max_results)
+                )
+                return request.execute()
+            except HttpError as e:
+                if e.resp.status == 401 and attempt < max_retries - 1:
+                    # Token scaduto, prova a refreshare e riprova
+                    logger.warning(f"[GMAIL_SERVICE] 401 Unauthorized (tentativo {attempt + 1}), refresh token e retry...")
+                    credentials = self._build_credentials(integration)
+                    self._refresh_credentials_if_needed(integration, credentials)
+                    time.sleep(1)
+                    continue
+                raise
+            except Exception as e:
+                if "timeout" in str(e).lower() and attempt < max_retries - 1:
+                    logger.warning(f"[GMAIL_SERVICE] Timeout (tentativo {attempt + 1}), retry...")
+                    time.sleep(2)
+                    continue
+                raise
 
     def get_message_raw(self, integration: HostEmailIntegrationRecord, message_id: str) -> dict:
-        gmail = self._gmail(integration)
-        return (
-            gmail.users()
-            .messages()
-            .get(userId="me", id=message_id, format="raw", metadataHeaders=["Subject"])
-            .execute()
-        )
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                gmail = self._gmail(integration)
+                return (
+                    gmail.users()
+                    .messages()
+                    .get(userId="me", id=message_id, format="raw", metadataHeaders=["Subject"])
+                    .execute()
+                )
+            except HttpError as e:
+                if e.resp.status == 401 and attempt < max_retries - 1:
+                    # Token scaduto, prova a refreshare e riprova
+                    logger.warning(f"[GMAIL_SERVICE] 401 Unauthorized per message {message_id} (tentativo {attempt + 1}), refresh token e retry...")
+                    credentials = self._build_credentials(integration)
+                    self._refresh_credentials_if_needed(integration, credentials)
+                    time.sleep(1)
+                    continue
+                raise
+            except Exception as e:
+                if "timeout" in str(e).lower() and attempt < max_retries - 1:
+                    logger.warning(f"[GMAIL_SERVICE] Timeout per message {message_id} (tentativo {attempt + 1}), retry...")
+                    time.sleep(2)
+                    continue
+                raise
 
     def get_integration(self, email: str) -> Optional[HostEmailIntegrationRecord]:
         return self._integration_repo.get_by_email(email)

@@ -1,0 +1,181 @@
+# Regole per gli Agenti Cursor
+
+## Contesto Importante
+
+L'utente **NON ha competenze come sviluppatore di codice** e quindi:
+- **NON supervisiona il codice** durante lo sviluppo
+- Supervisiona **solo il risultato finale** tramite la UI (es. testa i flussi completi)
+- Gli agenti hanno **MASSIMA AUTONOMIA** nell'implementazione delle task
+
+## Principio Fondamentale: Massima Autonomia
+
+Gli agenti devono essere **il più autonomi possibile**. Chiedere all'utente solo cose che **NON possono fare autonomamente**.
+
+---
+
+## Quando Lavorare sul Codice vs Quando Solo Spiegare
+
+### 🚀 LAVORARE SUL CODICE (Implementare)
+Quando l'utente usa comandi di **AZIONE**, procedi con l'implementazione completa:
+- "procedi", "modifica", "fai", "implementa", "cambia", "aggiungi", "rimuovi"
+- "risolvi", "correggi", "crea", "sviluppa", "configura"
+- Task espliciti di sviluppo: "crea una funzione per...", "aggiungi il campo...", "modifica il flusso..."
+
+**In questi casi:**
+- ✅ Implementa completamente la soluzione
+- ✅ Non chiedere conferma sui dettagli tecnici
+- ✅ Prendi decisioni tecniche autonome (mantenendo coerenza con il progetto)
+- ✅ Esegui TUTTI i test autonomi possibili
+- ✅ Completa la task end-to-end
+
+### 📖 SOLO SPIEGARE/Analizzare (NON Implementare)
+Quando l'utente usa comandi di **ANALISI/SPIEGAZIONE**, fornisci solo spiegazioni:
+- "spiegami", "dimmi", "analizza", "descrivimi", "fammi capire"
+- "perché", "come funziona", "cosa succede se", "che differenza c'è"
+- Domande di comprensione: "che problema c'è?", "dove si trova...?", "cosa fa questo codice?"
+
+**In questi casi:**
+- ✅ Fornisci spiegazioni dettagliate e chiare
+- ✅ Analizza il problema/il codice/il flusso
+- ✅ Suggerisci SOLUZIONI ma NON implementarle
+- ❌ **NON iniziare a modificare il codice autonomamente** (per evitare decisioni sbagliate senza supervisione)
+- ✅ Se l'utente vuole l'implementazione dopo la spiegazione, aspetta il comando esplicito di azione
+
+---
+
+## Test e Qualità del Codice
+
+### ✅ Test Autonomi OBBLIGATORI
+Dopo ogni implementazione, gli agenti DEVONO eseguire **automaticamente**:
+
+1. **Linting**
+   - Eseguire il linter del progetto
+   - Correggere automaticamente tutti gli errori di lint
+   - Rispettare le regole di formattazione
+
+2. **Test da Terminale**
+   - Eseguire test unitari/integrazione se presenti
+   - Verificare che il codice compili senza errori
+   - Controllare che non ci siano errori di build
+
+3. **Controlli di Base**
+   - Verificare sintassi e type checking
+   - Controllare import/export corretti
+   - Verificare che non ci siano riferimenti a file/moduli inesistenti
+
+### 🔍 Test Manuali - Proattività Richiesta
+Gli agenti devono essere **PROATTIVI** nel chiedere test manuali quando appropriato:
+
+- Dopo implementazioni di flussi UI completi
+- Quando un comportamento può essere verificato solo tramite interazione umana
+- Per verifiche funzionali end-to-end che richiedono la UI
+- Chiedere: "Per completare la verifica, potrebbe essere utile un test manuale di [specifica cosa]. Vuoi procedere?"
+
+---
+
+## Analisi di Problemi e Debugging
+
+### 🔧 Autonomia nell'Analisi
+Gli agenti devono essere **completamente autonomi** nell'analisi:
+
+1. **Analisi Log**
+   - Leggere e analizzare log di errore autonomamente
+   - Usare il terminale per cercare log, grep, tail, ecc.
+   - Analizzare stack trace e error messages
+   - Identificare la causa dei problemi senza chiedere
+
+2. **Debugging Attivo**
+   - Usare strumenti di debugging autonomamente
+   - Analizzare il flusso del codice
+   - Tracciare variabili e stati
+   - Usare il terminale per verifiche (curl, test API, ecc.)
+
+3. **Raccolta Informazioni**
+   - Estrarre informazioni dai file del progetto
+   - Analizzare configurazioni
+   - Verificare dipendenze e versioni
+   - Cercare nel codebase per pattern simili
+
+### 📱 Richiesta Proattiva di Informazioni
+Gli agenti devono **chiedere autonomamente** informazioni che non possono ottenere da soli:
+
+- **Log della console del browser** (quando servono per debug frontend)
+- **Output di test manuali** (quando l'utente li esegue su richiesta dell'agente)
+- **Comportamenti osservati nella UI** che non sono evidenti dai log
+- **Esempi di input/output reali** per testare funzionalità
+
+**Formato della richiesta:** "Per completare l'analisi, ho bisogno di [specifica cosa]. Puoi fornirmelo?"
+
+---
+
+## Credenziali e Configurazioni
+
+Quando servono **API key, credenziali, configurazioni** per completare un task:
+
+- ✅ **Chiedere autonomamente** all'utente quando necessario
+- ✅ Specificare chiaramente cosa serve e perché
+- ✅ Non bloccare il lavoro su altri aspetti mentre si aspetta (lavorare su parti che non richiedono credenziali)
+- ✅ Proporre dove salvare le credenziali (es. file .env, variabili d'ambiente)
+
+---
+
+## Stile di Comunicazione
+
+### Report Chiari
+Quando completi una task, fornisci un **riepilogo chiaro**:
+- ✅ Cosa è stato implementato/modificato
+- ✅ Test eseguiti e risultati
+- ✅ Eventuali problemi riscontrati e come risolti
+- ✅ Cosa richiede verifica manuale (se applicabile)
+- ✅ Eventuali credenziali/configurazioni necessarie
+
+### Evitare Gergo Tecnico Eccessivo
+- Usa termini tecnici quando necessario, ma spiega quando appropriato
+- Per decisioni tecniche complesse, spiega brevemente il perché della scelta
+
+---
+
+## Contesto del Progetto
+
+Questo progetto è "Giovi AI", un sistema di gestione di alloggi.
+
+### ⚠️ Servizio Principale di Lavoro
+**Il servizio principale su cui si lavora è:**
+- **`giovi-ai/email-agent-service/`** - Servizio Python per gestione email e parsing prenotazioni (Airbnb, Booking.com)
+  - Questo è il servizio **PERTINENTE** e su cui concentrarsi
+
+### ❌ Servizi NON Pertinenti (ignorare)
+Gli agenti NON devono concentrarsi o modificare:
+- `giovi-ai/core-service/` - NON pertinente per il lavoro corrente
+- `giovi-ai/giovi/gemini-proxy-service/` - NON pertinente per il lavoro corrente
+- Altri servizi non esplicitamente menzionati
+
+### 📁 Frontend
+Il frontend si trova in:
+- **`frontend/`** (cartella nella root del progetto) - Documentazione e riferimento frontend
+
+### Stack Tecnologico
+- **Email Agent Service**: Python (FastAPI)
+- Integrazione con Firebase/Firestore
+- Integrazione con Gmail API
+- Parsing email conferme prenotazioni (Airbnb, Booking.com)
+
+### Coerenza Tecnica
+Quando implementi modifiche:
+- ✅ Mantieni la coerenza con l'architettura esistente
+- ✅ Segui le convenzioni di naming già presenti
+- ✅ Rispetta la struttura modulare dei servizi
+- ✅ Usa gli stessi pattern di gestione errori e logging esistenti
+- ✅ Prendi decisioni tecniche autonome che si allineano al progetto
+
+---
+
+## Riepilogo Regole Chiave
+
+1. ✅ **Massima autonomia** - Chiedere solo ciò che non puoi fare autonomamente
+2. ✅ **Codice solo su comandi di azione** - "procedi", "modifica", "fai" = implementa; "spiegami", "analizza" = solo spiegazione
+3. ✅ **Test autonomi sempre** - Linting, test da terminale, controlli base
+4. ✅ **Proattività nei test manuali** - Chiedere quando serve verifica manuale
+5. ✅ **Autonomia nel debugging** - Analizzare log, usare terminale, risolvere problemi
+6. ✅ **Richiedere info proattivamente** - Log browser, test manuali, comportamenti UI
+7. ✅ **Chiedere credenziali autonomamente** - Quando servono per completare il task

@@ -171,11 +171,20 @@ class ReservationsRepository:
         
         # Aggiorna lo status a "cancelled"
         doc = docs[0]
+        existing_data = doc.to_dict() or {}
+        imported_from = existing_data.get("importedFrom", "unknown")
+        
+        # Messaggio cancellation appropriato in base alla fonte
+        if imported_from == "booking_api":
+            cancellation_details = f"Cancellata via Booking.com API {datetime.now().isoformat()}"
+        else:
+            cancellation_details = f"Cancellata via email Airbnb {datetime.now().isoformat()}"
+        
         doc.reference.set(
             {
                 "status": "cancelled",
                 "lastUpdatedAt": firestore.SERVER_TIMESTAMP,
-                "cancellationDetails": f"Cancellata via email Airbnb {datetime.now().isoformat()}",
+                "cancellationDetails": cancellation_details,
             },
             merge=True,
         )
@@ -217,4 +226,71 @@ class ReservationsRepository:
             merge=True,
         )
         return True
+    
+    def cancel_reservation_by_reservation_id_booking(
+        self,
+        reservation_id: str,
+        host_id: str,
+    ) -> bool:
+        """
+        Cancella una prenotazione cercandola per reservationId (per Booking.com API).
+        
+        Returns:
+            True se la prenotazione è stata trovata e cancellata, False altrimenti
+        """
+        # Riutilizza metodo esistente (comportamento identico)
+        return self.cancel_reservation_by_reservation_id(reservation_id=reservation_id, host_id=host_id)
+
+    def reassign_property(
+        self,
+        *,
+        host_id: str,
+        from_property_id: str,
+        to_property_id: str,
+        to_property_name: Optional[str] = None,
+    ) -> int:
+        """Aggiorna tutte le prenotazioni di un host spostandole da una property ad un'altra.
+
+        Returns:
+            Numero di prenotazioni aggiornate.
+        """
+        reservations_ref = self._client.collection("reservations")
+        query = (
+            reservations_ref.where("hostId", "==", host_id)
+            .where("propertyId", "==", from_property_id)
+        )
+        docs = list(query.get())
+        updated = 0
+        for doc in docs:
+            data = {
+                "propertyId": to_property_id,
+                "lastUpdatedAt": firestore.SERVER_TIMESTAMP,
+            }
+            if to_property_name:
+                data["propertyName"] = to_property_name
+            doc.reference.set(data, merge=True)
+            updated += 1
+        return updated
+
+    def delete_by_property(
+        self,
+        host_id: str,
+        property_id: str,
+    ) -> int:
+        """Elimina tutte le prenotazioni associate a una property.
+        
+        Returns:
+            Numero di prenotazioni eliminate.
+        """
+        reservations_ref = self._client.collection("reservations")
+        query = (
+            reservations_ref.where("hostId", "==", host_id)
+            .where("propertyId", "==", property_id)
+        )
+        docs = list(query.get())
+        deleted = 0
+        for doc in docs:
+            doc.reference.delete()
+            deleted += 1
+        return deleted
 

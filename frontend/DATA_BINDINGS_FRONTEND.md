@@ -95,3 +95,5 @@ Campi attesi: `propertyId`, `clientId`, `startDate`, `endDate`, `status`, `prope
 
 Ultimo aggiornamento: 2025-11-11.
 
+
+

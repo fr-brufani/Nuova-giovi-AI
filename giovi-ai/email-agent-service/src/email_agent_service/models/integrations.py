@@ -7,7 +7,6 @@ from pydantic import BaseModel, EmailStr, Field, HttpUrl
 class GmailIntegrationStartRequest(BaseModel):
     host_id: str = Field(..., alias="hostId", min_length=1)
     email: EmailStr
-    pms_provider: Optional[str] = Field(default=None, alias="pmsProvider")
     redirect_uri: Optional[HttpUrl] = Field(default=None, alias="redirectUri")
 
 
@@ -22,7 +21,6 @@ class GmailCallbackRequest(BaseModel):
     code: str
     host_id: str = Field(..., alias="hostId", min_length=1)
     email: EmailStr
-    pms_provider: Optional[str] = Field(default=None, alias="pmsProvider")
     redirect_uri: Optional[HttpUrl] = Field(default=None, alias="redirectUri")
 
 

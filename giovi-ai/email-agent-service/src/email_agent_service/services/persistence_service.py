@@ -5,7 +5,14 @@ import logging
 from firebase_admin import firestore
 
 from ..models import ParsedEmail
-from ..repositories import ClientsRepository, PropertiesRepository, ReservationsRepository
+from ..models.booking_reservation import BookingReservation
+from ..repositories import (
+    BookingPropertyMappingsRepository,
+    ClientsRepository,
+    PropertiesRepository,
+    PropertyNameMappingsRepository,
+    ReservationsRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +24,8 @@ class PersistenceService:
         self._properties_repo = PropertiesRepository(firestore_client)
         self._clients_repo = ClientsRepository(firestore_client)
         self._reservations_repo = ReservationsRepository(firestore_client)
+        self._property_mappings_repo = PropertyNameMappingsRepository(firestore_client)
+        self._booking_property_mappings_repo = BookingPropertyMappingsRepository(firestore_client)
 
     def save_parsed_email(
         self, parsed_email: ParsedEmail, host_id: str
@@ -104,6 +113,8 @@ class PersistenceService:
         result = {
             "property_id": None,
             "property_created": False,
+            "property_mapping_id": None,
+            "property_mapping_action": None,
             "client_id": None,
             "client_created": False,
             "reservation_saved": False,
@@ -115,26 +126,78 @@ class PersistenceService:
             # Determina imported_from in base al tipo di email
             imported_from = "airbnb_email" if parsed_email.kind == "airbnb_confirmation" else "scidoo_email"
             
-            # 1. Trova/crea property
-            if reservation.property_name:
-                logger.info(f"[PERSISTENCE] Cerca/crea property: {reservation.property_name}")
-                property_id, property_created = (
-                    self._properties_repo.find_or_create_by_name(
-                        host_id=host_id,
-                        property_name=reservation.property_name,
-                        imported_from=imported_from,
-                    )
-                )
-                result["property_id"] = property_id
-                result["property_created"] = property_created
-                logger.info(f"[PERSISTENCE] Property: id={property_id}, created={property_created}")
-            else:
-                logger.warning(f"[PERSISTENCE] Property name mancante!")
+            # 1. Determina property applicando eventuali mapping
+            if not reservation.property_name:
+                logger.warning("[PERSISTENCE] Property name mancante!")
                 return {
                     **result,
                     "saved": False,
                     "reason": "no_property_name",
                 }
+
+            resolved_property_id = None
+            resolved_property_name = reservation.property_name
+
+            property_created = False
+
+            mapping = self._property_mappings_repo.get_mapping_for_name(
+                host_id=host_id,
+                extracted_name=resolved_property_name,
+            )
+
+            if mapping:
+                result["property_mapping_id"] = mapping.id
+                result["property_mapping_action"] = mapping.action
+
+                if mapping.action == "ignore":
+                    logger.info(
+                        "[PERSISTENCE] Property name %s ignorato per host %s (mapping %s)",
+                        resolved_property_name,
+                        host_id,
+                        mapping.id,
+                    )
+                    return {
+                        **result,
+                        "saved": False,
+                        "reason": "property_name_ignored",
+                        "property_name": resolved_property_name,
+                    }
+
+                if mapping.action == "map" and mapping.target_property_id:
+                    mapped_property = self._properties_repo.get_by_id(mapping.target_property_id)
+                    if mapped_property:
+                        resolved_property_id = mapping.target_property_id
+                        resolved_property_name = mapped_property.get("name", resolved_property_name)
+                        logger.info(
+                            "[PERSISTENCE] Property name %s mappato su property %s (%s)",
+                            reservation.property_name,
+                            resolved_property_name,
+                            resolved_property_id,
+                        )
+                    else:
+                        logger.warning(
+                            "[PERSISTENCE] Mapping %s punta a property %s inesistente, fallback a creazione",
+                            mapping.id,
+                            mapping.target_property_id,
+                        )
+
+            if not resolved_property_id:
+                logger.info(f"[PERSISTENCE] Cerca/crea property: {resolved_property_name}")
+                resolved_property_id, property_created = (
+                    self._properties_repo.find_or_create_by_name(
+                        host_id=host_id,
+                        property_name=resolved_property_name,
+                        imported_from=imported_from,
+                    )
+                )
+                result["property_created"] = property_created
+                logger.info(
+                    "[PERSISTENCE] Property: id=%s, created=%s",
+                    resolved_property_id,
+                    property_created,
+                )
+
+            result["property_id"] = resolved_property_id
 
             # 2. Trova/crea cliente (prima di salvare la prenotazione, così abbiamo reservation_id)
             # Nota: per ora passiamo reservation_id dopo aver creato la reservation
@@ -145,7 +208,7 @@ class PersistenceService:
                 email=reservation.guest_email,
                 name=reservation.guest_name,
                 phone=reservation.guest_phone,
-                property_id=property_id,
+                property_id=resolved_property_id,
                 reservation_id=reservation.reservation_id,
                 imported_from=imported_from,
             )
@@ -158,8 +221,8 @@ class PersistenceService:
             self._reservations_repo.upsert_reservation(
                 reservation_id=reservation.reservation_id,
                 host_id=host_id,
-                property_id=property_id,
-                property_name=reservation.property_name or "",
+                property_id=resolved_property_id,
+                property_name=resolved_property_name or "",
                 client_id=client_id,
                 client_name=reservation.guest_name,
                 start_date=reservation.check_in,
@@ -183,4 +246,296 @@ class PersistenceService:
             return result
 
         return result
+    
+    def save_booking_reservation(
+        self, reservation: BookingReservation, host_id: str
+    ) -> dict[str, str | bool]:
+        """
+        Salva una prenotazione Booking.com API in Firestore - MULTI-HOST.
+        
+        Il host_id è già stato determinato dal polling service usando mapping
+        booking_property_id → host_id.
+        
+        Args:
+            reservation: BookingReservation parsata da XML OTA
+            host_id: ID host (già mappato correttamente dal polling service)
+            
+        Returns:
+            dict con informazioni su cosa è stato salvato
+        """
+        logger.info(
+            f"[PERSISTENCE] Salvataggio prenotazione Booking.com: "
+            f"reservation_id={reservation.reservation_id}, "
+            f"property_id={reservation.property_id}, "
+            f"host_id={host_id}, "
+            f"guest={reservation.guest_info.email}"
+        )
+        
+        result = {
+            "property_id": None,
+            "property_created": False,
+            "client_id": None,
+            "client_created": False,
+            "reservation_saved": False,
+            "saved": False,
+        }
+        
+        try:
+            # 1. Trova/crea property usando booking_property_id
+            # Prima verifica se c'è mapping a internal_property_id
+            booking_mapping = self._booking_property_mappings_repo.get_by_booking_property_id(
+                reservation.property_id
+            )
+            
+            resolved_property_id = None
+            property_name = None
+            property_created = False
+            
+            if booking_mapping and booking_mapping.internal_property_id:
+                # Usa internal_property_id se mappato
+                existing_property = self._properties_repo.get_by_id(booking_mapping.internal_property_id)
+                if existing_property:
+                    resolved_property_id = booking_mapping.internal_property_id
+                    property_name = existing_property.get("name") or booking_mapping.property_name
+                    logger.info(
+                        f"[PERSISTENCE] Property trovata tramite mapping: "
+                        f"booking_property_id={reservation.property_id} → "
+                        f"internal_property_id={resolved_property_id}"
+                    )
+            
+            if not resolved_property_id:
+                # Cerca property per booking_property_id (se già esiste)
+                # Per ora creiamo nuova property con booking_property_id come nome base
+                # L'host potrà poi mapparla a una property esistente
+                property_name = booking_mapping.property_name if booking_mapping else None
+                property_display_name = property_name or f"Booking.com Property {reservation.property_id}"
+                
+                # Cerca se esiste già una property con questo nome per questo host
+                existing_properties = self._properties_repo.list_by_name(host_id, property_display_name)
+                if existing_properties:
+                    resolved_property_id = existing_properties[0]["id"]
+                    property_created = False
+                    logger.info(
+                        f"[PERSISTENCE] Property esistente trovata per nome: {property_display_name}"
+                    )
+                else:
+                    # Crea nuova property
+                    resolved_property_id, property_created = self._properties_repo.find_or_create_by_name(
+                        host_id=host_id,
+                        property_name=property_display_name,
+                        imported_from="booking_api",
+                    )
+                    logger.info(
+                        f"[PERSISTENCE] Property: id={resolved_property_id}, created={property_created}, "
+                        f"name={property_display_name}"
+                    )
+                    
+                    # Aggiorna mapping con internal_property_id
+                    if booking_mapping:
+                        self._booking_property_mappings_repo.update_mapping(
+                            booking_mapping.id,
+                            internal_property_id=resolved_property_id,
+                            property_name=property_display_name,
+                        )
+                        logger.info(
+                            f"[PERSISTENCE] Mapping aggiornato con internal_property_id: {resolved_property_id}"
+                        )
+                    else:
+                        # Crea nuovo mapping
+                        self._booking_property_mappings_repo.create_mapping(
+                            booking_property_id=reservation.property_id,
+                            host_id=host_id,
+                            internal_property_id=resolved_property_id,
+                            property_name=property_display_name,
+                        )
+                        logger.info(
+                            f"[PERSISTENCE] Nuovo mapping creato: "
+                            f"booking_property_id={reservation.property_id} → "
+                            f"internal_property_id={resolved_property_id}"
+                        )
+            
+            result["property_id"] = resolved_property_id
+            result["property_created"] = property_created
+            
+            # 2. Trova/crea cliente
+            logger.info(
+                f"[PERSISTENCE] Cerca/crea cliente: email={reservation.guest_info.email}, "
+                f"name={reservation.guest_info.name}"
+            )
+            client_id, client_created = self._clients_repo.find_or_create_by_email(
+                host_id=host_id,
+                email=reservation.guest_info.email,
+                name=reservation.guest_info.name,
+                phone=reservation.guest_info.phone,
+                property_id=resolved_property_id,
+                reservation_id=reservation.reservation_id,
+                imported_from="booking_api",
+            )
+            result["client_id"] = client_id
+            result["client_created"] = client_created
+            logger.info(f"[PERSISTENCE] Cliente: id={client_id}, created={client_created}")
+            
+            # 3. Salva prenotazione
+            logger.info(
+                f"[PERSISTENCE] Salva prenotazione Booking.com: reservation_id={reservation.reservation_id}"
+            )
+            self._reservations_repo.upsert_reservation(
+                reservation_id=reservation.reservation_id,
+                host_id=host_id,
+                property_id=resolved_property_id,
+                property_name=property_name or property_display_name,
+                client_id=client_id,
+                client_name=reservation.guest_info.name,
+                start_date=reservation.check_in,
+                end_date=reservation.check_out,
+                status="confirmed",
+                total_price=reservation.total_amount,
+                adults=reservation.adults,
+                voucher_id=None,  # Booking.com API non usa voucher_id come Scidoo
+                source_channel="booking",  # Channel Booking.com
+                thread_id=None,  # Booking.com non usa thread_id come Airbnb
+                imported_from="booking_api",
+            )
+            result["reservation_saved"] = True
+            result["saved"] = True
+            logger.info(
+                f"[PERSISTENCE] ✅ Prenotazione Booking.com salvata con successo! "
+                f"reservation_id={reservation.reservation_id}, host_id={host_id}"
+            )
+            
+        except Exception as e:
+            result["saved"] = False
+            result["error"] = str(e)
+            logger.error(
+                f"[PERSISTENCE] ❌ Errore durante salvataggio prenotazione Booking.com: {e}",
+                exc_info=True,
+            )
+            return result
+        
+        return result
+    
+    def update_booking_reservation(
+        self, reservation: BookingReservation, host_id: str
+    ) -> dict[str, str | bool]:
+        """
+        Aggiorna una prenotazione Booking.com esistente in Firestore.
+        
+        Usato per modifiche a prenotazioni già esistenti.
+        
+        Args:
+            reservation: BookingReservation parsata da XML OTA (modificata)
+            host_id: ID host (già mappato correttamente dal polling service)
+            
+        Returns:
+            dict con informazioni su cosa è stato aggiornato
+        """
+        logger.info(
+            f"[PERSISTENCE] Aggiornamento prenotazione Booking.com: "
+            f"reservation_id={reservation.reservation_id}, host_id={host_id}"
+        )
+        
+        result = {
+            "updated": False,
+            "reservation_found": False,
+            "error": None,
+        }
+        
+        try:
+            # Verifica che reservation esista
+            reservations_ref = self._reservations_repo._client.collection("reservations")
+            query = (
+                reservations_ref
+                .where("reservationId", "==", reservation.reservation_id)
+                .where("hostId", "==", host_id)
+                .limit(1)
+            )
+            docs = list(query.get())
+            
+            if not docs:
+                logger.warning(
+                    f"[PERSISTENCE] Prenotazione non trovata per aggiornamento: "
+                    f"reservation_id={reservation.reservation_id}, host_id={host_id}"
+                )
+                result["error"] = "reservation_not_found"
+                return result
+            
+            existing_doc = docs[0]
+            existing_data = existing_doc.to_dict() or {}
+            result["reservation_found"] = True
+            
+            # Aggiorna reservation con nuovi dati
+            self._reservations_repo.upsert_reservation(
+                reservation_id=reservation.reservation_id,
+                host_id=host_id,
+                property_id=existing_data.get("propertyId", ""),
+                property_name=existing_data.get("propertyName", ""),
+                client_id=existing_data.get("clientId"),
+                client_name=reservation.guest_info.name,
+                start_date=reservation.check_in,
+                end_date=reservation.check_out,
+                status=existing_data.get("status", "confirmed"),  # Mantieni status esistente (non sovrascrivere "cancelled")
+                total_price=reservation.total_amount,
+                adults=reservation.adults,
+                voucher_id=None,
+                source_channel="booking",
+                thread_id=None,
+                imported_from="booking_api",
+            )
+            
+            result["updated"] = True
+            logger.info(
+                f"[PERSISTENCE] ✅ Prenotazione Booking.com aggiornata: "
+                f"reservation_id={reservation.reservation_id}"
+            )
+            
+        except Exception as e:
+            result["error"] = str(e)
+            logger.error(
+                f"[PERSISTENCE] ❌ Errore durante aggiornamento prenotazione Booking.com: {e}",
+                exc_info=True,
+            )
+            return result
+        
+        return result
+    
+    def cancel_booking_reservation(
+        self, reservation_id: str, host_id: str
+    ) -> dict[str, str | bool]:
+        """
+        Cancella una prenotazione Booking.com in Firestore.
+        
+        Usato per cancellazioni ricevute via API.
+        
+        Args:
+            reservation_id: Reservation ID Booking.com
+            host_id: ID host
+            
+        Returns:
+            dict con informazioni su cancellazione
+        """
+        logger.info(
+            f"[PERSISTENCE] Cancellazione prenotazione Booking.com: "
+            f"reservation_id={reservation_id}, host_id={host_id}"
+        )
+        
+        cancelled = self._reservations_repo.cancel_reservation_by_reservation_id(
+            reservation_id=reservation_id,
+            host_id=host_id,
+        )
+        
+        if cancelled:
+            logger.info(
+                f"[PERSISTENCE] ✅ Prenotazione Booking.com cancellata: reservation_id={reservation_id}"
+            )
+            return {"cancelled": True, "reservation_id": reservation_id}
+        else:
+            logger.warning(
+                f"[PERSISTENCE] ⚠️ Prenotazione Booking.com non trovata per cancellazione: "
+                f"reservation_id={reservation_id}, host_id={host_id}"
+            )
+            return {
+                "cancelled": False,
+                "reservation_id": reservation_id,
+                "reason": "reservation_not_found",
+            }
 

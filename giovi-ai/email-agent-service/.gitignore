@@ -7,3 +7,10 @@ __pycache__/
 *.egg-info/
 .env
 
+# Firebase credentials (NON COMMITTARE MAI)
+*firebase*credentials*.json
+*serviceAccount*.json
+*Firebase*sdk*
+*.json.backup
+*.json.backup*
+

@@ -63,7 +63,6 @@ class GmailOAuthService:
         *,
         host_id: str,
         email: str,
-        pms_provider: Optional[str] = None,
         redirect_uri: Optional[str] = None,
     ) -> tuple[str, str, datetime]:
         flow = self._build_flow(redirect_uri)
@@ -102,7 +101,6 @@ class GmailOAuthService:
         provider: str,
         credentials: Credentials,
         scopes: Sequence[str],
-        pms_provider: Optional[str] = None,
     ) -> HostEmailIntegrationRecord:
         encrypted_access = self._encrypt_token(credentials.token)
         encrypted_refresh = self._encrypt_token(credentials.refresh_token)
@@ -114,23 +112,8 @@ class GmailOAuthService:
             encrypted_refresh_token=encrypted_refresh,
             scopes=scopes,
             token_expiry=credentials.expiry,
-            pms_provider=pms_provider,
         )
         self._integration_repository.upsert_integration(record)
-        
-        # Salva anche pmsProvider nel documento hosts
-        if pms_provider and self._firestore_client:
-            try:
-                host_doc_ref = self._firestore_client.collection("hosts").document(host_id)
-                host_doc_ref.set(
-                    {"pmsProvider": pms_provider},
-                    merge=True,
-                )
-            except Exception as e:
-                # Log errore ma non bloccare il flusso OAuth
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.warning(f"Errore salvataggio pmsProvider in hosts/{host_id}: {e}")
         
         return record
 
@@ -140,7 +123,6 @@ class GmailOAuthService:
         state: str,
         code: str,
         email: str,
-        pms_provider: Optional[str] = None,
         redirect_uri: Optional[str] = None,
     ) -> HostEmailIntegrationRecord:
         state_record = self._validate_state(state)
@@ -187,7 +169,6 @@ class GmailOAuthService:
             provider="gmail",
             credentials=credentials,
             scopes=scopes,
-            pms_provider=pms_provider,
         )
 
         self._oauth_state_repository.delete_state(state)

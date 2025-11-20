@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, status
 from firebase_admin import firestore
 
 from ...dependencies.firebase import get_firestore_client
@@ -10,6 +10,7 @@ from ...models import (
     GmailIntegrationStartRequest,
     GmailIntegrationStartResponse,
     GmailBackfillResponse,
+    GmailBackfillPreviewResponse,
     GmailWatchRequest,
     GmailWatchResponse,
     GmailNotificationPayload,
@@ -96,7 +97,6 @@ def start_gmail_integration(
     authorization_url, state, expires_at = service.generate_authorization_url(
         host_id=payload.host_id,
         email=payload.email,
-        pms_provider=payload.pms_provider,
         redirect_uri=str(payload.redirect_uri) if payload.redirect_uri else None,
     )
     return GmailIntegrationStartResponse(
@@ -120,7 +120,6 @@ def handle_gmail_callback(
             state=payload.state,
             code=payload.code,
             email=payload.email,
-            pms_provider=payload.pms_provider,
             redirect_uri=str(payload.redirect_uri) if payload.redirect_uri else None,
         )
     except OAuthStateNotFoundError as exc:
@@ -153,6 +152,7 @@ def trigger_backfill(
     host_id: str,
     force: bool = False,
     service: GmailBackfillService = Depends(get_backfill_service),
+    firestore_client=Depends(get_firestore_client),
 ) -> GmailBackfillResponse:
     """
     Esegue il backfill delle email.
@@ -162,8 +162,33 @@ def trigger_backfill(
         host_id: ID dell'host
         force: Se True, riprocessa anche le email già processate (default: False)
     """
-    parsed_results = service.run_backfill(host_id=host_id, email=email, force=force)
+    parsed_results = service.run_backfill(host_id=host_id, email=email, force=force, firestore_client=firestore_client)
     return GmailBackfillResponse(processed=len(parsed_results), items=parsed_results)
+
+
+@router.post(
+    "/gmail/{email}/backfill/preview",
+    response_model=GmailBackfillPreviewResponse,
+    status_code=status.HTTP_200_OK,
+)
+def trigger_backfill_preview(
+    email: str,
+    host_id: str,
+    force: bool = False,
+    service: GmailBackfillService = Depends(get_backfill_service),
+    firestore_client=Depends(get_firestore_client),
+) -> GmailBackfillPreviewResponse:
+    """
+    Esegue un backfill in modalità preview (nessun dato viene salvato).
+    Restituisce il riepilogo delle property e prenotazioni estratte per poterle mappare manualmente.
+    """
+    preview = service.run_preview(
+        host_id=host_id,
+        email=email,
+        force=force,
+        firestore_client=firestore_client,
+    )
+    return preview
 
 
 def get_watch_service(
@@ -257,6 +282,74 @@ def setup_gmail_watch(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Errore durante setup Gmail Watch: {str(e)}",
         ) from e
+
+
+@router.patch(
+    "/hosts/{host_id}/airbnb-only",
+    status_code=status.HTTP_200_OK,
+)
+def toggle_airbnb_only(
+    host_id: str,
+    enabled: bool = Query(..., description="Attiva (true) o disattiva (false) modalità Airbnb only"),
+    firestore_client=Depends(get_firestore_client),
+) -> dict:
+    """
+    Attiva/disattiva la modalità "Airbnb only" per un host.
+    
+    Query parameter: enabled (bool)
+    - Se enabled=True: il sistema processerà solo email Airbnb
+    - Se enabled=False: il sistema processerà email Booking e Airbnb (comportamento normale)
+    """
+    try:
+        host_doc_ref = firestore_client.collection("hosts").document(host_id)
+        host_doc_ref.set(
+            {"airbnbOnly": enabled},
+            merge=True,
+        )
+        return {
+            "hostId": host_id,
+            "airbnbOnly": enabled,
+            "message": f"Modalità Airbnb only {'attivata' if enabled else 'disattivata'}",
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Errore aggiornamento airbnbOnly: {str(e)}",
+        )
+
+
+@router.patch(
+    "/hosts/{host_id}/auto-reply-to-new-reservations",
+    status_code=status.HTTP_200_OK,
+)
+def toggle_auto_reply_to_new_reservations(
+    host_id: str,
+    enabled: bool = Query(..., description="Attiva (true) o disattiva (false) auto-reply a messaggi in nuove prenotazioni"),
+    firestore_client=Depends(get_firestore_client),
+) -> dict:
+    """
+    Attiva/disattiva l'auto-reply per messaggi allegati a nuove prenotazioni.
+    
+    Query parameter: enabled (bool)
+    - Se enabled=True: i messaggi contenuti nelle email di conferma prenotazione verranno processati per generare risposta AI
+    - Se enabled=False: i messaggi in nuove prenotazioni non verranno processati (default)
+    """
+    try:
+        host_doc_ref = firestore_client.collection("hosts").document(host_id)
+        host_doc_ref.set(
+            {"autoReplyToNewReservations": enabled},
+            merge=True,
+        )
+        return {
+            "hostId": host_id,
+            "autoReplyToNewReservations": enabled,
+            "message": f"Auto-reply a nuove prenotazioni {'attivato' if enabled else 'disattivato'}",
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Errore aggiornamento autoReplyToNewReservations: {str(e)}",
+        )
 
 
 @router.delete(

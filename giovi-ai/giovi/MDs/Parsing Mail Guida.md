@@ -1,26 +1,48 @@
+# Guida Parsing Email OTA
 
+## Obiettivo
+Questa guida descrive come identificare e normalizzare i dati chiave provenienti dalle email generate dai diversi canali OTA (Airbnb, Booking.com, Scidoo). L’obiettivo è fornire agli agenti un riferimento unificato per estrarre le informazioni necessarie e popolare lo schema Firestore v2.
 
+## Flusso di parsing (alto livello)
+1. **Identifica il canale** in base al dominio mittente / pattern destinatario.
+2. **Estrai il payload raw** (plain text o HTML) e applica i parser specifici.
+3. **Normalizza i dati** in un oggetto intermedio (`ParsedEmailPayload`).
+4. **Esegui il matching** con prenotazioni esistenti (ID prenotazione o conversationId).
+5. **Aggiorna Firestore** nelle collezioni target (`reservations`, `properties`, `clients`, `properties/{propertyId}/conversations`).
+
+## Tabella incrociata Airtbnb (conferma vs messaggio)
 | Parametro Comune | Mail di Conferma Airbnb | Mail di Notifica Messaggi Airbnb | Ruolo di Collegamento |
 | :---- | :---- | :---- | :---- |
 | **ID Conversazione (Thread)** | 2311813630(nel link "Invia il messaggio") | 2311813630(nel link "Rispondi") | **L'ID tecnico primario** che collega la prenotazione confermata alla conversazione attiva. |
 | **Nome Ospite** | Marie-Thérèse Weber-Gobet | MARIE-THÉRÈSE (Titolare prenotazione) | Il nome dell'ospite è l'elemento umano di collegamento. |
 | **Periodo di Soggiorno** | dom 12 ott – dom 19 ott | 12 ottobre 2025 – 19 ottobre 2025 | Le date di check-in e check-out sono identiche. |
-| **Alloggio** | IMPERIAL SUITE \- PALAZZO DELLA STAFFA | IMPERIAL SUITE \- PALAZZO DELLA STAFFA | Il nome della struttura è identico. |
+| **Alloggio** | IMPERIAL SUITE - PALAZZO DELLA STAFFA | IMPERIAL SUITE - PALAZZO DELLA STAFFA | Il nome della struttura è identico. |
 
-### **L'ID Prenotazione**
+## 1. Airbnb – Mail di Conferma Prenotazione
+- **Scopo**: conferma ufficiale della prenotazione.
+- **Campi da estrarre**: codice prenotazione (confirmation code), conversationId, nome ospite, periodo soggiorno, struttura.
+- **Note**: il confirmation code è presente nel corpo. Conservare anche mittente `automated@airbnb.com` per validazione.
 
-Nella **Mail di Conferma Airbnb**, l'ID di Prenotazione (HMPBBAR2AN) è presente come **CODICE DI CONFERMA**.    \<[automated@airbnb.com](mailto:automated@airbnb.com)\>   Prenotazione confermata
+## 2. Airbnb – Mail di Notifica Messaggi
+- **Scopo**: avvisa che l’ospite ha scritto nel thread.
+- **Campi da estrarre**: conversationId presente nel link “Rispondi”, mittente `reply.airbnb.com`, testo del messaggio.
+- **Associazione**: usare conversationId per collegare il messaggio alla prenotazione già registrata (tabella precedente).
 
-Nelle **Mail di Notifica Messaggi Airbnb**, questo codice **non è visualizzato esplicitamente** nel corpo, ma il collegamento è garantito dall'**ID Conversazione** (2311813630) che è presente in entrambe.   [4xepm1lgw1ojsdnhxm9w2n3awteqe0u1uht7@reply.airbnb.com](mailto:4xepm1lgw1ojsdnhxm9w2n3awteqe0u1uht7@reply.airbnb.com)  
-\<[express@airbnb.com](mailto:express@airbnb.com)\>   RE: Prenotazione per l'annuncio
+## 3. Scidoo – Mail di Conferma Prenotazione
+### Campi da estrarre
+- ID voucher / prenotazione.
+- Stato prenotazione, agenzia di provenienza, timestamp creazione.
+- Dati ospite (nome, email guest, telefono), dettagli soggiorno (check-in/out, numero ospiti).
+- Dettagli struttura e alloggio, note, importi (totale, extra, commissione).
+- Servizi prenotati e stato pagamento (es. PRE-PAID).
 
-Booking
-
+### Payload raw di esempio (non modificare)
+```
 mail di conferma
 
 mittente:
 
-\<[reservation@scidoo.com](mailto:reservation@scidoo.com)\>
+<[reservation@scidoo.com](mailto:reservation@scidoo.com)>
 
 dati da estrarre:
 
@@ -30,7 +52,7 @@ dati da estrarre:
 
 * **ID Voucher / ID Prenotazione:** `5958915259`  
 * **Stato Prenotazione:** `Confermata`  
-* **Agenzia Prenotante:** `Booking` (ID 44813\)  
+* **Agenzia Prenotante:** `Booking` (ID 44813)  
 * **Data Creazione:** `23 ottobre 2025` alle `11:42`
 
 #### **Dati Ospite**
@@ -66,13 +88,13 @@ Delivered-To: shortdeseos@gmail.com
 
 Received: by 2002:a17:505:2581:10b0:1d27:83a3:6131 with SMTP id x1-n1csp726291njp;
 
-        Thu, 23 Oct 2025 02:42:31 \-0700 (PDT)
+        Thu, 23 Oct 2025 02:42:31 -0700 (PDT)
 
 X-Google-Smtp-Source: AGHT+IGacSAy3OcqEnp6Dfi2hUmge0lH94kGBI5NiIUZglRUb1t9QpjTisdYCAWrMVwJhXJGsKe1
 
 X-Received: by 2002:a05:6000:2284:b0:400:7e60:7ee0 with SMTP id ffacd0b85a97d-42704c8848cmr15564589f8f.0.1761212550857;
 
-        Thu, 23 Oct 2025 02:42:30 \-0700 (PDT)
+        Thu, 23 Oct 2025 02:42:30 -0700 (PDT)
 
 ARC-Seal: i=1; a=rsa-sha256; t=1761212550; cv=none;
 
@@ -124,17 +146,17 @@ ARC-Authentication-Results: i=1; mx.google.com;
 
        dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=scidoo.com
 
-Return-Path: \<bounces-91910830-4256376833@email.scidoo.com\>
+Return-Path: <bounces-91910830-4256376833@email.scidoo.com>
 
-Received: from email.scidoo.com (email.scidoo.com. \[212.146.252.118\])
+Received: from email.scidoo.com (email.scidoo.com. [212.146.252.118])
 
         by mx.google.com with ESMTPS id ffacd0b85a97d-4298990c3adsi850096f8f.817.2025.10.23.02.42.30
 
-        for \<shortdeseos@gmail.com\>
+        for <shortdeseos@gmail.com>
 
-        (version=TLS1\_3 cipher=TLS\_AES\_256\_GCM\_SHA384 bits=256/256);
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
 
-        Thu, 23 Oct 2025 02:42:30 \-0700 (PDT)
+        Thu, 23 Oct 2025 02:42:30 -0700 (PDT)
 
 Received-SPF: pass (google.com: domain of bounces-91910830-4256376833@email.scidoo.com designates 212.146.252.118 as permitted sender) client-ip=212.146.252.118;
 
@@ -152,33 +174,33 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=scidoo.com; q=dns/txt; s
 
         TGrisX6+aXta9cDjX9y7naHPxXK1lLyvusnnt4ZlQPg04opXHygXh2la1dzzFLLxx2svhlTHA+de
 
-        \+oe7smw3p4F2XYmX88g=
+        +oe7smw3p4F2XYmX88g=
 
-Origin-messageId: \<202510230942.72553680763@smtp-relay.mailin.fr\>
+Origin-messageId: <202510230942.72553680763@smtp-relay.mailin.fr>
 
-Reply-To: \<reservation@scidoo.com\>
+Reply-To: <reservation@scidoo.com>
 
 List-Unsubscribe-Post: List-Unsubscribe=One-Click
 
-Feedback-ID: 212.146.199.187:2694517\_-1:2694517:Sendinblue
+Feedback-ID: 212.146.199.187:2694517_-1:2694517:Sendinblue
 
-To: \<shortdeseos@gmail.com\>
+To: <shortdeseos@gmail.com>
 
-Date: Thu, 23 Oct 2025 09:42:29 \+0000
+Date: Thu, 23 Oct 2025 09:42:29 +0000
 
-Subject: Confermata \- Prenotazione ID 5958915259 \- Booking
+Subject: Confermata - Prenotazione ID 5958915259 - Booking
 
-From: Scidoo Booking Manager \<reservation@scidoo.com\>
+From: Scidoo Booking Manager <reservation@scidoo.com>
 
-List-Unsubscribe: \<https://r.email.scidoo.com/tr/un/li/MCxTswt93\_FMj-JSa62UdgK1IsAnAnoJs9Zds41eoM4i4pgs\_oVQDK-p3NDSSVY-XS0b6f1IvccQYb9nKmIx6s7\_Qmd9OTKU7bLrfxlIuaW0XLtBumz0l3k4K119gmTftE66Mv\_X\_I2uMR2nBQg7EDelBamypMKd3-RUV\_R4Kj4womawDSIVv8khUv\_Yg1LNeMNDj1BLuvDre9r\_ECk8TclSuLsjREwHIFIpXug\>
+List-Unsubscribe: <https://r.email.scidoo.com/tr/un/li/MCxTswt93_FMj-JSa62UdgK1IsAnAnoJs9Zds41eoM4i4pgs_oVQDK-p3NDSSVY-XS0b6f1IvccQYb9nKmIx6s7_Qmd9OTKU7bLrfxlIuaW0XLtBumz0l3k4K119gmTftE66Mv_X_I2uMR2nBQg7EDelBamypMKd3-RUV_R4Kj4womawDSIVv8khUv_Yg1LNeMNDj1BLuvDre9r_ECk8TclSuLsjREwHIFIpXug>
 
 X-CSA-Complaints: csa-complaints@eco.de
 
 X-Mailin-EID: OTE5MTA4MzB%2Bc2hvcnRkZXNlb3NAZ21haWwuY29tfjwyMDI1MTAyMzA5NDIuNzI1NTM2ODA3NjNAc210cC1yZWxheS5tYWlsaW4uZnI%2BfmVtYWlsLnNjaWRvby5jb20%3D
 
-X-sib-id: YGIYw-qtbjq\_UMym2uvqBDp1xhQaeBXvoBVL8RLKGlAeeqpgp49khRiH\_yw-V56VcyFNRXVo0q2qXbvbI4dJxRRkQ2\_9gV6W4d9txOt4k5vcnG3V46N3dlobNAVqhH-iJhEo8Nfw-rxRUGrSpD6mhFvSSsOY004iCYXNkBLRdQG6gaU
+X-sib-id: YGIYw-qtbjq_UMym2uvqBDp1xhQaeBXvoBVL8RLKGlAeeqpgp49khRiH_yw-V56VcyFNRXVo0q2qXbvbI4dJxRRkQ2_9gV6W4d9txOt4k5vcnG3V46N3dlobNAVqhH-iJhEo8Nfw-rxRUGrSpD6mhFvSSsOY004iCYXNkBLRdQG6gaU
 
-Message-Id: \<202510230942.72553680763@smtp-relay.mailin.fr\>
+Message-Id: <202510230942.72553680763@smtp-relay.mailin.fr>
 
 Content-Type: multipart/alternative; boundary=d0f619190f98c5d9ad868dadafd7017c04575fbbda18d99e7bdb312dfceb
 
@@ -186,13 +208,13 @@ Mime-Version: 1.0
 
 X-Api-Version: v3
 
-\--d0f619190f98c5d9ad868dadafd7017c04575fbbda18d99e7bdb312dfceb
+--d0f619190f98c5d9ad868dadafd7017c04575fbbda18d99e7bdb312dfceb
 
 Content-Transfer-Encoding: quoted-printable
 
 Content-Type: text/plain; charset=utf-8
 
-Agenzia Prenotante=0944813 \-\> Booking
+Agenzia Prenotante=0944813 -> Booking
 
 ID Voucher=095958915259
 
@@ -216,7 +238,7 @@ Data di Check-out=0918/01/2026
 
 Commissione=0948.52
 
-\---------------------------------------------------------------
+---------------------------------------------------------------
 
 Servizi Prenotati
 
@@ -228,17 +250,17 @@ N.1 Addebito Libero
 
 N.1 Pulizia Suite Small
 
-\---------------------------------------------------------------
+---------------------------------------------------------------
 
 Conto:
 
-\---------------------------------------------------------------
+---------------------------------------------------------------
 
 Totale Retta: 259,55=E2=82=AC
 
 Totale Extra: 90,00=E2=82=AC
 
-Totale Prenotazione: 349,55 \=E2=82=AC
+Totale Prenotazione: 349,55 =E2=82=AC
 
 Dati Ospite
 
@@ -248,21 +270,21 @@ Telefono:
 
 Cellulare:+393315681407
 
-\---------------------------------------------------------------
+---------------------------------------------------------------
 
 Note:
 
-Booker Genius \- BankTransfer \- \*\* THIS RESERVATION HAS BEEN PRE-PAID \*\* BOO=
+Booker Genius - BankTransfer - ** THIS RESERVATION HAS BEEN PRE-PAID ** BOO=
 
 KING NOTE : Payment charge is EUR 4.04325 LANGUAGE: IT
 
-\--d0f619190f98c5d9ad868dadafd7017c04575fbbda18d99e7bdb312dfceb
+--d0f619190f98c5d9ad868dadafd7017c04575fbbda18d99e7bdb312dfceb
 
 Content-Transfer-Encoding: quoted-printable
 
 Content-Type: text/html; charset=utf-8
 
-\<html\>\<head\>\</head\>\<body\>\<img width=3D"1" height=3D"1" src=3D"https://r.ema=
+<html><head></head><body><img width=3D"1" height=3D"1" src=3D"https://r.ema=
 
 il.scidoo.com/tr/op/V-YMZ
 
@@ -270,7 +292,8 @@ mail messaggi utente da booking a cui rispondere
 
 mail mittente (costante il suffisso [@mchat.booking.com](mailto:5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com))
 
-| [5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com](mailto:5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com) mail da pasare tipo: Delivered-To: shortdeseos@gmail.com Received: by 2002:a17:505:2581:10b0:1d27:83a3:6131 with SMTP id x1-n1csp726620njp;         Thu, 23 Oct 2025 02:43:29 \-0700 (PDT) X-Google-Smtp-Source: AGHT+IFb1Y24YzLq51VZWYyzLIEh/hz1v9MGLL4/Ir1AZ+1UENJdQg7bktWlVekJBCtpxfqXTQq/ X-Received: by 2002:a17:906:a20f:b0:b6d:2d06:bd82 with SMTP id a640c23a62f3a-b6d2d06f024mr632247366b.25.1761212609449;         Thu, 23 Oct 2025 02:43:29 \-0700 (PDT) ARC-Seal: i=1; a=rsa-sha256; t=1761212609; cv=none;         d=google.com; s=arc-20240605;         b=V26hpJ/MxrHrAoKpPMBj4kxRUaQmiH6ks3ggWTlTezWqANZeSuBOPJtxqvT6bA3ay7          CrsRpf7fJNE5y/03gQaJy26v0osBPMHE2StzkyCXiDAsqpTDXorCi9J4sl0P1u31fJ3j          Mh7gbnIzl2X2OtKPn8cKXiSZj559xVDO/1admGs8prrR3QB+qTwbjMEOAqKo7DJv0EVN          rojRwW2Ewy7Rzqg8xlLaoS/BEhzF3YrbWSJQfB2dIn2qYkEAZKJMEpSSxCHGQ3llQLVS          w2m8tOmVm6w9adVMDxvpppRT0K+WeNLSu9Ue7b4NjLGAJZL68/fvzislQ8kJV3g2kh4J          aoNg== ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;         h=message-id:to:reply-to:from:subject:sender:date:mime-version          :content-transfer-encoding:dkim-signature;         bh=EJIM4E3C35sY5p9mTnvTSKOSROWTFabBxmu6r/2LLRg=;         fh=XBTByGVyCMihm8LvqfNCIEQ1zKLApuAOsFeBQLo6miw=;         b=aOBwE3nhHoE9o78fHe9dXhr58CB8o8ZkYRY3nV0z+8utMj93SvCVd9kUI3u1HOXBhu          jF28H7jPg/6+3rV6Rc9C7TffJ5CuZu0Z7DVMJ0j7nwdVnSlKvT0WHnYIEj7nFmZ8O47S          aeRGDHfTv/mRMEpHGs1tBngX3Rm+4r4tCIc5Ul9WOh7RziRNU61wXUeIvATlxGTt6UWE          av6wcWeQciyAh6I7JdAX9P9WHLyaKjskXYBmbSJ8ZJRgegjrrE0jHHZO+zUgyRs4kDSE          GkjZT5FgWKqwaquh8fKdGhETJA1LI1SagOU3LQFwROrNz9ANkwfndK3FqqKJofdHukzy          tYrg==;         dara=google.com ARC-Authentication-Results: i=1; mx.google.com;        dkim=pass header.i=@mchat.booking.com header.s=bk header.b="JAbeD/nk";        spf=pass (google.com: domain of 5958915259-5sohk3qnf9yihbv5y31kzi0p5.2stir9myhhtxl7m69m0y4jiuq@mchat.booking.com designates 37.10.30.3 as permitted sender) smtp.mailfrom=5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com;        dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=mchat.booking.com Return-Path: \<5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com\> Received: from mailout-202-r2.booking.com (mailout-202-r2.booking.com. \[37.10.30.3\])         by mx.google.com with ESMTPS id a640c23a62f3a-b6d51468ce5si100883166b.846.2025.10.23.02.43.29         for \<shortdeseos@gmail.com\>         (version=TLS1\_3 cipher=TLS\_AES\_256\_GCM\_SHA384 bits=256/256);         Thu, 23 Oct 2025 02:43:29 \-0700 (PDT) Received-SPF: pass (google.com: domain of 5958915259-5sohk3qnf9yihbv5y31kzi0p5.2stir9myhhtxl7m69m0y4jiuq@mchat.booking.com designates 37.10.30.3 as permitted sender) client-ip=37.10.30.3; Authentication-Results: mx.google.com;        dkim=pass header.i=@mchat.booking.com header.s=bk header.b="JAbeD/nk";        spf=pass (google.com: domain of 5958915259-5sohk3qnf9yihbv5y31kzi0p5.2stir9myhhtxl7m69m0y4jiuq@mchat.booking.com designates 37.10.30.3 as permitted sender) smtp.mailfrom=5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com;        dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=mchat.booking.com DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; s=bk; d=mchat.booking.com; h=Content-Transfer-Encoding:Content-Type:MIME-Version:Date:Sender:Subject: From:Reply-To:To:Message-Id; i=5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com; bh=EJIM4E3C35sY5p9mTnvTSKOSROWTFabBxmu6r/2LLRg=; b=JAbeD/nkO1ohU1Pg6wwUI0jJxwV3bb4ukPZm/kAEf3mXVpYIf0Il5jw9KuRjFayn6bLyc1kYGTD1    cqE6mrYEgcEvkmnMPsbdmeUN/+fyGF+UcJxAlhWAC/DnGmFd/O0SjmvHPSmjzQUZd783v7x12b1c    ZbIMtB8Fr1y599cNixU= Content-Transfer-Encoding: binary Content-Type: multipart/alternative; boundary="\_----------=\_1761212608489324" MIME-Version: 1.0 Date: Thu, 23 Oct 2025 11:43:28 \+0200 Sender: "Francesco Brufani via Booking.com" \<5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com\> Subject: Abbiamo ricevuto questo messaggio da Francesco Brufani From: "Francesco Brufani via Booking.com" \<5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com\> Reply-To: 5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com To: shortdeseos@gmail.com X-Bme-Id: 34955536433 Message-Id: \<4csh1D6VbLzy5Z@mailrouter-601.fra3.prod.booking.com\> \--\_----------=\_1761212608489324 Content-Transfer-Encoding: base64 Content-Type: text/plain; charset=utf-8 Date: Thu, 23 Oct 2025 11:43:28 \+0200 ICAgIyMtIFNjcml2aSBsYSB0dWEgcmlzcG9zdGEgc29wcmEgcXVlc3RhIHJpZ2EgLSMjCgogICAg ICAgICAgICAgICAgICAgICAgIE51bWVybyBkaSBjb25mZXJtYTogNTk1ODkxNTI1OQoKICAgICAg ICAgICAgICAgICAgICAgICAgTnVvdm8gbWVzc2FnZ2lvIGRhIHVuIG9zcGl0ZQoKICAgICAgICA   |  |
+| [5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com](mailto:5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com) mail da pasare tipo: Delivered-To: shortdeseos@gmail.com Received: by 2002:a17:505:2581:10b0:1d27:83a3:6131 with SMTP id x1-n1csp726620njp;         Thu, 23 Oct 2025 02:43:29 -0700 (PDT) X-Google-Smtp-Source: AGHT+IFb1Y24YzLq51VZWYyzLIEh/hz1v9MGLL4/Ir1AZ+1UENJdQg7bktWlVekJBCtpxfqXTQq/ X-Received: by 2002:a17:906:a20f:b0:b6d:2d06:bd82 with SMTP id a640c23a62f3a-b6d2d06f024mr632247366b.25.1761212609449;         Thu, 23 Oct 2025 02:43:29 -0700 (PDT) ARC-Seal: i=1; a=rsa-sha256; t=1761212609; cv=none;         d=google.com; s=arc-20240605;         b=V26hpJ/MxrHrAoKpPMBj4kxRUaQmiH6ks3ggWTlTezWqANZeSuBOPJtxqvT6bA3ay7          CrsRpf7fJNE5y/03gQaJy26v0osBPMHE2StzkyCXiDAsqpTDXorCi9J4sl0P1u31fJ3j          Mh7gbnIzl2X2OtKPn8cKXiSZj559xVDO/1admGs8prrR3QB+qTwbjMEOAqKo7DJv0EVN          rojRwW2Ewy7Rzqg8xlLaoS/BEhzF3YrbWSJQfB2dIn2qYkEAZKJMEpSSxCHGQ3llQLVS          w2m8tOmVm6w9adVMDxvpppRT0K+WeNLSu9Ue7b4NjLGAJZL68/fvzislQ8kJV3g2kh4J          aoNg==;         dara=google.com ARC-Authentication-Results: i=1; mx.google.com;        dkim=pass header.i=@mchat.booking.com header.s=bk header.b="JAbeD/nk";        spf=pass (google.com: domain of 5958915259-5sohk3qnf9yihbv5y31kzi0p5.2stir9myhhtxl7m69m0y4jiuq@mchat.booking.com designates 37.10.30.3 as permitted sender) smtp.mailfrom=5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com;        dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=mchat.booking.com Return-Path: <5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com> Received: from mailout-202-r2.booking.com (mailout-202-r2.booking.com. [37.10.30.3])         by mx.google.com with ESMTPS id a640c23a62f3a-b6d51468ce5si100883166b.846.2025.10.23.02.43.29         for <shortdeseos@gmail.com>         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);         Thu, 23 Oct 2025 02:43:29 -0700 (PDT) Received-SPF: pass (google.com: domain of 5958915259-5sohk3qnf9yihbv5y31kzi0p5.2stir9myhhtxl7m69m0y4jiuq@mchat.booking.com designates 37.10.30.3 as permitted sender) client-ip=37.10.30.3; Authentication-Results: mx.google.com;        dkim=pass header.i=@mchat.booking.com header.s=bk header.b="JAbeD/nk";        spf=pass (google.com: domain of 5958915259-5sohk3qnf9yihbv5y31kzi0p5.2stir9myhhtxl7m69m0y4jiuq@mchat.booking.com designates 37.10.30.3 as permitted sender) smtp.mailfrom=5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com;        dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=mchat.booking.com DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; s=bk; d=mchat.booking.com; h=Content-Transfer-Encoding:Content-Type:MIME-Version:Date:Sender:Subject: From:Reply-To:To:Message-Id; i=5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com; bh=EJIM4E3C35sY5p9mTnvTSKOSROWTFabBxmu6r/2LLRg=; b=JAbeD/nkO1ohU1Pg6wwUI0jJxwV3bb4ukPZm/kAEf3mXVpYIf0Il5jw9KuRjFayn6bLyc1kYGTD1    cqE6mrYEgcEvkmnMPsbdmeUN/+fyGF+UcJxAlhWAC/DnGmFd/O0SjmvHPSmjzQUZd783v7x12b1c    ZbIMtB8Fr1y599cNixU= Content-Transfer-Encoding: binary Content-Type: multipart/alternative; boundary="_----------=_1761212608489324" MIME-Version: 1.0 Date: Thu, 23 Oct 2025 11:43:28 +0200 Sender: "Francesco Brufani via Booking.com" <5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com> Subject: Abbiamo ricevuto questo messaggio da Francesco Brufani From: "Francesco Brufani via Booking.com" <5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com> Reply-To: 5958915259-5SOHK3QNF9YIHBV5Y31KZI0P5.2STIR9MYHHTXL7M69M0Y4JIUQ@mchat.booking.com To: shortdeseos@gmail.com X-Bme-Id: 34955536433 Message-Id: <4csh1D6VbLzy5Z@mailrouter-601.fra3.prod.booking.com> --_----------=_1761212608489324 Content-Transfer-Encoding: base64 Content-Type: text/plain; charset=utf-8 Date: Thu, 23 Oct 2025 11:43:28 +0200 ICAgIyMtIFNjcml2aSBsYSB0dWEgcmlzcG9zdGEgc29wcmEgcXVlc3RhIHJpZ2EgLSMjCgogICAg ICAgICAgICAgICAgICAgICAgIE51bWVybyBkaSBjb25mZXJtYTogNTk1ODkxNTI1OQoKICAgICAg ICAgICAgICAgICAgICAgICAgTnVvdm8gbWVzc2FnZ2lvIGRhIHVuIG9zcGl0ZQoKICAgICAgICA   |  |
+
 | :---- | ----- |
 
 ### **🎯 Parametro Identico e Affidabile**
@@ -278,4 +301,24 @@ mail mittente (costante il suffisso [@mchat.booking.com](mailto:5958915259-5SOHK
 | Parametro | Email Scidoo | Email Booking.com | Coerenza |
 | :---- | :---- | :---- | :---- |
 | **ID Prenotazione** | **5958915259** (ID Voucher) | **5958915259** (Numero di conferma) | **Identico al 100%** |
+
+## 4. Booking.com – Messaggi Chat (dominio `mchat.booking.com`)
+- **Scopo**: conversazione tra ospite e host tramite Booking.com.
+- **Campi da estrarre**: mittente (indirizzo `@mchat.booking.com`), ID prenotazione incorporato nell’indirizzo, testo messaggio, timestamp.
+- **Associazione**: utilizzare ID prenotazione per recuperare prenotazione/cliente e salvare il messaggio nella conversazione (`properties/{propertyId}/conversations`).
+- **Nota**: l’esempio è incluso nel payload raw sopra; il parser deve distinguere la sezione Booking.com dalla porzione Scidoo.
+
+## 5. Mapping verso Firestore v2
+| Campo normalizzato | Collezione target | Note |
+| --- | --- | --- |
+| `reservationId`, `stayPeriod`, `status`, `channel` | `reservations/{reservationId}` | Upsert; link a `hostId`, `propertyId`, `clientId`. |
+| `clientEmail`, `clientPhone`, `guestName` | `clients/{clientId}` | Aggiornare/creare cliente; salvare mapping email booking. |
+| `propertyName`, `propertyExternalRef` | `properties/{propertyId}` | Usare per lookup o creazione se mancante. |
+| `messageText`, `channel`, `sourceEmailId` | `properties/{propertyId}/conversations/{clientId}/messages/{messageId}` | `messageId` può essere l’header `Message-Id`. |
+| `importMetadata` (provider, raw headers) | `integrations/email/{emailId}` | Conservare info debug, historyId Gmail. |
+
+---
+Questa struttura fornisce tutte le informazioni necessarie agli agenti per implementare o aggiornare i parser, mantenendo inalterati gli esempi raw di riferimento.
+
+
 

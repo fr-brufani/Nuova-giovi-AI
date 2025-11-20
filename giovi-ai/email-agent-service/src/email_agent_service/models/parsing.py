@@ -65,3 +65,25 @@ class GmailBackfillResponse(BaseModel):
     processed: int
     items: list[ParsedEmail]
 
+
+class PropertyPreview(BaseModel):
+    name: str
+    occurrences: int
+    matched_property_ids: list[str] = Field(default_factory=list, alias="matchedPropertyIds")
+    sample_reservation_ids: list[str] = Field(default_factory=list, alias="sampleReservationIds")
+
+
+class ReservationPreview(BaseModel):
+    reservation_id: Optional[str] = Field(None, alias="reservationId")
+    property_name: Optional[str] = Field(None, alias="propertyName")
+    guest_name: Optional[str] = Field(None, alias="guestName")
+    check_in: Optional[datetime] = Field(None, alias="checkIn")
+    check_out: Optional[datetime] = Field(None, alias="checkOut")
+    kind: str
+
+
+class GmailBackfillPreviewResponse(BaseModel):
+    processed: int
+    properties: list[PropertyPreview]
+    reservations: list[ReservationPreview]
+

@@ -54,6 +54,42 @@ class AppSettings(BaseSettings):
         validation_alias="GEMINI_API_KEY",
         description="Chiave API per Google Gemini",
     )
+    # Booking.com API Settings
+    booking_api_username: Optional[str] = Field(
+        default=None,
+        validation_alias="BOOKING_API_USERNAME",
+        description="Username Machine Account Booking.com",
+    )
+    booking_api_password: Optional[str] = Field(
+        default=None,
+        validation_alias="BOOKING_API_PASSWORD",
+        description="Password Machine Account Booking.com",
+    )
+    booking_messaging_api_base_url: str = Field(
+        default="https://supply-xml.booking.com/messaging",
+        validation_alias="BOOKING_MESSAGING_API_BASE_URL",
+        description="Base URL per Booking.com Messaging API",
+    )
+    booking_reservation_api_base_url: str = Field(
+        default="https://secure-supply-xml.booking.com/hotels/ota/",
+        validation_alias="BOOKING_RESERVATION_API_BASE_URL",
+        description="Base URL per Booking.com Reservation API",
+    )
+    booking_api_version: str = Field(
+        default="1.2",
+        validation_alias="BOOKING_API_VERSION",
+        description="Versione API Booking.com (1.0 o 1.2)",
+    )
+    booking_polling_interval_reservations: int = Field(
+        default=20,
+        validation_alias="BOOKING_POLLING_INTERVAL_RESERVATIONS",
+        description="Intervallo polling prenotazioni in secondi (raccomandato: 20s)",
+    )
+    booking_polling_interval_messages: int = Field(
+        default=60,
+        validation_alias="BOOKING_POLLING_INTERVAL_MESSAGES",
+        description="Intervallo polling messaggi in secondi (30-60s)",
+    )
 
     @field_validator("google_oauth_scopes", mode="before")
     @classmethod

@@ -54,11 +54,11 @@ class GmailWatchService:
             logger.error(f"[WATCH] Integrazione non trovata per {email}")
             return
 
-        # Recupera host_id e pmsProvider dalla collezione hosts
+        # Recupera host_id e airbnbOnly dalla collezione hosts
         host_id = integration.host_id
-        pms_provider = self._get_pms_provider_from_host(host_id)
+        airbnb_only = self._get_airbnb_only_from_host(host_id)
         
-        logger.info(f"[WATCH] Host ID: {host_id}, PMS Provider: {pms_provider}")
+        logger.info(f"[WATCH] Host ID: {host_id}, Airbnb Only: {airbnb_only}")
 
         # Recupera lastHistoryIdProcessed
         start_history_id = integration.last_history_id_processed or (
@@ -158,9 +158,9 @@ class GmailWatchService:
 
                     logger.info(f"[WATCH] Email {message_id} parsata: kind={parsed.kind}, sender={parsed.metadata.sender}")
 
-                    # Verifica se email è rilevante (filtro in base a pmsProvider)
-                    if not self._is_email_relevant(parsed, pms_provider):
-                        logger.debug(f"[WATCH] Email {message_id} non rilevante per pmsProvider={pms_provider}, skip")
+                    # Verifica se email è rilevante (filtro in base a airbnbOnly)
+                    if not self._is_email_relevant(parsed, airbnb_only):
+                        logger.debug(f"[WATCH] Email {message_id} non rilevante per airbnbOnly={airbnb_only}, skip")
                         # Marca come processata comunque per evitare riprocessamento
                         self._processed_repository.mark_processed(
                             email,
@@ -275,50 +275,55 @@ class GmailWatchService:
             f"{processed_count} processate, {skipped_count} saltate"
         )
 
-    def _is_email_relevant(self, parsed: ParsedEmail, pms_provider: str | None) -> bool:
+    def _is_email_relevant(self, parsed: ParsedEmail, airbnb_only: bool) -> bool:
         """
-        Verifica se un'email è rilevante in base al pmsProvider.
+        Verifica se un'email è rilevante in base a airbnbOnly.
         
         Regole:
-        - Email messaggi guest (Booking/Airbnb): sempre processate (non dipendono da pmsProvider)
-        - Email conferme prenotazioni Scidoo: solo se pmsProvider == "scidoo"
-        - Altre email: non processate
+        - Se airbnb_only=True: processa solo email Airbnb (conferme, cancellazioni, messaggi)
+        - Se airbnb_only=False: processa email Booking e Airbnb (comportamento normale)
         """
         kind = parsed.kind
 
-        # Email messaggi guest: sempre rilevanti (non dipendono da pmsProvider)
-        if kind in ["booking_message", "airbnb_message"]:
-            return True
-
-        # Email conferme/cancellazioni prenotazioni Scidoo: solo se pmsProvider == "scidoo"
-        if kind in ["scidoo_confirmation", "scidoo_cancellation"]:
-            if pms_provider == "scidoo":
+        if airbnb_only:
+            # Solo Airbnb: processa solo email Airbnb
+            if kind in ["airbnb_confirmation", "airbnb_cancellation", "airbnb_message"]:
                 return True
-            else:
-                logger.debug(f"[WATCH] Email Scidoo ignorata: pmsProvider={pms_provider} != 'scidoo'")
+            # Ignora tutto il resto (Booking, Scidoo, unhandled)
+            logger.debug(f"[WATCH] Email {kind} ignorata: airbnbOnly=True, solo Airbnb processate")
+            return False
+        else:
+            # Comportamento normale: processa Booking e Airbnb
+            # Email messaggi guest: sempre rilevanti
+            if kind in ["booking_message", "airbnb_message"]:
+                return True
+
+            # Email conferme/cancellazioni Scidoo: ignorate (non più usate)
+            if kind in ["scidoo_confirmation", "scidoo_cancellation"]:
+                logger.debug(f"[WATCH] Email Scidoo ignorata: airbnbOnly=False ma Scidoo non più supportato")
                 return False
 
-        # Email conferme/cancellazioni Booking/Airbnb: sempre rilevanti (non dipendono da pmsProvider)
-        if kind in ["booking_confirmation", "airbnb_confirmation", "airbnb_cancellation"]:
-            return True
+            # Email conferme/cancellazioni Booking/Airbnb: sempre rilevanti
+            if kind in ["booking_confirmation", "airbnb_confirmation", "airbnb_cancellation"]:
+                return True
 
-        # Email non gestite: non processate
-        if kind == "unhandled":
+            # Email non gestite: non processate
+            if kind == "unhandled":
+                return False
+
+            # Default: non processare
             return False
 
-        # Default: non processare
-        return False
-
-    def _get_pms_provider_from_host(self, host_id: str) -> str | None:
-        """Recupera pmsProvider dalla collezione hosts."""
+    def _get_airbnb_only_from_host(self, host_id: str) -> bool:
+        """Recupera airbnbOnly dalla collezione hosts."""
         try:
             host_doc = self._firestore_client.collection("hosts").document(host_id).get()
             if host_doc.exists:
                 data = host_doc.to_dict()
-                return data.get("pmsProvider")
+                return data.get("airbnbOnly", False)
         except Exception as e:
-            logger.warning(f"[WATCH] Errore recupero pmsProvider per host {host_id}: {e}")
-        return None
+            logger.warning(f"[WATCH] Errore recupero airbnbOnly per host {host_id}: {e}")
+        return False
 
     def _update_last_history_id(self, email: str, history_id: str) -> None:
         """Aggiorna lastHistoryIdProcessed in Firestore."""

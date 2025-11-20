@@ -19,7 +19,6 @@ class HostEmailIntegrationRecord:
     status: str = "connected"
     last_history_id_processed: Optional[str] = None
     watch_subscription: Optional[dict] = None
-    pms_provider: Optional[str] = None
 
 
 class HostEmailIntegrationRepository:
@@ -31,16 +30,15 @@ class HostEmailIntegrationRepository:
     def upsert_integration(self, record: HostEmailIntegrationRecord) -> None:
         doc_ref = self._collection.document(record.email)
         doc_data = {
-            "emailAddress": record.email,
-            "hostId": record.host_id,
-            "provider": record.provider,
-            "encryptedAccessToken": record.encrypted_access_token,
-            "encryptedRefreshToken": record.encrypted_refresh_token,
-            "scopes": list(record.scopes),
-            "status": record.status,
-            "tokenExpiryDate": record.token_expiry,
-            "pmsProvider": record.pms_provider,
-            "updatedAt": firestore.SERVER_TIMESTAMP,
+                "emailAddress": record.email,
+                "hostId": record.host_id,
+                "provider": record.provider,
+                "encryptedAccessToken": record.encrypted_access_token,
+                "encryptedRefreshToken": record.encrypted_refresh_token,
+                "scopes": list(record.scopes),
+                "status": record.status,
+                "tokenExpiryDate": record.token_expiry,
+                "updatedAt": firestore.SERVER_TIMESTAMP,
         }
         
         # Aggiungi campi watch se presenti
@@ -60,6 +58,16 @@ class HostEmailIntegrationRepository:
             merge=True,
         )
     
+    def update_access_token(self, email: str, encrypted_token: str) -> None:
+        """Aggiorna l'access token criptato in Firestore."""
+        doc_ref = self._collection.document(email)
+        doc_ref.update(
+            {
+                "encryptedAccessToken": encrypted_token,
+                "updatedAt": firestore.SERVER_TIMESTAMP,
+            }
+        )
+
     def update_watch_subscription(
         self,
         email: str,
@@ -131,7 +139,6 @@ class HostEmailIntegrationRepository:
             status=data.get("status", "connected"),
             last_history_id_processed=data.get("lastHistoryIdProcessed"),
             watch_subscription=watch_subscription,
-            pms_provider=data.get("pmsProvider"),
         )
     
     def delete_integration(self, email: str) -> None:

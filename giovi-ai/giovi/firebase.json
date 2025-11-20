@@ -34,7 +34,7 @@
     }
   ],
   "hosting": {
-    "public": "build/web",
+    "public": "frontend/giovi-ai-working-app/dist",
     "ignore": [
       "firebase.json",
       "**/.*",
