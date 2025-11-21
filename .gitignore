@@ -1,1 +1,23 @@
+# Firebase SDK and credentials (NON COMMITTARE MAI)
 giovi-ai/giovi/Firebase sdk
+Firebase*sdk*
+*firebase*credentials*.json
+*serviceAccount*.json
+*service-account*.json
+
+# Environment files
+.env
+.env.*
+.env.local
+
+# Certificates and keys
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Credentials and secrets
+credentials.json
+secrets.json
+*secret*.json
+*.secret

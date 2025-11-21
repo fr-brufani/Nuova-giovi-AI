@@ -14,6 +14,14 @@ from ...models import (
     GmailWatchRequest,
     GmailWatchResponse,
     GmailNotificationPayload,
+    ScidooConfigureRequest,
+    ScidooConfigureResponse,
+    ScidooSyncRequest,
+    ScidooSyncResponse,
+    ScidooTestRequest,
+    ScidooTestResponse,
+    ScidooRoomType,
+    ScidooRoomTypesResponse,
 )
 from ...parsers import (
     ScidooCancellationParser,
@@ -25,7 +33,15 @@ from ...parsers import (
     ScidooConfirmationParser,
     EmailParsingEngine,
 )
-from ...repositories import HostEmailIntegrationRepository, OAuthStateRepository
+from ...repositories import (
+    HostEmailIntegrationRepository,
+    OAuthStateRepository,
+    ScidooIntegrationsRepository,
+    ScidooPropertyMappingsRepository,
+    ReservationsRepository,
+    ClientsRepository,
+    PropertiesRepository,
+)
 from ...services import (
     GmailOAuthService,
     OAuthStateExpiredError,
@@ -37,7 +53,16 @@ from ...services.backfill_service import GmailBackfillService
 from ...services.gmail_service import GmailService
 from ...services.gmail_watch_service import GmailWatchService
 from ...services.persistence_service import PersistenceService
+from ...services.integrations.scidoo_reservation_client import (
+    ScidooReservationClient,
+    ScidooAPIError,
+    ScidooAuthenticationError,
+)
 from ...config.settings import get_settings
+from datetime import datetime, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -455,4 +480,405 @@ def handle_gmail_notifications(
     # Rispondi immediatamente con 204 No Content (ack a Pub/Sub)
     # BackgroundTasks viene eseguito dopo la risposta
     return Response(status_code=status.HTTP_204_NO_CONTENT, background=background_tasks)
+
+
+# ============================================================================
+# Scidoo API Integration Endpoints
+# ============================================================================
+
+
+def get_scidoo_persistence_service(
+    firestore_client=Depends(get_firestore_client),
+) -> PersistenceService:
+    """Dependency per PersistenceService."""
+    return PersistenceService(firestore_client)
+
+
+@router.post(
+    "/scidoo/{host_id}/configure",
+    response_model=ScidooConfigureResponse,
+    status_code=status.HTTP_200_OK,
+)
+def configure_scidoo_integration(
+    host_id: str,
+    payload: ScidooConfigureRequest,
+    firestore_client: firestore.Client = Depends(get_firestore_client),
+    persistence_service: PersistenceService = Depends(get_scidoo_persistence_service),
+) -> ScidooConfigureResponse:
+    """
+    Configura integrazione Scidoo per un host.
+    
+    Salva API key e opzionalmente triggera import massivo iniziale.
+    """
+    try:
+        # Salva API key
+        integrations_repo = ScidooIntegrationsRepository(firestore_client)
+        integrations_repo.save_api_key(host_id, payload.api_key)
+        logger.info(f"[SCIDOO] API key salvata per host {host_id}")
+        
+        # Test connessione
+        client = ScidooReservationClient(api_key=payload.api_key, mock_mode=False)
+        account_info = client.get_account_info()
+        
+        account_name = account_info.get("name")
+        properties = account_info.get("properties", [])
+        properties_count = len(properties) if isinstance(properties, list) else 0
+        
+        sync_triggered = False
+        
+        # Se trigger_sync=True, esegui import massivo
+        if payload.trigger_sync:
+            try:
+                # Import ultimi 6 mesi basato su data di creazione prenotazione
+                creation_from = (datetime.now() - timedelta(days=180)).strftime("%Y-%m-%d")
+                creation_to = datetime.now().strftime("%Y-%m-%d")
+                
+                reservations = client.get_reservations(
+                    creation_from=creation_from,
+                    creation_to=creation_to,
+                )
+                
+                processed = 0
+                skipped = 0
+                errors = 0
+                
+                for reservation in reservations:
+                    try:
+                        save_result = persistence_service.save_scidoo_reservation(reservation, host_id)
+                        if save_result.get("saved"):
+                            processed += 1
+                        elif save_result.get("skipped"):
+                            skipped += 1
+                        else:
+                            errors += 1
+                    except Exception as e:
+                        errors += 1
+                        logger.error(f"Errore salvataggio prenotazione {reservation.internal_id}: {e}")
+                
+                sync_triggered = True
+                logger.info(
+                    f"[SCIDOO] Import massivo completato per host {host_id}: "
+                    f"{processed} processate, {skipped} saltate, {errors} errori"
+                )
+            except Exception as e:
+                logger.error(f"Errore durante import massivo Scidoo: {e}", exc_info=True)
+        
+        return ScidooConfigureResponse(
+            hostId=host_id,
+            connected=True,
+            accountName=account_name,
+            propertiesCount=properties_count,
+            syncTriggered=sync_triggered,
+        )
+        
+    except ScidooAuthenticationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Autenticazione Scidoo fallita: {str(e)}"
+        ) from e
+    except ScidooAPIError as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Errore API Scidoo: {str(e)}"
+        ) from e
+    except Exception as e:
+        logger.error(f"Errore configurazione Scidoo per host {host_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Errore configurazione integrazione Scidoo: {str(e)}"
+        ) from e
+
+
+@router.post(
+    "/scidoo/{host_id}/sync",
+    response_model=ScidooSyncResponse,
+    status_code=status.HTTP_200_OK,
+)
+def sync_scidoo_reservations(
+    host_id: str,
+    payload: ScidooSyncRequest,
+    firestore_client: firestore.Client = Depends(get_firestore_client),
+    persistence_service: PersistenceService = Depends(get_scidoo_persistence_service),
+) -> ScidooSyncResponse:
+    """
+    Esegue import massivo prenotazioni Scidoo.
+    
+    Se non specificate date, importa ultimi 6 mesi.
+    """
+    try:
+        # Recupera API key
+        integrations_repo = ScidooIntegrationsRepository(firestore_client)
+        api_key = integrations_repo.get_api_key(host_id)
+        
+        if not api_key:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Integrazione Scidoo non configurata per host {host_id}"
+            )
+        
+        # Determina range date - usa data di creazione invece di check-in
+        if payload.checkin_from and payload.checkin_to:
+            # Se vengono passate date, le usiamo come creation_from/creation_to
+            creation_from = payload.checkin_from
+            creation_to = payload.checkin_to
+        else:
+            # Default: ultimi 6 mesi basato su data di creazione prenotazione
+            creation_from = (datetime.now() - timedelta(days=180)).strftime("%Y-%m-%d")
+            creation_to = datetime.now().strftime("%Y-%m-%d")
+        
+        # Chiama API con parametri di creazione
+        client = ScidooReservationClient(api_key=api_key, mock_mode=False)
+        reservations = client.get_reservations(
+            creation_from=creation_from,
+            creation_to=creation_to,
+        )
+        
+        logger.info(
+            f"[SCIDOO] Sync host {host_id}: trovate {len(reservations)} prenotazioni "
+            f"create da {creation_from} a {creation_to}"
+        )
+        
+        # Processa prenotazioni
+        processed = 0
+        skipped = 0
+        errors = 0
+        reservation_details = []
+        
+        for reservation in reservations:
+            try:
+                save_result = persistence_service.save_scidoo_reservation(reservation, host_id)
+                
+                if save_result.get("saved"):
+                    processed += 1
+                    reservation_details.append({
+                        "internal_id": reservation.internal_id,
+                        "status": "saved",
+                        "property_id": save_result.get("property_id"),
+                        "client_id": save_result.get("client_id"),
+                    })
+                elif save_result.get("skipped"):
+                    skipped += 1
+                    reservation_details.append({
+                        "internal_id": reservation.internal_id,
+                        "status": "skipped",
+                        "reason": "already_exists",
+                    })
+                else:
+                    errors += 1
+                    reservation_details.append({
+                        "internal_id": reservation.internal_id,
+                        "status": "error",
+                        "error": save_result.get("error", "unknown"),
+                    })
+            except Exception as e:
+                errors += 1
+                logger.error(f"Errore salvataggio prenotazione {reservation.internal_id}: {e}")
+                reservation_details.append({
+                    "internal_id": reservation.internal_id,
+                    "status": "error",
+                    "error": str(e),
+                })
+        
+        return ScidooSyncResponse(
+            processed=processed,
+            skipped=skipped,
+            errors=errors,
+            reservations=reservation_details,
+        )
+        
+    except ScidooAPIError as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Errore API Scidoo: {str(e)}"
+        ) from e
+    except Exception as e:
+        logger.error(f"Errore sync Scidoo per host {host_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Errore sync prenotazioni Scidoo: {str(e)}"
+        ) from e
+
+
+@router.post(
+    "/scidoo/{host_id}/test",
+    response_model=ScidooTestResponse,
+    status_code=status.HTTP_200_OK,
+)
+def test_scidoo_connection(
+    host_id: str,
+    payload: ScidooTestRequest,
+    firestore_client: firestore.Client = Depends(get_firestore_client),
+) -> ScidooTestResponse:
+    """
+    Testa connessione API Scidoo.
+    
+    Se api_key è fornita nel body, la usa per il test senza salvare.
+    Altrimenti recupera l'API key salvata da Firestore.
+    """
+    try:
+        # Determina API key da usare
+        api_key = None
+        if payload.api_key:
+            # Usa API key fornita nel body (test senza salvataggio)
+            api_key = payload.api_key
+            logger.info(f"[SCIDOO] Test connessione con API key fornita per host {host_id}")
+        else:
+            # Recupera API key salvata
+            integrations_repo = ScidooIntegrationsRepository(firestore_client)
+            api_key = integrations_repo.get_api_key(host_id)
+            
+            if not api_key:
+                return ScidooTestResponse(
+                    connected=False,
+                    error="API key non configurata. Fornisci un'API key per testare la connessione.",
+                )
+            logger.info(f"[SCIDOO] Test connessione con API key salvata per host {host_id}")
+        
+        # Test connessione
+        client = ScidooReservationClient(api_key=api_key, mock_mode=False)
+        account_info = client.get_account_info()
+        
+        account_name = account_info.get("name")
+        properties = account_info.get("properties", [])
+        properties_count = len(properties) if isinstance(properties, list) else 0
+        
+        return ScidooTestResponse(
+            connected=True,
+            accountName=account_name,
+            propertiesCount=properties_count,
+        )
+        
+    except ScidooAuthenticationError as e:
+        return ScidooTestResponse(
+            connected=False,
+            error=f"Autenticazione fallita: {str(e)}",
+        )
+    except ScidooAPIError as e:
+        return ScidooTestResponse(
+            connected=False,
+            error=f"Errore API: {str(e)}",
+        )
+    except Exception as e:
+        logger.error(f"Errore test connessione Scidoo per host {host_id}: {e}", exc_info=True)
+        return ScidooTestResponse(
+            connected=False,
+            error=f"Errore: {str(e)}",
+        )
+
+
+@router.get(
+    "/scidoo/{host_id}/room-types",
+    response_model=ScidooRoomTypesResponse,
+    status_code=status.HTTP_200_OK,
+)
+def get_scidoo_room_types(
+    host_id: str,
+    firestore_client: firestore.Client = Depends(get_firestore_client),
+) -> ScidooRoomTypesResponse:
+    """
+    Recupera lista room types Scidoo per configurazione mapping.
+    """
+    try:
+        # Recupera API key
+        integrations_repo = ScidooIntegrationsRepository(firestore_client)
+        api_key = integrations_repo.get_api_key(host_id)
+        
+        if not api_key:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Integrazione Scidoo non configurata per host {host_id}"
+            )
+        
+        # Chiama API
+        client = ScidooReservationClient(api_key=api_key, mock_mode=False)
+        room_types_data = client.get_room_types()
+        
+        # Converti in modelli
+        room_types = [
+            ScidooRoomType(
+                id=rt.get("id"),
+                name=rt.get("name", ""),
+                description=rt.get("description"),
+                size=rt.get("size"),
+                capacity=rt.get("capacity"),
+                additionalBeds=rt.get("additional_beds"),
+                images=rt.get("images", []),
+            )
+            for rt in room_types_data
+        ]
+        
+        return ScidooRoomTypesResponse(roomTypes=room_types)
+        
+    except ScidooAPIError as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Errore API Scidoo: {str(e)}"
+        ) from e
+    except Exception as e:
+        logger.error(f"Errore recupero room types Scidoo per host {host_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Errore recupero room types: {str(e)}"
+        ) from e
+
+
+@router.delete(
+    "/scidoo/{host_id}",
+    status_code=status.HTTP_200_OK,
+)
+def remove_scidoo_integration(
+    host_id: str,
+    firestore_client: firestore.Client = Depends(get_firestore_client),
+) -> dict:
+    """
+    Rimuove integrazione Scidoo per un host.
+    
+    Elimina:
+    - API key e configurazione
+    - Tutte le prenotazioni con importedFrom="scidoo_api"
+    - Tutti i clienti con importedFrom="scidoo_api"
+    - Tutte le properties con importedFrom="scidoo_api"
+    - Tutti i mapping Scidoo property
+    """
+    try:
+        # Inizializza repository
+        integrations_repo = ScidooIntegrationsRepository(firestore_client)
+        reservations_repo = ReservationsRepository(firestore_client)
+        clients_repo = ClientsRepository(firestore_client)
+        properties_repo = PropertiesRepository(firestore_client)
+        mappings_repo = ScidooPropertyMappingsRepository(firestore_client)
+        
+        imported_from = "scidoo_api"
+        
+        # Elimina prenotazioni, clienti e properties importate da Scidoo
+        reservations_deleted = reservations_repo.delete_by_imported_from(host_id, imported_from)
+        clients_deleted = clients_repo.delete_by_imported_from(host_id, imported_from)
+        properties_deleted = properties_repo.delete_by_imported_from(host_id, imported_from)
+        mappings_deleted = mappings_repo.delete_by_host(host_id)
+        
+        # Rimuovi API key e configurazione
+        integrations_repo.remove_integration(host_id)
+        
+        logger.info(
+            f"[SCIDOO] Integrazione rimossa per host {host_id}: "
+            f"{reservations_deleted} prenotazioni, {clients_deleted} clienti, "
+            f"{properties_deleted} properties, {mappings_deleted} mapping eliminati"
+        )
+        
+        return {
+            "success": True,
+            "message": "Integrazione Scidoo rimossa",
+            "deleted": {
+                "reservations": reservations_deleted,
+                "clients": clients_deleted,
+                "properties": properties_deleted,
+                "mappings": mappings_deleted,
+            }
+        }
+    except Exception as e:
+        logger.error(f"Errore rimozione integrazione Scidoo per host {host_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Errore durante rimozione: {str(e)}"
+        ) from e
 

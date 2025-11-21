@@ -351,10 +351,26 @@ def list_property_match_data(
     imported_raw = []
     for item in all_properties:
         imported_from = item.get("importedFrom")
-        requires_review = item.get("requiresReview", imported_from == "airbnb_email")
-        if imported_from == "airbnb_email" or requires_review:
+        
+        # Verifica se il campo importedFrom esiste nel documento e ha un valore
+        # In Firestore, se il campo non esiste, .get() restituisce None
+        # Distinguiamo tra campo non esistente e campo con valore None/null
+        has_imported_from_field = "importedFrom" in item
+        has_imported_from_value = has_imported_from_field and imported_from is not None and imported_from != ""
+        
+        # Logica richiesta dall'utente:
+        # - Colonna sinistra (managed): properties che NON hanno il campo importedFrom popolato
+        # - Colonna destra (imported): properties che HANNO importedFrom popolato (qualsiasi valore)
+        #
+        # Nota: l'utente ha anche detto "fai su che finiscono nella colonna di sinistra quelli 
+        # con valore importedFrom che può essere uno di quelli sensati", ma questo contraddice
+        # la prima parte. Implementiamo la logica principale: sinistra=senza importedFrom, destra=con importedFrom
+        
+        if has_imported_from_value:
+            # Property con importedFrom popolato -> colonna destra (imported)
             imported_raw.append(item)
         else:
+            # Property senza importedFrom o con valore None/empty -> colonna sinistra (managed)
             managed_raw.append(item)
 
     def to_candidate(item: dict) -> PropertyCandidateResponse:

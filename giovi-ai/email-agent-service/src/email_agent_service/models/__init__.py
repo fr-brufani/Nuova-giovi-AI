@@ -6,6 +6,14 @@ from .integrations import (
     GmailWatchRequest,
     GmailWatchResponse,
     GmailNotificationPayload,
+    ScidooConfigureRequest,
+    ScidooConfigureResponse,
+    ScidooSyncRequest,
+    ScidooSyncResponse,
+    ScidooTestRequest,
+    ScidooTestResponse,
+    ScidooRoomType,
+    ScidooRoomTypesResponse,
 )
 from .booking_message import (
     BookingConversation,
@@ -17,6 +25,15 @@ from .booking_reservation import (
     BookingGuestInfo,
     BookingPaymentInfo,
     BookingReservation,
+)
+from .smoobu_reservation import (
+    SmoobuReservation,
+    SmoobuApartment,
+)
+from .scidoo_reservation import (
+    ScidooReservation,
+    ScidooCustomer,
+    ScidooGuest,
 )
 from .parsing import (
     GmailBackfillPreviewResponse,
@@ -37,6 +54,15 @@ __all__ = [
     "GmailWatchRequest",
     "GmailWatchResponse",
     "GmailNotificationPayload",
+    # Scidoo integration models
+    "ScidooConfigureRequest",
+    "ScidooConfigureResponse",
+    "ScidooSyncRequest",
+    "ScidooSyncResponse",
+    "ScidooTestRequest",
+    "ScidooTestResponse",
+    "ScidooRoomType",
+    "ScidooRoomTypesResponse",
     "ParsedEmail",
     "ParsedEmailMetadata",
     "ReservationInfo",
@@ -53,5 +79,12 @@ __all__ = [
     "BookingReservation",
     "BookingGuestInfo",
     "BookingPaymentInfo",
+    # Smoobu models
+    "SmoobuReservation",
+    "SmoobuApartment",
+    # Scidoo models
+    "ScidooReservation",
+    "ScidooCustomer",
+    "ScidooGuest",
 ]
 

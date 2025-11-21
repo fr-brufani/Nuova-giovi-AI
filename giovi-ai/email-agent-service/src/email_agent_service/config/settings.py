@@ -90,6 +90,33 @@ class AppSettings(BaseSettings):
         validation_alias="BOOKING_POLLING_INTERVAL_MESSAGES",
         description="Intervallo polling messaggi in secondi (30-60s)",
     )
+    # Smoobu API Settings
+    smoobu_api_key: Optional[str] = Field(
+        default=None,
+        validation_alias="SMOOBU_API_KEY",
+        description="API Key per Smoobu API",
+    )
+    smoobu_api_base_url: str = Field(
+        default="https://login.smoobu.com",
+        validation_alias="SMOOBU_API_BASE_URL",
+        description="Base URL per Smoobu API",
+    )
+    smoobu_polling_interval_reservations: int = Field(
+        default=60,
+        validation_alias="SMOOBU_POLLING_INTERVAL_RESERVATIONS",
+        description="Intervallo polling prenotazioni Smoobu in secondi (default: 60s)",
+    )
+    # Scidoo API Settings
+    scidoo_api_base_url: str = Field(
+        default="https://www.scidoo.com/api/v1",
+        validation_alias="SCIDOO_API_BASE_URL",
+        description="Base URL per Scidoo API",
+    )
+    scidoo_polling_interval: int = Field(
+        default=30,
+        validation_alias="SCIDOO_POLLING_INTERVAL",
+        description="Intervallo polling prenotazioni Scidoo in secondi (default: 30s)",
+    )
 
     @field_validator("google_oauth_scopes", mode="before")
     @classmethod

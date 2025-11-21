@@ -7,6 +7,12 @@ from .booking_messaging_client import (
     BookingRateLimitError,
 )
 from .booking_reservation_client import BookingReservationClient
+from .scidoo_reservation_client import (
+    ScidooReservationClient,
+    ScidooAPIError,
+    ScidooAuthenticationError,
+    ScidooRateLimitError,
+)
 from .oauth_service import GmailOAuthService
 
 __all__ = [
@@ -16,5 +22,9 @@ __all__ = [
     "BookingAuthenticationError",
     "BookingForbiddenError",
     "BookingRateLimitError",
+    "ScidooReservationClient",
+    "ScidooAPIError",
+    "ScidooAuthenticationError",
+    "ScidooRateLimitError",
 ]
 

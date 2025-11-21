@@ -1,0 +1,3407 @@
+Smoobu logo
+Search
+Introduction
+Authentication
+OAuth 2 Authentication
+Rate Limit
+CORS (Cross-Origin Resource Sharing) Policy
+Get User
+Smoobu Availability
+Create Booking
+Update Booking
+Get Bookings Api
+Get Booking
+Cancel Reservation
+Get Price Elements
+Get Price Element
+Create Price Element
+Update Price Element
+Delete Price Element
+Get Placeholders (Beta)
+Get Rates
+Post Rates Api
+Get Apartment-IDs
+Get Apartment
+Get Message
+Get Addons
+Send message to guest
+Send message to host
+Get Custom Placeholders Api (Beta)
+Get Custom Placeholder Api (Beta)
+Create Custom Placeholder (Beta)
+Update Custom Placeholder Api (Beta)
+Delete Custom Placeholder Api (Beta)
+Get Custom Placeholder Translations Api (Beta)
+Get Custom Placeholder Translation Api (Beta)
+Create Custom Placeholder Translation Api (Beta)
+Update Custom Placeholder Api (Beta)
+Delete Custom Placeholder Translation Api (Beta)
+Get Guests Api
+Get Guest Api
+Get Online Check-In (OCI)
+Create Online Check-In (OCI)
+Third Party Providers
+Webhooks
+Client Libraries
+Channels
+Change Log
+Documentation is created with Slate
+Introduction
+Our REST based APIs allow you to get access to the Smoobu Application. We have different APIs for different usecases. On this page we explain you a little bit more detailled what you need for your usecase as a host.
+
+Please contact us before you start coding. We send you the necessary keys and all further information you need to know. Tell us a few words about your ideas and plans. We are always happy to help our customers and our partners to build a perfect integrated and easy to use solution.
+
+Send us an email to api@smoobu.com to join our mailing list and keep updated about all issues, developer news and API updates.
+
+Authentication
+To authorize, use this code:
+
+# With shell, you can just pass the correct header with each request
+curl "api_endpoint_here"
+  -H "Api-Key: secretApiKey"
+Make sure to replace secretApiKey with your API key.
+
+If you want to develop an API for a single Smoobu user you will find all necessary IDs and Keys in settings for developers.
+Please add API-key in the header in each request. If your API-Key is ABCDEFGH Your header should look like: ‘API-key: ABCDEFGH’
+
+ You must replace secretApiKey with your personal API key.
+If you are a developer of a third party tool which is relevant for more than one Smoobu user please read the part at the end of the documentation.
+
+OAuth 2 Authentication
+Currently OAuth 2 only supported for Smoobu partners.
+
+Send a registration request to Smoobu for your application. You will get a Client Id and Client Secret. A redirect URL will be required which will be called after a host authorize your application. The URL is invoked with a query string containing a special authorization code that you can use to retrieve access tokens required for all Smoobu API calls.
+
+Authorization
+The authorization URL will be :
+
+https://login.smoobu.com/{locale}/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&state={state}
+
+URL Parameters
+
+Parameter	Description
+locale	Locale of Smoobu supported languages (i.e en, de, fr, it, es)
+client_id	Provided from Smoobu
+redirect_uri	Redirect Url provided at registration.
+state	Random number/string
+i.e
+
+https://login.smoobu.com/de/oauth/authorize?client_id=10&redirect_uri=https://yourdomain.com/&response_type=code&state=20464541
+
+After a host grants or denies your application access, your server must handle the authorization response. This response contains a code field which you can use to get an initial access token. The authorization code expired in 2 minutes after is is issued.
+
+Example of success redirect.
+
+https://yourdomain.com/?code=eef1b91d549f7c8fd4ccbfb6d96c32122e53b25e&state=20464541
+
+In case of error, it will be like this.
+
+https://yourdomain.com/?error=access_denied&error_description=The user denied access to your application&state=20464541 (The URL will be encoded)
+
+Obtaining Access Token
+Once you have authorization code, you can get the access token which can be used for other API calls.
+
+To obtain access token, use this code:
+
+curl --location --request POST 'https://login.smoobu.com/oauth/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'grant_type=authorization_code' \
+--data-urlencode 'code=db9dba495938124bdd0e8635212280bf3cc76721' \
+--data-urlencode 'redirect_uri=https://yourdomain.com/' \
+--data-urlencode 'client_id=10' \
+--data-urlencode 'client_secret=1dde36bc0f25c842079e90871d55f019c331e29055'
+The above command returns JSON structured like this (HTTP status code 200):
+
+{ 
+   "access_token":"c8c02e8af18fa10ff4388ebf9bcaa15a522b6cfe",
+   "expires_in":3600,
+   "token_type":"Bearer",
+   "scope":null,
+   "refresh_token":"610b630034a85d1805faca0d495f89ffc44e9a92"
+}
+Response if it failed (HTTP status code 400):
+
+{ 
+   "error":"invalid_grant",
+   "error_description":"Authorization code doesn\u0027t exist or is invalid for the client"
+}
+POST Parameters
+
+Parameter	Description
+grant_type	authorization_code
+code	Authorization code
+redirect_uri	Redirect Url provided at registration.
+client_id	Provided from Smoobu
+client_secret	Provided from Smoobu
+Refresh Token
+If a access token expires, you can send a refresh token request in order to get new access token.
+
+To get new access token, use this command:
+
+curl --location --request POST 'https://login.smoobu.com/oauth/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'grant_type=refresh_token' \
+--data-urlencode 'refresh_token=2c3bb89326e5bc3a7e953b9eff72b2463b11b393' \
+--data-urlencode 'client_id=10' \
+--data-urlencode 'client_secret=1dde36bc0f25c842079e90871d55f019c331e29055'
+The above command returns JSON structured like this (HTTP status code 200):
+
+{ 
+   "access_token":"6490e32fad291d54402c5879dee4cd8840936b4c",
+   "expires_in":3600,
+   "token_type":"Bearer",
+   "scope":null
+}
+Response if it failed (HTTP status code 400):
+
+{ 
+   "error":"invalid_grant",
+   "error_description":"Invalid refresh token"
+}
+POST Parameters
+
+Parameter	Description
+grant_type	refresh_token
+refresh_token	Refresh token.
+client_id	Provided from Smoobu
+client_secret	Provided from Smoobu
+Using Access Token
+Use of access token:
+
+curl --location --request GET 'https://login.smoobu.com/api/apartments' \
+--header 'Authorization: Bearer  6490e32fad291d54402c5879dee4cd8840936b4c'
+Instead of Api-Key, an authorization header is required.
+
+Rate Limit
+Smoobu allows up to 1000 request per minute. If this limit exceeded, you will receive HTTP response with status code 429.
+
+Following rate limit headers are available in each response.
+
+Header	Format	Description
+X-RateLimit-Limit	int	Number of requests allowed in 1 minute window
+X-RateLimit-Remaining	int	Remaining requests in 1 minute window
+X-RateLimit-Retry-After	int	Current window expire time in Unix timestamp. Requests can be made after this time if rate limit exceeded.
+CORS (Cross-Origin Resource Sharing) Policy
+Due to security concerns, Smoobu API cannot be directly called from your website/front-end application. Instead, you can setup a proxy service (using any backend languages i.e PHP, Python, Node.js) which will securely call the Smoobu API and then pass the information back to your website.
+
+Get User
+Below command will return profile data of the current user based on Api-Key:
+
+curl -X GET \
+  https://login.smoobu.com/api/me \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache'
+The above command returns JSON structured like this with Status code 200:
+
+{
+    "id": 7,
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "jhon@example.com"
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Get profile data of the current user based on Api-Key
+
+HTTP Request
+GET https://login.smoobu.com/api/me
+
+Json Response
+Parameter	Format	Description
+id	int	user Id.
+firstName	string	First name of the user.
+lastName	string	Last name of the user.
+email	string	Email of the user.
+Smoobu Availability
+curl -X POST \
+  https://login.smoobu.com/booking/checkApartmentAvailability \
+  -H 'Api-Key: secretApiKey' \
+  -H 'cache-control: no-cache' \
+  -d '{
+    "arrivalDate" : "2017-11-01",
+    "departureDate":  "2017-12-03",
+    "apartments": [2, 3, 14],
+    "customerId": 9
+}'
+The above command returns JSON structured like this:
+
+{
+    "availableApartments": [
+        2,
+        3,
+        14
+
+    ],
+    "prices": {
+        "3": {
+            "price": 36560,
+            "currency": "IDR"
+        },
+        "14": {
+            "price": 4415,
+            "currency": "IDR"
+        }
+    },
+    "errorMessages": {
+        "2": {
+            "errorCode": 401,
+            "message": "The duration of the booking is too short.",
+            "minimumLengthOfStay": 50
+        }
+    }
+}
+If the authentication failed it return this jason:
+
+{
+    "title": "Error occurred",
+    "detail": "verification error"
+}
+Partners and customers of Smoobu can check their availability of properties and dates. For that you send a request with arrival and departure date and the property ID.
+
+HTTP Request
+POST https://login.smoobu.com/booking/checkApartmentAvailability
+
+Json Request Body
+Parameter	Format	Mandatory	Description
+arrivalDate	yyyy-mm-dd	Yes	Start date of the booking.
+departureDate	yyyy-mm-dd	Yes	End date of the booking.
+apartments	array	Yes	Check availability in the given apartments. If apartments is empty it check all apartments.
+customerId	int	Yes	Id of the customer/user with the given apartment and the api key.
+guests	int	No	number of guests
+discountCode	string	No	Discount code from bookingTool settings
+Json Response
+We send you more than available or unavailable. If it is available we send you the price for that period. If you have restrictions which don't allow this reservation we show the reason for disapproval.
+
+Parameter	Format	Description
+availableApartments	array	All available apartments from request.
+prices	object	The Key of the price object match with the apartment id. The price object contain the price and the currency.
+prices.price	int	price for the range and for the apartment.
+prices.currency	string	Currency of the price.
+errorMessages	object	The Key of the error message object match with the apartment id. The error message object contain all unavailable apartments with reason why it not available.
+errorMessages.errorCode	int	Error id.
+errorMessages.message	string	Error message.
+errorMessages.minimumLengthOfStay	int	Number of required days. Occur only if the booking is to short.
+errorMessages.numberOfGuest	int	Max number of guests. Occur only if the number of guests is to high.
+errorMessages.leadTime	int	Number of days before a booking. Occur Only if the number of days before is to small.
+errorMessages.minimumLengthBetweenBookings	int	Number of days between bookings. Occur only if the Distance between bookings is to short.
+errorMessages.arrivalDays	array	Allowed arrival dates. Occur only if the arrival day is not in the list of allowed days.
+Errors
+Error Code	Message
+400	The number of guests exceeds the limit of the apartment.
+401	The duration of the booking is too short.
+402	The chosen day of arrival is not available
+403	Arrival day is too short term.
+404	Minimum between bookings is too short.
+Create Booking
+The above command create a booking only with the mandatory fields:
+
+curl -X POST \
+  https://login.smoobu.com/api/reservations \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "arrivalDate": "2019-09-01",
+  "departureDate": "2019-09-03",
+  "channelId": 63,
+  "apartmentId": 7,
+}'
+The above command returns JSON structured like this with Status code 200:
+
+{
+    "id": 906
+}
+The above comand create a booking with all fields:
+
+curl -X POST \
+  https://login.smoobu.com/api/reservations \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "arrivalDate": "2019-09-05",
+  "departureDate": "2019-09-08",
+  "channelId": 63,
+  "apartmentId": 7,
+  "arrivalTime": "12:00",
+  "departureTime": "15:00",
+  "firstName": "Max",
+  "lastName": "Mustermann",
+  "email": "ma@muster.de",
+  "phone": "0177123456789",
+  "notice": "Breakfast, one dog",
+  "adults": 2,
+  "children": 3,
+  "price": 150.20,
+  "priceStatus": 1,
+  "deposit": 50,
+  "depositStatus": 1,
+  "language": "en",
+  "priceElements" : [
+                      {
+                          "type": "basePrice",
+                          "name": "Base price",
+                          "amount": 100.20,
+                          "quantity": null,
+                          "tax": null,
+                          "currencyCode": "EUR",
+                          "sortOrder": 1
+                      },
+                      {
+                          "type": "cleaningFee",
+                          "name": "Cleaning fee",
+                          "amount": 50,
+                          "quantity": null,
+                          "tax": null,
+                          "currencyCode": "EUR",
+                          "sortOrder": 4
+                      }
+                  ]
+}'
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Response if there is an validation error code 400:
+
+{
+    "status": 400,
+    "title": "Bad Request",
+    "detail": "Failed validation",
+    "validation_messages": {
+        "error": "There exists already a reservation from 05.09.2019 to 08.09.2019."
+    }
+}
+Response if the channel not found for the user code 400:
+
+{
+  "status": 400,
+  "title": "Bad Request",
+  "detail": "Failed validation",
+  "validation_messages": {
+    "error": "Channel with id 144 not found for user 7"
+  }
+}
+Partners and customers of Smoobu can send bookings to Smoobu. Our application receives them like a booking from a booking channel and synchronizes it into every other channel.
+
+HTTP Request
+POST https://login.smoobu.com/api/reservations
+
+Json Request Body
+Parameter	Format	Mandatory	Description
+arrivalDate	yyyy-mm-dd	Yes	Start date of the booking.
+departureDate	yyyy-mm-dd	Yes	End date of the booking.
+channelId	int	No	Id of the Channel. Default = 70
+apartmentId	int	Yes	Id of the apartment
+arrivalTime	string	*	Time when the guest will arrive. In the Format "HH:ii"
+departureTime	string	No	Time when the guest will departs. In the Format "HH:ii"
+firstName	string	*	First name of the guest
+lastName	string	*	First name of the guest
+notice	string	*	Notes. Free text field for you information.
+adults	int	No	Number of adults
+children	int	No	Number of children
+price	float	No	Total price of the booking.
+priceStatus	int	No	1 or 0 . See table below.
+prepayment	float	No	Prepayment of the booking.
+prepaymentStatus	int	No	1 or 0 . See table below.
+deposit	float	No	Deposit of the booking.
+depositStatus	int	No	1 or 0 . See table below.
+address	object	*	address of the guest
+address.street	string	*	street of the address
+address.postalCode	string	*	postal code of the address
+address.location	string	*	location of the address
+country	string	*	country of the address
+email	string	*	Email of the guest
+phone	string	*	Phone Number of the guest
+language	string	No	Guest language i.e en, de, es
+priceElements	array	No	Array of price elements. See this for price element fields.
+* depend on the user settings which can be found in the booking-tool settings in "Form Content"
+
+Price/Prepayment/Deposit Status
+Id	Description
+0	open/not payed
+1	complete payment
+Json Response
+Parameter	Format	Description
+id	int	If booking successful entered it return the booking id
+Update Booking
+The below command update booking with provided fields:
+
+curl -X PUT \
+  https://login.smoobu.com/api/reservations/12 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "departureTime": "11:00",
+        "arrivalTime": "18:00",
+        "price": 50.10,
+        "priceStatus": 1,
+        "prepayment": 10,
+        "prepaymentStatus": 0,
+        "deposit": 40,
+        "depositStatus": 1,
+        "notice": "",
+        "assistantNotice": "",
+        "guestName": "Jhon Doe",
+        "guestEmail": "example@domain.com",
+        "guestPhone": "04545451",
+        "adults": 1,
+        "children": 3,
+        "language" : "de"
+      }'
+The above command returns JSON structured like this with Status code 200:
+
+{
+    "status": 200,
+    "title": "Resource updated successfully",
+    "detail": ""
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Response if there is an validation error code 400:
+
+{
+    "status": 400,
+    "title": "Bad Request",
+    "detail": "Failed validation",
+    "validation_messages": {
+        "arrivalTime": {
+            "wrongFormat": "Please enter a valid time for check-in and check-out. Use the 24 hour format, for example 16:00."
+        }
+    }
+}
+Partners and customers of Smoobu can update existing bookings to Smoobu.
+
+HTTP Request
+PUT https://login.smoobu.com/api/reservations/<reservationId>
+
+URL Parameters
+Parameter	Description
+reservationId	Reservation / Booking Id
+Json Request Body
+Parameter	Format	Mandatory	Description
+arrivalTime	string	*	Time when the guest will arrive. In the Format "HH:ii"
+departureTime	string	No	Time when the guest will departs. In the Format "HH:ii"
+price	float	No	Total price of the booking.
+priceStatus	int	No	1 or 0 . See table below.
+prepayment	float	No	Prepayment of the booking.
+prepaymentStatus	int	No	1 or 0 . See table below.
+deposit	float	No	Deposit of the booking.
+depositStatus	int	No	1 or 0 . See table below.
+guestName	string	*	Guest name.
+guestEmail	string	*	Email of the guest
+guestPhone	string	*	Phone Number of the guest
+notice	string	*	Notes. Free text field for you information.
+assistantNotice	string	*	Assistant instructions.
+adults	int	No	Number of adults
+children	int	No	Number of children
+language	string	No	Guest language i.e en, de, es
+* depend on the user settings which can be found in the booking-tool settings in "Form Content"
+
+Price/Prepayment/Deposit Status
+Id	Description
+0	open/not payed
+1	complete payment
+Json Response
+Parameter	Format	Description
+status	int	200
+title	string	Resource updated successfully
+detail	string	
+Get Bookings Api
+The above command get all bookings:
+
+curl -X GET \
+  https://login.smoobu.com/api/reservations \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+ "page_count": 1,
+ "page_size": 25,
+ "total_items": 3,
+ "page": 1,
+ "bookings": [
+ {
+  "id": 291,
+  "reference-id": null,
+  "type": "reservation",
+  "arrival": "2018-01-10",
+  "departure": "2018-01-12",
+  "created-at": "2018-01-03 13:51",
+  "modified-at": "2018-01-03 13:51",
+  "apartment": {
+   "id": 50017,
+   "name": "Seaside apartment"
+  },
+  "channel": {
+   "id": 465614,
+   "name": "Booking.com"
+  },
+  "guest-name": "Harry Potter",
+  "email": "HarryPotter@hogwarts.com",
+  "phone": "+49123456789",
+  "adults": 3,
+  "children": 2,
+  "check-in": "16:00",
+  "check-out": "10:00",
+  "notice": "",
+  "price": 150,
+  "price-paid": "Yes",
+  "prepayment": 0,
+  "prepayment-paid": "No",
+  "deposit": 0,
+  "deposit-paid": "No",
+  "language": "en",
+  "guest-app-url": "https://guest.smoobu.com/?t=sf7678asd&b=291",
+  "is-blocked-booking" : false,
+  "guestId" : 155,
+   "related": []
+ },
+ {
+  "id": 292,
+  "reference-id": "4545dS4254",
+  "type": "reservation",
+  "arrival": "2018-01-22",
+  "departure": "2018-01-25",
+  "created-at": "2018-01-03 13:51",
+  "modified-at": "2018-01-03 13:51",
+  "apartment": {
+   "id": 50017,
+   "name": "Seaside apartment"
+  },
+  "channel": {
+   "id": 465885,
+   "name": "Airbnb"
+  },
+  "guest-name": "Hermine Granger",
+  "email": "Hermine@hogwarts.com",
+  "phone": "+49123456789",
+  "adults": 1,
+  "children": 0,
+  "check-in": "18:00",
+  "check-out": "",
+  "notice": "she arrives by plane and is maybe a little bit late",
+  "price": 200,
+  "price-paid": "YES",
+  "deposit": 0,
+  "deposit-paid": "No",
+  "language": "en",
+  "guest-app-url": "https://guest.smoobu.com/?t=sf7678asd&b=292",
+  "is-blocked-booking" : false,
+  "guestId" : 156,
+   "related": [
+     {
+       "id": 50017,
+       "name": "Seaside apartment"
+     }
+   ]
+  }
+ ]
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+With this Call you can get all your existing reservations with all information.
+
+HTTP Request
+GET https://login.smoobu.com/api/reservations
+
+URL Query Parameters
+Parameter	Format	Mandatory	Description
+created_from	yyyy-mm-dd	No	show all bookings with the created at in the range
+created_to	yyyy-mm-dd	No	show all bookings with the created at in the range
+from	yyyy-mm-dd	No	show all bookings in the range
+to	yyyy-mm-dd	No	show all bookings in the range
+modifiedFrom	yyyy-mm-dd	No	show all bookings with the modified at in the range
+modifiedTo	yyyy-mm-dd	No	show all bookings with the modified at in the range
+arrivalFrom	yyyy-mm-dd	No	show all bookings with the arrival date in the range
+arrivalTo	yyyy-mm-dd	No	show all bookings with the arrival date in the range
+departureFrom	yyyy-mm-dd	No	show all bookings with the departure date in the range
+departureTo	yyyy-mm-dd	No	show all bookings with the departure date in the range
+showCancellation	boolean	No	include cancelled bookings
+excludeBlocked	boolean	No	hide blocked bookings
+page	int	No	current page
+pageSize	int	No	Bookings per page (max 100)
+apartmentId	int	No	Id of the apartment
+includeRelated	boolean	false	When used together with apartmentId, returns bookings from grouped apartments.
+includePriceElements	boolean	false	Set true if want to show price elements in booking response.
+Json Response
+Parameter	Format	Description
+page_count	int	number of all pages
+page_size	int	max number of bookings on one page
+total_items	int	number of all bookings
+page	int	number of current page
+bookings	array	contain all booking objects
+bookings.id	int	id of the booking
+bookings.reference-id	string	Channel reference Id (AirBNB or Booking.com reference Id)
+bookings.type	string	see types in the table below
+bookings.arrival	string	start date of the booking
+bookings.departure	string	end date of the booking
+bookings.created-at	string	create date of the booking
+bookings.modifiedAt	string	last modified date of the booking
+bookings.apartment	object	apartment of the booking
+bookings.apartment.id	int	id of the apartment
+bookings.apartment.name	string	name of the apartment
+bookings.channel	object	channel of the booking
+bookings.channel.id	int	id of the channel
+bookings.channel.name	string	name of the channel
+bookings.guest-name	string	name of the guest
+bookings.email	string	email of the guest
+bookings.phone	string	phone number of the guest
+bookings.adults	int	number of adults
+bookings.children	int	number of children
+bookings.check-in	string	check in time of the guests
+bookings.check-out	string	check in time of the guests
+bookings.notice	string	notice from the guests
+bookings.price	int	price of the booking
+bookings.price-paid	bool	price already paid ("yes"/"no")
+bookings.prepayment	int	prepayment of the booking
+bookings.prepayment-paid	bool	prepayment paid ("yes"/"no")
+bookings.deposit	int	deposit of the booking
+bookings.deposit-paid	bool	deposit already paid ("yes"/"no")
+bookings.language	string	language(locale) of the guest
+bookings.guest-app-url	string	guest app URL for the booking.
+bookings.is-blocked-booking	bool	indicate if booking was created for blocking period purpose.
+bookings.guestId	int	Guest id
+bookings.priceElements	array of price element object	see Price Elements
+bookings.related	array of apartments	Others apartments blocked by this booking
+booking type
+booking type
+reservation
+modification of booking
+cancellation
+Get Booking
+The below command will return booking:
+
+curl -X GET \
+  https://login.smoobu.com/api/reservations/291 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+  "id": 291,
+  "reference-id": null,
+  "type": "reservation",
+  "arrival": "2018-01-10",
+  "departure": "2018-01-12",
+  "created-at": "2018-01-03 13:51",
+  "apartment": {
+   "id": 50017,
+   "name": "Seaside apartment"
+  },
+  "channel": {
+   "id": 465614,
+   "name": "Booking.com"
+  },
+  "guest-name": "Harry Potter",
+  "email": "HarryPotter@hogwarts.com",
+  "phone": "+49123456789",
+  "adults": 3,
+  "children": 2,
+  "check-in": "16:00",
+  "check-out": "10:00",
+  "notice": "",
+  "price": 150,
+  "price-paid": "Yes",
+  "prepayment": 0,
+  "prepayment-paid": "No",
+  "deposit": 0,
+  "deposit-paid": "No",
+  "language": "en",
+  "guest-app-url": "https://guest.smoobu.com/?t=sf7678asd&b=291",
+  "is-blocked-booking" : false,
+  "guestId" : 155
+ }
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+With this Call you can get all your existing reservations with all information.
+
+HTTP Request
+GET https://login.smoobu.com/api/reservations/<reservationId>
+
+URL Parameters
+Parameter	Description
+reservationId	Reservation / Booking Id
+Json Response
+Parameter	Format	Description
+id	int	id of the booking
+reference-id	string	Channel reference Id (AirBNB or Booking.com reference Id)
+type	string	see types in the table below
+arrival	string	start date of the booking
+departure	string	end date of the booking
+created-at	string	create date of the booking
+apartment	object	apartment of the booking
+apartment.id	int	id of the apartment
+apartment.name	string	name of the apartment
+channel	object	channel of the booking
+channel.id	int	id of the channel
+channel.name	string	name of the channel
+guest-name	string	name of the guest
+email	string	email of the guest
+phone	string	phone number of the guest
+adults	int	number of adults
+children	int	number of children
+check-in	string	check in time of the guests
+check-out	string	check in time of the guests
+notice	string	notice from the guests
+price	int	price of the booking
+price-paid	bool	price already paid ("yes"/"no")
+prepayment	int	prepayment of the booking
+prepayment-paid	bool	prepayment paid ("yes"/"no")
+deposit	int	deposit of the booking
+deposit-paid	bool	deposit already paid ("yes"/"no")
+language	string	language(locale) of the guest
+guest-app-url	string	guest app URL for the booking.
+is-blocked-booking	bool	indicate if booking was created for blocking period purpose.
+guestId	int	Guest id
+booking type
+booking type
+reservation
+modification of booking
+cancellation
+Cancel Reservation
+The below command cancel a reservation:
+
+curl -X DELETE \
+  https://login.smoobu.com/api/reservations/54 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+ "success": true
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+With this call you can cancel a existing reservation. The booking is still in the system as a cancelled booking.
+
+HTTP Request
+DELETE https://login.smoobu.com/api/reservations/<reservationId>
+
+URL Parameters
+Parameter	Description
+reservationId	Reservation / Booking Id
+Get Price Elements
+The command get all price elements:
+
+curl -X GET \
+  https://login.smoobu.com/api/reservations/291/price-elements \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+ "priceElements": [
+    {
+      "id": 10,
+      "type": "basePrice",
+      "name": "Base price",
+      "amount": 40,
+      "quantity": null,
+      "tax": null,
+      "currencyCode": "EUR",
+      "sortOrder": 1,
+      "priceIncludedInId": null
+     },
+     {
+           "id": 11,
+           "type": "cleaningFee",
+           "name": "Cleaning fee",
+           "amount": 10,
+           "quantity": null,
+           "tax": null,
+           "currencyCode": "EUR",
+           "sortOrder": 4,
+           "priceIncludedInId": null
+      }
+ ]
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+With this Call you can get all your price elements for the booking.
+
+HTTP Request
+GET https://login.smoobu.com/api/reservations/<reservationId>/price-elements
+
+URL Parameters
+Parameter	Description
+reservationId	Reservation / Booking Id
+Json Response
+Parameter	Format	Description
+priceElements	array	contain all booking objects
+priceElements.id	int	
+priceElements.type	string	see types in the table below
+priceElements.name	string	
+priceElements.amount	float	
+priceElements.quantity	int	
+priceElements.tax	float	
+priceElements.currencyCode	string	ISO 4217 currency code
+priceElements.sortOrder	int	sorting order to display price elements in reservation detail page. The direction of sorting is ascending
+priceElements.priceIncludedInId	int	Id of price element which cover the price of this element.
+Types
+basePrice
+cleaningFee
+addon
+longStayDiscount
+coupon
+Get Price Element
+The below command will return booking:
+
+curl -X GET \
+  https://login.smoobu.com/api/reservations/291/price-elements/10 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+  "id": 10,
+  "type": "basePrice",
+  "name": "Base price",
+  "amount": 40,
+  "quantity": null,
+  "tax": null,
+  "currencyCode": "EUR",
+  "sortOrder": 1,
+  "priceIncludedInId": null
+ }
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+HTTP Request
+GET https://login.smoobu.com/api/reservations/<reservationId>/price-elements/<priceElementId>
+
+URL Parameters
+Parameter	Description
+reservationId	Reservation / Booking Id
+priceElementId	Price Element Id
+Json Response
+Parameter	Format	Description
+id	int	
+type	string	see types in the table below
+name	string	
+amount	float	
+quantity	int	
+tax	float	
+currencyCode	string	ISO 4217 currency code
+sortOrder	int	sorting order to display price elements in reservation detail page. The direction of sorting is ascending
+priceIncludedInId	int	Id of price element which cover the price of this element.
+Types
+basePrice
+cleaningFee
+addon
+longStayDiscount
+coupon
+Create Price Element
+The below command create a price element for the booking:
+
+curl -X POST \
+  https://login.smoobu.com/api/reservations/291/price-elements \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/json' \
+  -d '{
+      "type": "",
+      "name": "example name",
+      "amount": 50,
+      "quantity": 1,
+      "tax": 5.5,
+      "currencyCode": "EUR",
+      "sortOrder": 110,
+      "priceIncludedInId": null
+}'
+The above command returns JSON structured like this with Status code 201:
+
+{
+    "status": 201,
+    "title": "Resource created successfully",
+    "detail": {
+        "id": 62
+    }
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Response if there is an validation error code 400:
+
+{
+    "status": 400,
+    "title": "Bad Request",
+    "detail": "Failed validation",
+    "validation_messages": {
+          "amount":{"isEmpty":"Value is required and can't be empty"}
+    }
+}
+HTTP Request
+POST https://login.smoobu.com/api/reservations/<reservationId>/price-elements
+
+Json Request Body
+Parameter	Format	Mandatory	Description
+type	string	No	See below types table.
+name	string	Yes	Name of price element.
+amount	float	Yes	
+quantity	int	No	Depend on price element.
+tax	float	No	Tax if applicable
+currencyCode	string	Yes	ISO 4217 currency code
+sortOrder	int	No	sorting order to display price elements in reservation detail page. The direction of sorting is ascending
+priceIncludedInId	int	No	Id of price element which cover the price of this element.
+Types
+basePrice
+cleaningFee
+addon
+longStayDiscount
+coupon
+Json Response
+Parameter	Format	Description
+status	int	201
+title	string	Resource updated successfully
+detail	array	
+detail.id	int	Id of newly created price element
+Update Price Element
+The below command create a price element for the booking:
+
+curl -X POST \
+  https://login.smoobu.com/api/reservations/291/price-elements/10 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/json' \
+  -d '{
+      "type": "",
+      "name": "example name",
+      "amount": 50,
+      "quantity": 1,
+      "tax": 5.5,
+      "currencyCode": "EUR",
+      "sortOrder": 110,
+      "priceIncludedInId": null
+}'
+The above command returns JSON structured like this with Status code 200:
+
+{
+    "status": 200,
+    "title": "Resource updated successfully",
+    "detail": ""
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Response if there is an validation error code 400:
+
+{
+    "status": 400,
+    "title": "Bad Request",
+    "detail": "Failed validation",
+    "validation_messages": {
+      "amount":{"isEmpty":"Value is required and can't be empty"}
+    }
+}
+HTTP Request
+POST https://login.smoobu.com/api/reservations/<reservationId>/price-elements/<priceElementId>
+
+URL Parameters
+Parameter	Description
+reservationId	Reservation / Booking Id
+priceElementId	Price element id
+Json Request Body
+Parameter	Format	Mandatory	Description
+type	string	No	See below types table.
+name	string	Yes	Name of price element.
+amount	float	Yes	
+quantity	int	No	Depend on price element.
+tax	float	No	Tax if applicable
+currencyCode	string	Yes	ISO 4217 currency code
+sortOrder	int	No	sorting order to display price elements in reservation detail page. The direction of sorting is ascending
+priceIncludedInId	int	No	Id of price element which cover the price of this element.
+Types
+basePrice
+cleaningFee
+addon
+longStayDiscount
+coupon
+Json Response
+Parameter	Format	Description
+status	int	200
+title	string	Resource updated successfully
+detail	string	
+Delete Price Element
+The below command delete a price element:
+
+curl -X DELETE \
+  https://login.smoobu.com/api/reservations/54/price-elements/10 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+    "status": 200,
+    "title": "Resource deleted successfully",
+    "detail": ""
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+HTTP Request
+DELETE https://login.smoobu.com/api/reservations/<reservationId>/price-elements/<priceElementId>
+
+URL Parameters
+Parameter	Description
+reservationId	Reservation / Booking Id
+priceElementId	Price element id
+Get Placeholders (Beta)
+The below command will return all available placeholders for the booking:
+
+curl -X GET \
+  https://login.smoobu.com/api/reservations/291/placeholders \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+  "placeholders": [
+    {
+        "key": "firstName",
+        "value": "Michelle"
+    },
+    {
+        "key": "lastName",
+        "value": "Fischer"
+    },
+    {
+        "key": "email",
+        "value": "michelle@example.com"
+    },
+    {
+        "key": "bookingID",
+        "value": 291
+    },
+    {
+        "key": "channelBookingID",
+        "value": null
+    },
+    {
+        "key": "arrivalTime",
+        "value": "06:00 pm"
+    },
+    {
+        "key": "arrivalDate",
+        "value": "25.05.20"
+    },
+    {
+        "key": "departureTime",
+        "value": "11:00 am"
+    },
+    {
+        "key": "departureDate",
+        "value": "26.05.20"
+    },
+    {
+        "key": "guestName",
+        "value": "Jhon Doe"
+    },
+    {
+        "key": "firstGuestName",
+        "value": "Jhon"
+    },
+    {
+        "key": "guestEmail",
+        "value": "example@domain.com"
+    },
+    {
+        "key": "guestPhone",
+        "value": "04545451"
+    },
+    {
+        "key": "price",
+        "value": "50,10"
+    },
+    {
+        "key": "prepayment",
+        "value": "0,00"
+    },
+    {
+        "key": "rest",
+        "value": 0
+    },
+    {
+        "key": "note",
+        "value": ""
+    },
+    {
+        "key": "adults",
+        "value": 1
+    },
+    {
+        "key": "children",
+        "value": 2
+    },
+    {
+        "key": "persons",
+        "value": 3
+    },
+    {
+        "key": "assistantNote",
+        "value": ""
+    },
+    {
+        "key": "numberOfNights",
+        "value": 1
+    },
+    {
+        "key": "apartment",
+        "value": "Example property"
+    },
+    {
+        "key": "apartmentID",
+        "value": 7
+    },
+    {
+        "key": "chekinIOGuestUrl",
+        "value": ""
+    },
+    {
+        "key": "onlineCheckInLink",
+        "value": "<a href=\"https://login.smoobu.com/en/online-check-in/check-in/e67df18af616399075feca8400eab4564555\" target=\"_blank\">https://login.smoobu.com/en/online-check-in/check-in/e67df18af616399075feca8400eab4564555</a>"
+    },
+    {
+        "key": "onlineCheckInLinkEN",
+        "value": "<a href=\"https://login.smoobu.com/en/online-check-in/check-in/2be8ccd700a8da9598127d45432390cc3cd0ac12\" target=\"_blank\">https://login.smoobu.com/en/online-check-in/check-in/2be8ccd700a8da9598127d45432390cc3cd0ac12</a>"
+    },
+    {
+        "key": "onlineCheckInLinkDE",
+        "value": "<a href=\"https://login.smoobu.com/de/online-check-in/check-in/0e707d07da2a02377e81bafcf4f524de82783b14\" target=\"_blank\">https://login.smoobu.com/de/online-check-in/check-in/0e707d07da2a02377e81bafcf4f524de82783b14</a>"
+    },
+    {
+        "key": "onlineCheckInLinkES",
+        "value": "<a href=\"https://login.smoobu.com/es/online-check-in/check-in/dea13adc294e1a32ee736d808e1587a8f5e9ce27\" target=\"_blank\">https://login.smoobu.com/es/online-check-in/check-in/dea13adc294e1a32ee736d808e1587a8f5e9ce27</a>"
+    },
+    {
+        "key": "onlineCheckInLinkFR",
+        "value": "<a href=\"https://login.smoobu.com/fr/online-check-in/check-in/ba2a8370176d3bd147430aadd229cbd3e68bff2d\" target=\"_blank\">https://login.smoobu.com/fr/online-check-in/check-in/ba2a8370176d3bd147430aadd229cbd3e68bff2d</a>"
+    },
+    {
+        "key": "onlineCheckInLinkNL",
+        "value": "<a href=\"https://login.smoobu.com/nl/online-check-in/check-in/ba2456a34e9472234d2d50d67aa2838b5fba7fdc\" target=\"_blank\">https://login.smoobu.com/nl/online-check-in/check-in/ba2456a34e9472234d2d50d67aa2838b5fba7fdc</a>"
+    },
+    {
+        "key": "onlineCheckInLinkIT",
+        "value": "<a href=\"https://login.smoobu.com/it/online-check-in/check-in/5d8c0623529b099d196d1ad2898f6c8bf798dadd\" target=\"_blank\">https://login.smoobu.com/it/online-check-in/check-in/5d8c0623529b099d196d1ad2898f6c8bf798dadd</a>"
+    },
+    {
+        "key": "swiklylink",
+        "value": ""
+    },
+    {
+        "key": "pin4",
+        "value": "6580"
+    },
+    {
+        "key": "pin5",
+        "value": "56580"
+    },
+    {
+        "key": "pin6",
+        "value": "456580"
+    },
+    {
+        "key": "pricePayPalLink",
+        "value": "<a href=\"https://www.paypal.me/testmd/AUD50.1\">Pay with PayPal</a>"
+    },
+    {
+        "key": "prepaymentPayPalLink",
+        "value": "<a href=\"https://www.paypal.me/testmd/AUD0\">Pay with PayPal</a>"
+    },
+    {
+        "key": "restPayPalLink",
+        "value": "<a href=\"https://www.paypal.me/testmd/AUD50.1\">Pay with PayPal</a>"
+    },
+    {
+        "key": "guestAppLink",
+        "value": "https://guest.smoobu.com?t=s3dwe3a923&b=291"
+    },
+    {
+        "key": "apartmentNameLong",
+        "value": "Property name long"
+    },
+    {
+        "key": "igloohomeLockCode",
+        "value": ""
+    },
+    {
+        "key": "luggageHeroUrl",
+        "value": "https://luggagehero.com/?lat=52.5007405000000&lng=13.4449256000000&location=test+property&utm_promo_code=sb2h&utm_source=smoobu"
+    },
+    {
+        "key": "nannybagUrl",
+        "value": "https://www.nannybag.com/de/luggage-storage?latitude=52.5007405000000&longitude=13.4449256000000&promo=smoobu"
+    },
+    {
+        "key": "channel",
+        "value": "Direct booking"
+    },
+    {
+        "key": "offerurl",
+        "value": "<a href=\"https://booking.smoobu.com//9A7/s3dwe3a923\" target=\"_blank\">https://booking.smoobu.com//9A7/s3dwe3a923</a>"
+    },
+    {
+        "key": "guestName",
+        "value": "Jhon Doe"
+    }
+  ]
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+With this call you can get all available placeholders for the booking.
+
+HTTP Request
+GET https://login.smoobu.com/api/reservations/<reservationId>/placeholders
+
+URL Parameters
+Parameter	Description
+reservationId	Reservation / Booking Id
+Json Response
+Parameter	Format	Description
+placeholders	array	contain all placeholders
+placeholders.key	string	Placeholder key
+placeholders.value	string	Placeholder Value
+Get Rates
+The above command get all dates:
+
+curl -X GET 'https://login.smoobu.com/api/rates?apartments[]=398&apartments[]=401&start_date=2019-01-15&end_date=2019-01-30' \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+    "data": {
+        "398": {
+            "2019-01-15": {
+                "price": 444,
+                "min_length_of_stay": 2,
+                "available": 1
+            },
+            "2019-01-16": {
+                "price": 444,
+                "min_length_of_stay": 2,
+                "available": 1
+            },
+            "2019-01-17": {
+                "price": 444,
+                "min_length_of_stay": 2,
+                "available": 1
+            },
+            "2019-01-18": {
+                "price": 444,
+                "min_length_of_stay": 2,
+                "available": 1
+            },
+            "2019-01-19": {
+                "price": 444,
+                "min_length_of_stay": 2,
+                "available": 1
+            },
+            "2019-01-20": {
+                "price": 200,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-21": {
+                "price": 200,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-22": {
+                "price": 200,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-23": {
+                "price": 200,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-24": {
+                "price": 200,
+                "min_length_of_stay": 3,
+                "available": 1
+            },
+            "2019-01-25": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-26": {
+                "price": 444,
+                "min_length_of_stay": 2,
+                "available": 1
+            },
+            "2019-01-27": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-28": {
+                "price": 45,
+                "min_length_of_stay": 5,
+                "available": 1
+            },
+            "2019-01-29": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-30": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            }
+        },
+        "401": {
+            "2019-01-15": {
+                "price": 170,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-16": {
+                "price": 170,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-17": {
+                "price": 170,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-18": {
+                "price": 170,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-19": {
+                "price": 170,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-20": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-21": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-22": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-23": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-24": {
+                "price": 200,
+                "min_length_of_stay": 3,
+                "available": 1
+            },
+            "2019-01-25": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-26": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-27": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-28": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-29": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            },
+            "2019-01-30": {
+                "price": null,
+                "min_length_of_stay": null,
+                "available": 1
+            }
+        }
+    }
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Example Response for validation error error code 500: json { "status": 500, "title": "Internal Server Error", "detail": "Apartment not found for this user" }
+
+With this Call you can get all your rates
+
+HTTP Request
+GET https://login.smoobu.com/api/rates
+
+URL Query Parameters
+Parameter	Format	Mandatory	Description
+start_date	yyyy-mm-dd	Yes	show all dates in the range
+end_date	yyyy-mm-dd	Yes	show all dates in the range
+apartments	array	Yes	array of apartment ids
+Json Response
+Parameter	Format	Description
+data	array	include all dates departed in apartments. Array key is the apartment id
+data.date	object	Array key is date in form y yyyy-mm-dd
+date.price	double	price of this date. Null if there is no price
+date.min_length_of_stay	int	min length of stay for this date. Null if there is no value
+date.available	int	say how often the apartment is available 0 for not available
+Post Rates Api
+The above command create/update a rate:
+
+curl -X POST \
+  https://login.smoobu.com/api/rates \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "apartments": [apartmentId1, apartmentId2],
+  "operations": [
+    {
+        "dates": [
+            "2019-01-24:2019-01-27",
+            "2019-01-29",
+            "2019-02-01:2019-02-05"
+        ],
+        "daily_price": 140,
+        "min_length_of_stay": 2
+    },
+
+    {
+            "dates": [
+                "2019-02-29"               
+            ],
+            "daily_price": 200,
+            "min_length_of_stay": 4
+        }
+  ]
+}'
+The above command returns JSON structured like this with Status code 200:
+
+{
+    "success": true
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Response if you send only min length of stay but there is no price error code 500:
+
+{
+    "status": 500,
+    "title": "Internal Server Error",
+    "detail": "Price is required"
+}
+Example Response for validation error error code 500:
+
+{
+    "status": 500,
+    "title": "Internal Server Error",
+    "detail": "invalid Date format 22\/01\/19"
+}
+Partners and customers of Smoobu can send rates to Smoobu. Our application synchronizes it into other channels which has enabled the price sync.
+
+HTTP Request
+POST https://login.smoobu.com/api/rates
+
+Json Request Body
+Parameter	Format	Mandatory	Description
+apartments	array	Yes	Array with apartment ids
+operations	objects	Yes	array with all operations
+operation.dates	array	Yes	Dates for the operation you can add a single dates with format "yyyy-mm-dd" or a ranges with format "yyyy-mm-dd:yyyy-mm-dd".
+operation.daily_price	double	*	Price of the operation
+operation.min_length_of_stay	int	*	Min length of booking. Can only set if this date has a price or set together with price
+* operation need minimum one of this values but not all
+
+Json Response
+Parameter	Format	Description
+success	boolean	response is true or validation error response with message in detail
+Get Apartment-IDs
+The above command get all apartments
+
+curl -X GET \
+  https://login.smoobu.com/api/apartments \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+ "apartments": [
+  {
+    "id": 1,
+    "name": "Property 1"
+  },
+  {
+    "id": 2,
+    "name": "Property 2"
+  }
+ ]
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+With this Call you can get all your properties.
+
+HTTP Request
+GET https://login.smoobu.com/api/apartments
+
+Json Response
+Parameter	Format	Description
+apartments	array	contain all apartment objects
+apartments.id	int	id of the apartment
+apartments.name	string	name of the apartment
+Get Apartment
+The above command get more details for a specific listing
+
+curl -X GET \
+  https://login.smoobu.com/api/apartments/1 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+
+{
+    "location": {
+        "street": "Wönnichstr. 68/70",
+        "zip": "10317",
+        "city": "Berlin",
+        "country": "Germany",
+        "latitude": "52.5200080000000",
+        "longitude": "13.4049540000000"
+    },
+   "timeZone": "Europe/Berlin",
+    "rooms": {
+        "maxOccupancy": 4,
+        "bedrooms": 4,
+        "bathrooms": 2,
+        "doubleBeds": 1,
+        "singleBeds": 3,
+        "sofaBeds": null,
+        "couches": null,
+        "childBeds": null,
+        "queenSizeBeds": null,
+        "kingSizeBeds": 1
+
+    },
+    "equipments": [
+        "Internet",
+        "Whirlpool",
+        "Pool",
+        "Heating"
+    ],
+    "currency": "EUR",
+    "price": {
+            "minimal": "10.00",
+            "maximal": "100.00"
+    },
+    "type": {
+        "id": 2,
+        "name": "Holiday rental"
+    }
+}
+
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+With this call you can get more information about one property. Especially the information which are relevant to calculate competitive rates. You can create and edit this content in the Smoobu website builder even if you don't use our website or the website isn't online.
+
+HTTP Request
+GET https://login.smoobu.com/api/apartments/<apartmentId>
+
+URL Parameters
+Parameter	Description
+apartmentId	Id of the apartment // you can fin the apartment id in getApartmentsApi
+Json Response
+Parameter	Format	Description
+location	object	group all location information of the apartment
+location.street	string	street of the apartment
+location.zip	string	zip of the apartment
+location.city	string	city of the apartment
+location.country	string	country of the apartment
+location.latitude	string	latitude of the apartment
+location.longitude	string	longitude of the apartment
+timeZone	string	Time zone of the apartment. Can be null if not set.
+rooms	object	group all room information of the apartment
+rooms.maxOccupancy	integer	max number of persons
+rooms.bedrooms	integer	number of bedrooms
+rooms.bathrooms	integer	number of bathrooms
+rooms.doubleBeds	integer	number of double beds
+rooms.singleBeds	integer	number of single beds
+rooms.sofaBeds	integer	number of sofa beds
+rooms.couches	integer	number of couches
+rooms.childBeds	integer	number of children's beds
+rooms.queenSizeBeds	integer	number of queen size beds
+rooms.kingSizeBeds	integer	number of king size beds
+amenities	array	list of amenities
+currency	string	Currency of the user e.g. ("EUR")
+price	object	
+price.minimal	string	minimum price per night
+price.maximal	string	maximum price per night
+type	object	apartment type
+Get Message
+Below command to get all messages:
+
+curl -X GET \
+  https://login.smoobu.com/api/reservations/1/messages \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+ "page_count": 1,
+ "page_size": 25,
+ "total_items": 2,
+ "page": 1,
+ "messages": [
+ {
+  "id": 1,
+  "subject": "welcome",
+  "message": "Hello Kim Klaus, Thank you for booking our Apartment Property 3. You have booked the apartment for 1 person. You can email us @ smoobu. Contact us for advance information on how to get there and how to get there. Ideal to inform you about sightseeing opportunities around Apartment 3 or give you tips on where to spend a cozy evening.  We are looking forward to hearing from you.",
+  "messageHtml": "<p>Hello Kim Klaus, <br />Thank you for booking our Apartment Property 3. You have booked the apartment for 1 person. You can email us @ smoobu. Contact us for advance information on how to get there and how to get there. Ideal to inform you about sightseeing opportunities around Apartment 3 or give you tips on where to spend a cozy evening.  We are looking forward to hearing from you.</p>",
+  "type": 2
+ },
+ {
+  "id": 2,
+  "subject": "re-welcome",
+  "message": "",
+  "messageHtml": "<p>Please send me exact apartment location</p>",
+  "type": 1
+  }
+ ]
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+With this call you can get all messages and the complete conversation for a reservation.
+
+HTTP Request
+GET https://login.smoobu.com/api/reservations/<reservationId>/messages
+
+URL Parameters
+Parameter	Description
+reservationId	Id of the booking
+URL Query Parameters
+Parameter	Format	Mandatory	Description
+page	int	No	current page
+onlyRelatedToGuest	boolean	No	get messages only related to guest. Setting this parameter to false will fetch all messages for the booking.
+Json Response
+Parameter	Format	Description
+page_count	int	number of all pages
+page_size	int	max number of messages on one page
+total_items	int	number of all messages
+page	int	number of current page
+messages	array	contain all message objects
+messages.id	int	id of the booking
+messages.subject	string	message subject
+messages.message	string	plain-text message
+messages.htmlMessage	string	message in html
+messages.type	int	1 = inbox, 2 = outbox
+Get Addons
+The command get all addons:
+
+curl -X GET \
+  https://login.smoobu.com/api/addons \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The command get all addons for one apartment:
+
+curl -X GET \
+  https://login.smoobu.com/api/addons/<apartmentId> \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+URL Parameters
+Parameter	Description
+apartmentId	Apartment id
+The above command returns JSON structured like this with Status code 200:
+
+{
+ "addons": [
+    {
+     "id": 2,
+     "name": "towel",
+      "apartments": [
+            4,
+                 54
+             ],
+             "amount": 2,
+             "usePercentage": true,
+             "tax": 20,
+             "calculationType": 0,
+             "optional": true,
+             "maxQuantity": 5,
+             "whereVisible": 2
+         },
+         {
+             "id": 3,
+             "name": "towel",
+             "apartments": [
+                 7
+             ],
+             "amount": 1,
+             "usePercentage": true,
+             "tax": 10,
+             "calculationType": 0,
+             "optional": false,
+             "maxQuantity": 1,
+             "whereVisible": null
+         }
+ ]
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+With this Call you can get all your existing addons.
+
+HTTP Request
+GET https://login.smoobu.com/api/addons
+
+URL Parameters
+Parameter	Format	Mandatory	Description
+apartmentId	int	No	filter addons for single apartment
+Json Response
+Parameter	Format	Description
+addons	array	contain all booking objects
+addons.id	int	id of the addon
+addons.name	string	name of the addon
+addons.apartments	array	list os apartment ids
+addons.amount	float	value of the amount
+addons.usePercentage	boolean	amount will be calculate by percentage or as fix value
+addons.tax	float	tax amount
+addons.calculationType	int	tax calculation type
+addons.optional	boolean	if the addon is optional
+addons.maxQuantity	int	max number of this item for one booking
+addons.whereVisible	int	
+booking type
+calculation type	description
+0	per booking
+1	per person
+2	per night
+3	per person and night
+whereVisible type
+calculation type	description
+null	All
+0	All
+1	booking-tool
+2	guest-app
+Send message to guest
+Below command send a message to guest for the given booking:
+
+curl -X POST \
+  'https://login.smoobu.com/api/reservations/1/messages/send-message-to-guest' \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Content-Type: application/json' \
+  -H 'cache-control: no-cache' \
+  -d '{
+    "subject" : "Test subject",
+    "messageBody" : "test"
+}'
+The above command returns JSON structured like this with Status code 201:
+
+{
+    "status": 201,
+    "title": "Resource created successfully",
+    "detail": ""
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Response if there is an validation error code 400:
+
+{
+    "status": 400,
+    "title": "Bad Request",
+    "detail": "Failed validation",
+    "validation_messages": {
+        "messageBody": {
+            "isEmpty": "Value is required and can't be empty"
+        }
+    }
+}
+Partners and customers of Smoobu can send message to guests of a reservation.
+
+HTTP Request
+POST https://login.smoobu.com/api/reservations/<reservationId>/messages/send-message-to-guest
+
+URL Parameters
+Parameter	Description
+reservationId	Id of the booking
+Json Request Body
+Parameter	Format	Mandatory	Description
+subject	string	No	Message subject
+messageBody	string	Yes	Message content in HTML or plain-text.
+Send message to host
+Below command send a message to host for the given booking:
+
+curl -X POST \
+  'https://login.smoobu.com/api/reservations/1/messages/send-message-to-host' \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Content-Type: application/json' \
+  -H 'cache-control: no-cache' \
+  -d '{
+    "subject" : "Test subject",
+    "messageBody" : "test"
+}'
+The above command returns JSON structured like this with Status code 201:
+
+{
+    "status": 201,
+    "title": "Resource created successfully",
+    "detail": ""
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Response if there is an validation error code 400:
+
+{
+    "status": 400,
+    "title": "Bad Request",
+    "detail": "Failed validation",
+    "validation_messages": {
+        "messageBody": {
+            "isEmpty": "Value is required and can't be empty"
+        }
+    }
+}
+Partners and customers of Smoobu can send messages to the Smoobu user as a host.
+
+HTTP Request
+POST https://login.smoobu.com/api/reservations/<reservationId>/messages/send-message-to-host
+
+URL Parameters
+Parameter	Description
+reservationId	Id of the booking
+Json Request Body
+Parameter	Format	Mandatory	Description
+subject	string	No	Message subject
+messageBody	string	Yes	Message content in HTML or plain-text.
+internal	boolean	No	If true, message will only be visible to host. (hidden from guest)
+Get Custom Placeholders Api (Beta)
+The command get all custom placeholders:
+
+curl -X GET \
+  https://login.smoobu.com/api/custom-placeholders \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+    "customPlaceholders": [
+        {
+            "id": 1,
+            "key": "exampleKey",
+            "defaultValue": "example text",
+            "type": 1,
+            "foreignId": 185
+        },
+        {
+            "id": 2,
+            "key": "globalPlaceholder",
+            "defaultValue": "example text2",
+            "type": null,
+            "foreignId": null
+        }
+    ]
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+With this Call you can get all your custom placeholders.
+
+HTTP Request
+GET https://login.smoobu.com/api/custom-placeholders
+
+Json Response
+Parameter	Format	Description
+customPlaceholders	array	contain all objects
+customPlaceholders.id	int	
+customPlaceholders.key	string	The placeholder key.
+customPlaceholders.defaultValue	string	Default value if no translation available.
+customPlaceholders.type	string	see types in the table below
+customPlaceholders.foreignId	int	Depend on type. i.e if type is booking, then it is booking id.
+Types
+Type	Description
+1	Booking
+2	Apartment
+Get Custom Placeholder Api (Beta)
+The below command will return custom placeholder:
+
+curl -X GET \
+  https://login.smoobu.com/api/custom-placeholders/2 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+   "id": 1,
+   "key": "exampleKey",
+   "defaultValue": "example text",
+   "type": 1,
+   "foreignId": 185
+ }
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+HTTP Request
+GET https://login.smoobu.com/api/custom-placeholders/<customPlaceHolderId>
+
+URL Parameters
+Parameter	Description
+customPlaceHolderId	Custom placeholder Id.
+Json Response
+Parameter	Format	Description
+id	int	
+key	string	The placeholder key.
+defaultValue	string	Default value if no translation available.
+type	string	see types in the table below
+foreignId	int	Depend on type. i.e if type is booking, then it is booking id.
+Types
+Type	Description
+1	Booking
+2	Apartment
+Create Custom Placeholder (Beta)
+The below command create a price element for the booking:
+
+curl -X POST \
+  https://login.smoobu.com/api/custom-placeholders \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/json' \
+  -d '{
+      "key": "exampleKey",
+      "defaultValue": "example text",
+      "type": 1,
+      "foreignId": 185
+}'
+The above command returns JSON structured like this with Status code 201:
+
+{
+    "status": 201,
+    "title": "Resource created successfully",
+    "detail": {
+        "id": 1
+    }
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Response if there is an validation error code 400:
+
+{
+    "status": 400,
+    "title": "Bad Request",
+    "detail": "Failed validation",
+    "validation_messages": {
+          "key": {
+                      "isEmpty": "Value is required and can't be empty"
+           }
+    }
+}
+HTTP Request
+POST https://login.smoobu.com/api/custom-placeholders
+
+Json Request Body
+Parameter	Format	Mandatory	Description
+key	string	Yes	Placeholder key.
+defaultValue	string	No	Default value if no translation found.
+type	string	No	See below types table.
+foreignId	int	No	Depend on type. i.e. if type is booking, then it is booking id.
+Types
+Type	Description
+1	Booking
+2	Apartment
+Json Response
+Parameter	Format	Description
+status	int	201
+title	string	Resource updated successfully
+detail	array	
+detail.id	int	Id of newly created placeholder
+Update Custom Placeholder Api (Beta)
+The below command create a custom placeholder:
+
+curl -X POST \
+  https://login.smoobu.com/api/custom-placeholders/1 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/json' \
+  -d '{
+      "key": "newKey",
+      "type": 1,
+      "foreignId": 185,
+      "defaultValue": "updated text"
+}'
+The above command returns JSON structured like this with Status code 200:
+
+{
+    "status": 200,
+    "title": "Resource updated successfully",
+    "detail": ""
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Response if there is an validation error code 400:
+
+{
+    "status": 400,
+    "title": "Bad Request",
+    "detail": "Failed validation",
+    "validation_messages": {
+      "key": {
+                            "isEmpty": "Value is required and can't be empty"
+                 }
+    }
+}
+HTTP Request
+POST https://login.smoobu.com/api/custom-placeholders/<customPlaceHolderId>
+
+URL Parameters
+Parameter	Description
+customPlaceHolderId	Id of the placeholder
+Json Request Body
+Parameter	Format	Mandatory	Description
+key	string	Yes	Placeholder key.
+defaultValue	string	No	Default value if no translation found.
+type	string	No	See below types table.
+foreignId	int	No	Depend on type. i.e. if type is booking, then it is booking id.
+Types
+Type	Description
+1	Booking
+2	Apartment
+Json Response
+Parameter	Format	Description
+status	int	200
+title	string	Resource updated successfully
+detail	string	
+Delete Custom Placeholder Api (Beta)
+The below command delete a custom placeholder:
+
+curl -X DELETE \
+  https://login.smoobu.com/api/custom-placeholders/1 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+    "status": 200,
+    "title": "Resource deleted successfully",
+    "detail": ""
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+HTTP Request
+DELETE https://login.smoobu.com/api/custom-placeholders/<customPlaceHolderId>
+
+URL Parameters
+Parameter	Description
+customPlaceHolderId	Placeholder id
+Get Custom Placeholder Translations Api (Beta)
+The command get all translations for the custom placeholder:
+
+curl -X GET \
+  https://login.smoobu.com/api/custom-placeholders/1/translations \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+    "translations": [
+            {
+                "id": 1,
+                "locale": "de",
+                "value": "german text"
+            }
+        ]
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+With this Call you can get all translations for the placeholder.
+
+HTTP Request
+GET https://login.smoobu.com/api/custom-placeholders/<customPlaceHolderId>/translations
+
+URL Parameters
+Parameter	Description
+customPlaceHolderId	Custom placeholder Id.
+Json Response
+Parameter	Format	Description
+translations	array	contain all objects
+translations.id	int	
+translations.locale	string	The locale of the language.
+translations.value	string	Text for the language
+Supported Languages
+Language	Locale
+Arabic	ar
+Azerbaijani	az
+Bulgarian	bg
+Catalan	ca
+Czech	cs
+Danish	da
+German	de
+Greek	el
+English	en
+Spanish	es
+Estonian	et
+French	fr
+Finnish	fi
+Hebrew	he
+Hindi	hi
+Croatian	hr
+Hungarian	hu
+Indonesian	id
+Icelandic	is
+Italian	it
+Japanese	ja
+Khmer	km
+Korean	ko
+Lao	lo
+Lithuanian	lt
+Latvian	lv
+Malay	ms
+Dutch	nl
+Norwegian	no
+Polish	pl
+Portuguese	pt
+Romanian	ro
+Russian	ru
+Slovak	sk
+Slovenian	sl
+Serbian	sr
+Swedish	sv
+Tagalog	tl
+Thai	th
+Turkish	tr
+Ukrainian	uk
+Vietnamese	vi
+Chinese	zh
+Get Custom Placeholder Translation Api (Beta)
+The below command will return translation for custom placeholder:
+
+curl -X GET \
+  https://login.smoobu.com/api/custom-placeholders/2/translations/1 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+   "id": 1,
+   "locale": "de",
+   "value": "german text"
+ }
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+HTTP Request
+GET https://login.smoobu.com/api/custom-placeholders/<customPlaceHolderId>/translations/<customPlaceHolderTranslationId>
+
+URL Parameters
+URL Parameters
+Parameter	Description
+customPlaceHolderId	Id of the placeholder
+customPlaceHolderTranslationId	Id of the translation
+Json Response
+Parameter	Format	Description
+Json Response
+Parameter	Format	Description
+id	int	
+locale	string	The locale of the language.
+value	string	Text for the language
+Supported Languages
+Language	Locale
+Arabic	ar
+Azerbaijani	az
+Bulgarian	bg
+Catalan	ca
+Czech	cs
+Danish	da
+German	de
+Greek	el
+English	en
+Spanish	es
+Estonian	et
+French	fr
+Finnish	fi
+Hebrew	he
+Hindi	hi
+Croatian	hr
+Hungarian	hu
+Indonesian	id
+Icelandic	is
+Italian	it
+Japanese	ja
+Khmer	km
+Korean	ko
+Lao	lo
+Lithuanian	lt
+Latvian	lv
+Malay	ms
+Dutch	nl
+Norwegian	no
+Polish	pl
+Portuguese	pt
+Romanian	ro
+Russian	ru
+Slovak	sk
+Slovenian	sl
+Serbian	sr
+Swedish	sv
+Tagalog	tl
+Thai	th
+Turkish	tr
+Ukrainian	uk
+Vietnamese	vi
+Chinese	zh
+Create Custom Placeholder Translation Api (Beta)
+The below command create a translation for the custom placeholder:
+
+curl -X POST \
+  https://login.smoobu.com/api/custom-placeholders/1/translations \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/json' \
+  -d '{
+      "locale": "de",
+      "value": "german text"
+}'
+The above command returns JSON structured like this with Status code 201:
+
+{
+    "status": 201,
+    "title": "Resource created successfully",
+    "detail": {
+        "id": 1
+    }
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Response if there is an validation error code 400:
+
+{
+    "status": 400,
+    "title": "Bad Request",
+    "detail": "Failed validation",
+    "validation_messages": {
+            "value": {
+                "isEmpty": "Value is required and can't be empty"
+            },
+            "locale": {
+                "isEmpty": "Value is required and can't be empty"
+            }
+        }
+}
+HTTP Request
+POST https://login.smoobu.com/api/custom-placeholders
+
+Json Request Body
+Parameter	Format	Mandatory	Description
+locale	string	Yes	Locale of the language. see below table.
+value	string	Yes	Translation in given locale.
+Supported Languages
+Language	Locale
+Arabic	ar
+Azerbaijani	az
+Bulgarian	bg
+Catalan	ca
+Czech	cs
+Danish	da
+German	de
+Greek	el
+English	en
+Spanish	es
+Estonian	et
+French	fr
+Finnish	fi
+Hebrew	he
+Hindi	hi
+Croatian	hr
+Hungarian	hu
+Indonesian	id
+Icelandic	is
+Italian	it
+Japanese	ja
+Khmer	km
+Korean	ko
+Lao	lo
+Lithuanian	lt
+Latvian	lv
+Malay	ms
+Dutch	nl
+Norwegian	no
+Polish	pl
+Portuguese	pt
+Romanian	ro
+Russian	ru
+Slovak	sk
+Slovenian	sl
+Serbian	sr
+Swedish	sv
+Tagalog	tl
+Thai	th
+Turkish	tr
+Ukrainian	uk
+Vietnamese	vi
+Chinese	zh
+Json Response
+Parameter	Format	Description
+status	int	201
+title	string	Resource created successfully
+detail	array	
+detail.id	int	Id of newly created translation
+Update Custom Placeholder Api (Beta)
+The below command create a custom placeholder:
+
+curl -X POST \
+  https://login.smoobu.com/api/custom-placeholders/1/translations/1 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/json' \
+  -d '{
+      "locale": "fr",
+      "value": "French text"
+}'
+The above command returns JSON structured like this with Status code 200:
+
+{
+    "status": 200,
+    "title": "Resource updated successfully",
+    "detail": ""
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Response if there is an validation error code 400:
+
+{
+    "status": 400,
+    "title": "Bad Request",
+    "detail": "Failed validation",
+    "validation_messages": {
+                "value": {
+                    "isEmpty": "Value is required and can't be empty"
+                },
+                "locale": {
+                    "isEmpty": "Value is required and can't be empty"
+                }
+     }
+}
+HTTP Request
+POST https://login.smoobu.com/api/custom-placeholders/<customPlaceHolderId>/translations/<customPlaceHolderTranslationId>
+
+URL Parameters
+Parameter	Description
+customPlaceHolderId	Id of the placeholder
+customPlaceHolderTranslationId	Id of the translation
+Json Request Body
+Parameter	Format	Mandatory	Description
+locale	string	Yes	Locale of the language. see below table.
+value	string	Yes	Translation in given locale.
+Supported Languages
+Language	Locale
+Arabic	ar
+Azerbaijani	az
+Bulgarian	bg
+Catalan	ca
+Czech	cs
+Danish	da
+German	de
+Greek	el
+English	en
+Spanish	es
+Estonian	et
+French	fr
+Finnish	fi
+Hebrew	he
+Hindi	hi
+Croatian	hr
+Hungarian	hu
+Indonesian	id
+Icelandic	is
+Italian	it
+Japanese	ja
+Khmer	km
+Korean	ko
+Lao	lo
+Lithuanian	lt
+Latvian	lv
+Malay	ms
+Dutch	nl
+Norwegian	no
+Polish	pl
+Portuguese	pt
+Romanian	ro
+Russian	ru
+Slovak	sk
+Slovenian	sl
+Serbian	sr
+Swedish	sv
+Tagalog	tl
+Thai	th
+Turkish	tr
+Ukrainian	uk
+Vietnamese	vi
+Chinese	zh
+Json Response
+Parameter	Format	Description
+status	int	200
+title	string	Resource updated successfully
+detail	string	
+Delete Custom Placeholder Translation Api (Beta)
+The below command delete the translation of a custom placeholder:
+
+curl -X DELETE \
+  https://login.smoobu.com/api/custom-placeholders/1/translations/1 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+    "status": 200,
+    "title": "Resource deleted successfully",
+    "detail": ""
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+HTTP Request
+DELETE https://login.smoobu.com/api/custom-placeholders/<customPlaceHolderId>/translations/<customPlaceHolderTranslationId>
+
+URL Parameters
+Parameter	Description
+customPlaceHolderId	Id of the placeholder
+customPlaceHolderTranslationId	Id of the translation
+Get Guests Api
+The above command get all guests:
+
+curl -X GET \
+  https://login.smoobu.com/api/guests \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+  "pageCount": 1,
+  "pageSize": 25,
+  "totalItems": 1,
+  "page": 1,
+  "guests": [
+    {
+      "id": 17,
+      "firstName": "Harry",
+      "lastName": "Potter",
+      "companyName": null,
+      "emails": ["HarryPotter@hogwarts.com"],
+      "telephoneNumbers": ["+49123456789"],
+      "address": {
+        "street": null,
+        "postalCode": null,
+        "city": null,
+        "country": null
+      },
+      "notes": null,
+      "bookings": [
+        {
+          "id": 291,
+          "reference-id": null,
+          "type": "reservation",
+          "arrival": "2018-01-10",
+          "departure": "2018-01-12",
+          "created-at": "2018-01-03 13:51",
+          "apartment": {
+            "id": 50017,
+            "name": "Seaside apartment"
+          },
+          "channel": {
+            "id": 465614,
+            "name": "Booking.com"
+          },
+          "guest-name": "Harry Potter",
+          "email": "HarryPotter@hogwarts.com",
+          "phone": "+49123456789",
+          "adults": 3,
+          "children": 2,
+          "check-in": "16:00",
+          "check-out": "10:00",
+          "notice": "",
+          "price": 150,
+          "price-paid": "Yes",
+          "prepayment": 0,
+          "prepayment-paid": "No",
+          "deposit": 0,
+          "deposit-paid": "No",
+          "language": "en",
+          "guest-app-url": "https://guest.smoobu.com/?t=sf7678asd&b=291",
+          "is-blocked-booking" : false,
+          "guestId" : 17
+        },
+        {
+          "id": 292,
+          "reference-id": "4545dS4254",
+          "type": "reservation",
+          "arrival": "2018-01-22",
+          "departure": "2018-01-25",
+          "created-at": "2018-01-03 13:51",
+          "apartment": {
+            "id": 50017,
+            "name": "Seaside apartment"
+          },
+          "channel": {
+            "id": 465885,
+            "name": "Airbnb"
+          },
+          "guest-name": "Hermine Granger",
+          "email": "Hermine@hogwarts.com",
+          "phone": "+49123456789",
+          "adults": 1,
+          "children": 0,
+          "check-in": "18:00",
+          "check-out": "",
+          "notice": "she arrives by plane and is maybe a little bit late",
+          "price": 200,
+          "price-paid": "YES",
+          "deposit": 0,
+          "deposit-paid": "No",
+          "language": "en",
+          "guest-app-url": "https://guest.smoobu.com/?t=sf7678asd&b=292",
+          "is-blocked-booking" : false,
+          "guestId" : 17
+        }
+      ]
+    }
+  ]
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+HTTP Request
+GET https://login.smoobu.com/api/guests
+
+URL Query Parameters
+Parameter	Format	Mandatory	Description
+page	int	No	current page
+pageSize	int	No	Bookings per page (max 100)
+query	int	No	Search term
+Json Response
+Parameter	Format	Description
+pageCount	int	number of all pages
+pageSize	int	max number of guests on one page
+totalItems	int	number of all guests
+page	int	number of current page
+guests	array	contain all guests objects
+guests.id	int	id of the guest
+guests.firstName	string	first name of the guest
+guests.lastName	string	last name of the guest
+guests.companyName	string	Company name
+guests.emails	array	list of guest emails
+guests.telephoneNumbers	array	list of telephone numbers
+guests.address	object	address of the guest
+guests.address.street	string	street name
+guests.address.postalCode	string	post code
+guests.address.city	string	city
+guests.address.country	string	country
+guests.notes	string	notes for the guest
+guests.bookings	array	bookings belong to this guest, see https://docs.smoobu.com/#get-booking-api for response object
+Get Guest Api
+The below command will return guest:
+
+curl -X GET \
+  https://login.smoobu.com/api/guests/291 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'Cache-Control: no-cache''
+The above command returns JSON structured like this with Status code 200:
+
+{
+  "id": 291,
+  "firstName": "Harry",
+  "lastName": "Potter",
+  "companyName": null,
+  "emails": ["HarryPotter@hogwarts.com"],
+  "telephoneNumbers": ["+49123456789"],
+  "address": {
+    "street": null,
+    "postalCode": null,
+    "city": null,
+    "country": null
+  },
+  "notes": null,
+  "bookings": [
+    {
+      "id": 291,
+      "reference-id": null,
+      "type": "reservation",
+      "arrival": "2018-01-10",
+      "departure": "2018-01-12",
+      "created-at": "2018-01-03 13:51",
+      "apartment": {
+        "id": 50017,
+        "name": "Seaside apartment"
+      },
+      "channel": {
+        "id": 465614,
+        "name": "Booking.com"
+      },
+      "guest-name": "Harry Potter",
+      "email": "HarryPotter@hogwarts.com",
+      "phone": "+49123456789",
+      "adults": 3,
+      "children": 2,
+      "check-in": "16:00",
+      "check-out": "10:00",
+      "notice": "",
+      "price": 150,
+      "price-paid": "Yes",
+      "prepayment": 0,
+      "prepayment-paid": "No",
+      "deposit": 0,
+      "deposit-paid": "No",
+      "language": "en",
+      "guest-app-url": "https://guest.smoobu.com/?t=sf7678asd&b=291",
+      "is-blocked-booking" : false,
+      "guestId" : 291
+    },
+    {
+      "id": 292,
+      "reference-id": "4545dS4254",
+      "type": "reservation",
+      "arrival": "2018-01-22",
+      "departure": "2018-01-25",
+      "created-at": "2018-01-03 13:51",
+      "apartment": {
+        "id": 50017,
+        "name": "Seaside apartment"
+      },
+      "channel": {
+        "id": 465885,
+        "name": "Airbnb"
+      },
+      "guest-name": "Hermine Granger",
+      "email": "Hermine@hogwarts.com",
+      "phone": "+49123456789",
+      "adults": 1,
+      "children": 0,
+      "check-in": "18:00",
+      "check-out": "",
+      "notice": "she arrives by plane and is maybe a little bit late",
+      "price": 200,
+      "price-paid": "YES",
+      "deposit": 0,
+      "deposit-paid": "No",
+      "language": "en",
+      "guest-app-url": "https://guest.smoobu.com/?t=sf7678asd&b=292",
+      "is-blocked-booking" : false,
+      "guestId" : 291
+    }
+  ]
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+HTTP Request
+GET https://login.smoobu.com/api/guests/<guestId>
+
+URL Parameters
+Parameter	Description
+guestId	Guest id
+Json Response
+Parameter	Format	Description
+id	int	id of the guest
+firstName	string	first name of the guest
+lastName	string	last name of the guest
+companyName	string	Company name
+emails	array	list of guest emails
+telephoneNumbers	array	list of telephone numbers
+address	object	address of the guest
+address.street	string	street name
+address.postalCode	string	post code
+address.city	string	city
+address.country	string	country
+notes	string	notes for the guest
+bookings	array	bookings belong to this guest, see https://docs.smoobu.com/#get-booking-api for response object
+Get Online Check-In (OCI)
+Below command will return profile data of the current user based on Api-Key:
+
+curl -X GET \
+  https://login.smoobu.com/api/oci/1/partner/1 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'token: partnerToken' \
+  -H 'Cache-Control: no-cache'
+The above command returns JSON structured like this with Status code 200:
+
+{
+  "onlineCheckInList": {
+    "mainGuest": {
+      "firstName": "Harry",
+      "lastName": "Potter",
+      "dateOfBirth": "2001-01-01"
+    },
+    "additionalGuests": [
+      {
+        "firstName": "Ron",
+        "lastName": "Weasley",
+        "taxCode": "123456789"
+      }
+    ]
+  }
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Currently only supported for Smoobu Partners, if you would like to access this API contact our Partner team at:
+
+HTTP Request
+GET https://login.smoobu.com/api/oci/<reservationId>/partner/<partnerId>
+
+Json Response
+Parameter	Format	Description
+onlineCheckInList	Object	Object with guests
+onlineCheckInList.mainGuest	OnlineCheckIn	OnlineCheckIn object for the Main Guest
+onlineCheckInList.additionalGuests	array	Array of OnlineCheckIn objects for the Additional Guests
+Create Online Check-In (OCI)
+Currently only supported for Smoobu Partners
+
+HTTP Request
+POST https://login.smoobu.com/api/oci/<reservationId>/partner/<partnerId>
+
+Json Request Body
+Parameter	Format	Mandatory	Description
+onlineCheckInList	Object	Yes	Object with guests
+onlineCheckInList.mainGuest	OnlineCheckIn	Yes	OnlineCheckIn object for the Main Guest
+onlineCheckInList.additionalGuests	array	No	Array of OnlineCheckIn objects for the Additional Guests
+OnlineCheckIn	Format	Mandatory	Description
+id	string|null	No	nullable, attach id to update the Online Check-In
+firstName	string|null	No	First name of the guest
+lastName	string|null	No	Last name of the guest
+gender	int|null	No	Gender of the guest. 0 - Male. 1 - Female. 2 - Non-binary. 3 - Prefer not say
+address	AddressOnlineCheckIn|null	No	Address object of the guest
+placeOfIssue	string|null	No	Document place of issue of the guest
+email	string|null	No	Email of the guest
+telephoneNumber	string|null	No	Telephone number of the guest
+taxCode	string|null	No	Tax code of the guest
+companyIdentificationNumber	string|null	No	Company identification number of the guest
+AddressOnlineCheckIn	Format	Mandatory	Description
+street	string|null	No	Street of the guest
+zipCode	string|null	No	Zip code of the guest
+city	string|null	No	City of the guest
+state	string|null	No	State of the guest
+country	string|null	No	Country of the guest
+Json Response
+Parameter	Format	Description
+message	string	Response OK on success
+The below command create a price element for the booking:
+
+curl -X POST \
+  https://login.smoobu.com/api/oci/1/partner/1 \
+  -H 'Api-Key: secretApiKey' \
+  -H 'token: partnerToken' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "onlineCheckInList": {
+        "mainGuest": {
+            "firstName": "Harry",
+            "lastName": "Potter",
+            "dateOfBirth": "2001-01-01"
+        },
+        "additionalGuests": [
+            {
+                "firstName": "Ron",
+                "lastName": "Weasley",
+                "taxCode": "123456789"
+            }
+        ]
+    }
+}'
+The above command returns Status code 200 on creation success:
+
+{
+  "message": "OK"
+}
+Response if authentication failed Status code 401:
+
+{
+    "status": 401,
+    "title": "Unauthorized",
+    "detail": "Authentication required"
+}
+Response if there is a validation error code 422:
+
+{
+    "status": 422,
+    "title": "Bad Request",
+    "detail": "Failed validation",
+    "validation_messages": {
+          "amount":{"isEmpty":"Value is required and can't be empty"}
+    }
+}
+Third Party Providers
+We have a different authorization process for third party providers that have solutions for more than one Smoobu user. Please contact us and tell us more about your product and business model. We can list you as a third party provider that our users get easy access to your system and you get all the rights you need for your product. Third party providers can be smart pricing tools, booking portals, accounting software, smartlock systems and many more.
+
+Webhooks
+example for updateRates webhook:
+
+{
+  "action": "updateRates",
+  "user": 7,
+  "data": {
+    "398": {
+      "2019-01-15": {
+        "price": 444,
+        "min_length_of_stay": 2,
+        "available": 1
+      },
+      "2019-01-16": {
+        "price": 444,
+        "min_length_of_stay": 2,
+        "available": 1
+      },
+      "2019-01-17": {
+        "price": 444,
+        "min_length_of_stay": 2,
+        "available": 1
+      }
+    }
+  }
+}
+example for newReservation webhook (similar for updateReservation, cancelReservation, and deleteReservation):
+
+{
+  "action": "newReservation",
+  "user": 7,
+  "data": {
+    "id": 292,
+    "reference-id": "KRZUZ2XY",
+    "type": "modification of booking",
+    "arrival": "2019-08-11",
+    "departure": "2019-08-13",
+    "created-at": "2019-08-08 15:25",
+    "modifiedAt": "2019-08-08 16:25",
+    "apartment": {
+      "id": 38,
+      "name": "Apartment 1"
+    },
+    "channel": {
+      "id": 3,
+      "name": "API"
+    },
+    "guest-name": "Steffen Hansen",
+    "firstname": "Steffen",
+    "lastname": "Hansen",
+    "email": "steffen@smoobu.com",
+    "phone": null,
+    "adults": 1,
+    "children": 0,
+    "check-in": null,
+    "check-out": null,
+    "notice": "Zahlungsmethode: Rechnung (Überweisung)",
+    "assistant-notice": "Assistant: Zahlungsmethode: Rechnung (Überweisung)",
+    "price": 444,
+    "price-paid": "No",
+    "commission-included": 22.0,
+    "prepayment": 44.0,
+    "prepayment-paid": "Yes",
+    "deposit": null,
+    "deposit-paid": "No",
+    "language": "de",
+    "guest-app-url": "https://example.com/app",
+    "is-blocked-booking": false,
+    "guestId": 1234
+  }
+}
+example for onlineCheckInUpdate webhook:
+
+{
+  "action": "onlineCheckInUpdate",
+  "user": 7,
+  "data": {
+    "bookingId": 234
+  }
+}
+example for priceElementCreated (similar to priceElementUpdated) webhook:
+
+{
+  "action": "priceElementCreated",
+  "user": 7,
+  "data": {
+    "id": 1234,
+    "type": "basePrice",
+    "name": "Base Price",
+    "amount": 1,
+    "quantity": 2300,
+    "tax": 7.00,
+    "currencyCode": "EUR|€",
+    "sortOrder": 51,
+    "priceIncludedInId": 1,
+    "booking": {
+      "id": 234
+    }
+  }
+}
+example for priceElementDeleted webhook:
+
+{
+  "action": "priceElementDeleted",
+  "user": 7,
+  "data": {
+    "id": 1234
+  }
+}
+It is very important that calendars and rates are always up to date. If you use cron jobs you can never guarantee correct data in real time. So we provide a webhook functionality that notificates you if there are any updates. Every Smoobu user can enter a webhook URL in the API settings. Then we send a webhook containing a json file to this URL if there are any changes in the calendar regarding rates or availabilities.
+
+For third party providers we send webhooks for all connected users that allow you to receive rates and availabilities.
+
+Json
+Parameter	Format	Description
+action	string	action of the webhook (updateRates, newReservation, cancelReservation, updateReservation)
+user	integer	user id
+data	object	contain the data of the webhook. For the detailed information for single webhook look in the documentation of regarding request
+Client Libraries
+Node.js
+Smoobu by Cliff Stanford
+
+The library can be installed using NPM
+
+npm install smoobu
+
+Channels
+List of channels. You can only use channel that the user has.
+
+Id	Name
+1	Airbnb iCal
+2	Mowitania
+11	Blocked channel
+13	Direct booking
+14	Booking.com
+15	Ferienwohnung24 Berlin
+16	9Flats
+17	Only Apartments
+18	Expedia
+19	Wimdu
+20	HouseTrip
+21	Oh Berlin
+22	Travanto Ical
+23	FeWo-direkt / HomeAway
+24	Tripadvisor
+25	Roomorama
+26	Red Apple Apartments
+27	Rentxpress
+28	VRBO / HomeAway
+29	Traum-Ferienwohnungen (ical)
+30	Vacation Apartments (ical)
+31	Ferienwohnungen.de
+32	Waytostay
+33	Bedandbreakfast.eu
+34	BedyCasa
+35	Ebab
+36	Alterkeys
+37	Bemate
+38	VacationRentals.com / HomeAway
+39	AlwaysOnVacation
+40	Misterbnb
+41	RentalHouses
+42	HolidayRentals.com
+43	France-Voyage.com
+44	MorningCroissant
+45	Flat4day / Go-fewo
+46	Abritel / HomeAway
+47	Individueller iCal-Kanal 1
+48	Individueller iCal-Kanal 2
+49	Individueller iCal-Kanal 3
+50	HomeAway
+51	e-domizil/atraveo
+52	E-domizil Ical
+53	Bungalow.net
+54	Hundeurlaub.de
+55	BAYregio
+56	Ferienhausmiete.de
+57	Homelidays
+58	Feratel Deskline
+59	Feries.com
+60	Casevacanza.it
+61	HBook Booking System
+62	Pinpoint Booking System
+63	Spain Holiday
+64	Holidaylettings
+65	Flipkey
+66	Intobis
+67	HRS Destination / ImWeb
+68	Agoda
+69	RoomCity
+70	Homepage
+71	Agriturismo.it
+72	Ownersdirect.co.uk
+73	MWFerienwohnungen
+74	Airbnb
+75	Prodess
+76	Bergfex
+77	Tourist-online.de
+78	Bellevue Ferienhaus
+79	Contao
+80	Traum-Ferienwohnungen
+81	Ferienhausmarkt.com
+82	Rentahouseboat.com
+83	Bed-and-breakfast.it
+84	Tomas
+85	Landreise.de
+86	Micazu.nl
+87	apartment.at
+88	Pura Vida Travel / ORAmap
+89	Canada Stays
+90	Blocked channel (HRS)
+91	Feriwa.com
+92	Bed-And-Breakfast.it
+93	Motopress Booking Plugin
+94	Individual iCal - 4
+95	Individual iCal - 5
+96	Individual iCal - 6
+97	Individual iCal - 7
+98	wpestate/wprentals Plugin
+99	Beds 24
+100	Bauernhofurlaub.de
+101	Landsichten
+102	urlaub-in-florida.net
+103	HRS Destination / ImWeb 2
+104	HRS Destination / ImWeb 3
+105	Bodenseeferien
+106	Lohospo
+107	Bodensee.de
+108	Optimale Präsentation
+109	Trip.com / Ctrip
+110	Blocked channel auto
+111	Open Pro
+112	Individual iCal - 8
+113	Individual iCal - 9
+114	Individual iCal - 10
+115	Soho Hotel Plugin
+116	Travanto
+117	Optimale Präsentation
+118	E-domizil API
+119	Safarinow.com
+120	Individueller iCal-Kanal 11
+121	Individueller iCal-Kanal 12
+122	Individueller iCal-Kanal 13
+123	VRBO / HomeAway 1
+124	VRBO / HomeAway 2
+125	VRBO / HomeAway 3
+126	VRBO / HomeAway 4
+127	VRBO / HomeAway 5
+128	VRBO / HomeAway 6
+129	VRBO / HomeAway 7
+130	VRBO / HomeAway 8
+131	VRBO / HomeAway 9
+132	VRBO / HomeAway 10
+133	HRS Destination / ImWeb 4
+134	HRS Destination / ImWeb 5
+135	HRS Destination / ImWeb 6
+136	HRS Destination / ImWeb 7
+137	HRS Destination / ImWeb 8
+138	MonsieurChalets
+139	Individueller iCal-Kanal 14
+140	Individueller iCal-Kanal 15
+141	Individueller iCal-Kanal 16
+142	Individueller iCal-Kanal 17
+143	Individueller iCal-Kanal 18
+144	HomeToGo
+145	BestFewo
+146	Agriturismo.it
+147	HRS Destination / ImWeb 9
+148	HRS Destination / ImWeb 10
+149	HRS Destination / ImWeb 11
+150	HRS Destination / ImWeb 12
+151	HRS Destination / ImWeb 13
+152	HRS Destination / ImWeb 14
+153	HRS Destination / ImWeb 15
+154	HRS Destination / ImWeb 16
+155	HRS Destination / ImWeb 17
+156	HRS Destination / ImWeb 18
+157	Frisonaut
+158	Nature House
+169	Casas Rurales
+Change Log
+2025-04-24
+Updated channel list
+
+Online Check-In (OCI) endpoints for partners
+
+2023-07-18
+Add new filter for getBookings (includeRelated)
+
+New field related in response from getBookings, this field contains apartments array that are also blocked by current booking
+
+2022-06-14
+Add new filters to getBookings (modified_from, modified_to, arrival_from, arrival_to, departure_from, departure_to, excludeBlocked) Price elements in booking response.
+
+2022-05-31
+Add Channel list and add guests in availability request
+
+2022-02-01
+CORS (Cross-Origin Resource Sharing) policy
+
+2021-09-20
+Guest api endpoints \ Get guests to receive additional information of guests including all their crm and contact data
+
+New field guestId in booking response
+
+2021-08-24
+Beds info in apartment details response
+
+2021-07-27
+Rate limit headers
+
+2021-05-20
+Type of accommodation in apartment detail response.
+
+2021-02-22
+Time zone information in get apartment response.
+
+2020-12-01
+New parameter pageSize in get bookings request.
+
+2020-12-01
+API rate limit
+
+2020-11-04
+New parameter internal in message to host API endpoint.
+
+2020-10-14
+New endpoint, get placeholders for the booking.
+
+2020-07-07
+Price elements in create booking request.
+
+2020-05-15
+Client libraries.
+
+2020-05-13
+Flag is-blocked-booking is added to booking response.
+
+2020-05-11
+Custom Placeholders
+
+2020-04-27
+Price Elements (Financials) Price in apartment detail
+
+2020-03-23
+Add new api to get addons
+
+2020-03-11
+Guest app URL in the booking response.
+
+2020-01-30
+OAuth 2 support.
+
+2020-01-23
+Clean up URLs
+New resource [GET] /api/reservations/<reservationId>
+Old Urls	New Urls
+[GET] /api/apartment	/api/apartments
+[GET] /api/apartment/	/api/apartments/
+[GET] /api/apartment/{{apartmentId}}/booking	/api/reservations?apartmentId={{apartmentId}}
+[POST] /api/apartment/{{apartmentId}}/booking	/api/reservations
+[PUT] /api/apartment/{{apartmentId}}/booking/{{bookingId}}	/api/reservations/{{reservationId}}
+[DELETE] /api/apartment/{{apartmentId}}/booking/{{bookingId}}	/api/reservations/{{reservationId}}
+[GET] /api/apartment/{{apartmentId}}/booking/{{bookingId}}/message	/api/reservations/{{reservationId}}/messages
+[POST] /api/apartment/{{apartmentId}}/booking/{{bookingId}}/send-message-to-host	/api/reservations/{{reservationId}}/messages/send-message-to-host
+[POST] /api/apartment/{{apartmentId}}/booking/{{bookingId}}/send-message-to-guest	/api/reservations/{{reservationId}}/messages/send-message-to-guest
+2019-12-05
+Api Urls from 'http' to 'https' and get rates api url fix
+
+2019-10-29
+Update create and update booking for prepayment and prepayment status
+
+2019-10-22
+Add update booking Add get user (user profile)
+
+2019-09-16
+Messaging APIs: sending messages to guests or hosts and receiving the whole conversation
+
+2019-08-11
+Add webhook for reservations
+
+2019-06-28
+Add language attribute to create booking request
+
+2019-06-24
+Add webhook for getRates updates
+
+2019-06-17
+Add availability to getRates response
+
+2019-04-24
+Add user currency to apartment detail page
+
+2019-04-03
+New endpoint for listing details
+
+New process and authentification for third party providers
+
+2019-03-28
+New endpoint to cancel reservations and add Get Apartment IDs
+
+2019-01-18
+Starting newsletter for Api users. Join by sending an email to api@smoobu.com
+
+2019-01-08
+Add Get/Post Rates Api
+
+2018-11-13
+Add missing address in createBooking call. And add correct mandatory fields for some fields in createBooking call
+
+2018-10-23
+Added getReservations. Clarifying functions, fixing typos, cleaning up. Added changelog
+
+shell

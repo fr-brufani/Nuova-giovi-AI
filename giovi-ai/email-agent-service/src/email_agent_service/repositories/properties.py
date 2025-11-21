@@ -144,3 +144,69 @@ class PropertiesRepository:
             results.append(data)
         return results
 
+    def delete_by_imported_from(
+        self,
+        host_id: str,
+        imported_from: str,
+    ) -> int:
+        """Elimina tutte le properties importate da una specifica fonte per un host.
+        
+        Args:
+            host_id: ID dell'host
+            imported_from: Fonte di import (es. "scidoo_api", "smoobu_api")
+        
+        Returns:
+            Numero di properties eliminate.
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        properties_ref = self._client.collection("properties")
+        
+        # Query con entrambi i filtri
+        query = (
+            properties_ref.where("hostId", "==", host_id)
+            .where("importedFrom", "==", imported_from)
+        )
+        
+        try:
+            docs = list(query.get())
+            logger.info(
+                f"[PropertiesRepository] Query per hostId={host_id}, importedFrom={imported_from}: "
+                f"trovati {len(docs)} documenti"
+            )
+            
+            deleted = 0
+            for doc in docs:
+                try:
+                    doc.reference.delete()
+                    deleted += 1
+                except Exception as e:
+                    logger.error(f"[PropertiesRepository] Errore eliminazione documento {doc.id}: {e}")
+            
+            return deleted
+        except Exception as e:
+            logger.error(
+                f"[PropertiesRepository] Errore query per hostId={host_id}, importedFrom={imported_from}: {e}",
+                exc_info=True
+            )
+            # Fallback: query solo per hostId e filtrare in memoria
+            logger.info(f"[PropertiesRepository] Tentativo fallback: query solo per hostId")
+            query_fallback = properties_ref.where("hostId", "==", host_id)
+            docs_fallback = list(query_fallback.get())
+            logger.info(f"[PropertiesRepository] Fallback: trovati {len(docs_fallback)} documenti totali per host")
+            
+            deleted = 0
+            for doc in docs_fallback:
+                data = doc.to_dict() or {}
+                doc_imported_from = data.get("importedFrom")
+                if doc_imported_from == imported_from:
+                    try:
+                        doc.reference.delete()
+                        deleted += 1
+                    except Exception as e:
+                        logger.error(f"[PropertiesRepository] Errore eliminazione documento {doc.id}: {e}")
+            
+            logger.info(f"[PropertiesRepository] Fallback: eliminati {deleted} documenti")
+            return deleted
+

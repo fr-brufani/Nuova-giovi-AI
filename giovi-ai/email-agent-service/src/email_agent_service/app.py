@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .api import get_api_router
 from .config.settings import get_settings
 from .dependencies.firebase import get_firestore_client
+from .services import ScidooReservationPollingService, PersistenceService
 
 # Configura logging
 logging.basicConfig(
@@ -20,10 +21,41 @@ def create_app() -> FastAPI:
     settings = get_settings()
 
     @asynccontextmanager
-    async def lifespan(_: FastAPI):
+    async def lifespan(app: FastAPI):
         # Warm up Firebase / Firestore connection at startup for faster first request.
-        get_firestore_client()
+        firestore_client = get_firestore_client()
+        
+        # Avvia polling services
+        persistence_service = PersistenceService(firestore_client)
+        
+        # Crea e avvia servizi di polling
+        scidoo_polling_service = None
+        
+        try:
+            # Avvia Scidoo polling service
+            scidoo_polling_service = ScidooReservationPollingService(
+                persistence_service=persistence_service,
+                firestore_client=firestore_client,
+            )
+            scidoo_polling_service.start()
+            logging.info("[APP] ScidooReservationPollingService avviato")
+        except Exception as e:
+            logging.error(f"[APP] Errore avvio ScidooReservationPollingService: {e}", exc_info=True)
+        
+        # Salva istanze nell'app state per accesso dagli endpoint
+        # NOTA: Smoobu ora usa webhooks invece di polling
+        app.state.scidoo_polling_service = scidoo_polling_service
+        
         yield
+        
+        # Cleanup: ferma polling services
+        # NOTA: Smoobu ora usa webhooks invece di polling
+        try:
+            if scidoo_polling_service:
+                scidoo_polling_service.stop()
+                logging.info("[APP] ScidooReservationPollingService fermato")
+        except Exception as e:
+            logging.error(f"[APP] Errore fermata ScidooReservationPollingService: {e}", exc_info=True)
 
     app = FastAPI(
         title="Email Agent Service",

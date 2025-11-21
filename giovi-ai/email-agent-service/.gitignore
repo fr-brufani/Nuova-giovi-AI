@@ -6,11 +6,26 @@ __pycache__/
 .mypy_cache/
 *.egg-info/
 .env
+.env.*
+.env.local
 
 # Firebase credentials (NON COMMITTARE MAI)
 *firebase*credentials*.json
 *serviceAccount*.json
+*service-account*.json
 *Firebase*sdk*
+Firebase*sdk*
+
+# Certificates and keys
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Credentials and secrets
+credentials.json
+secrets.json
+*secret*.json
 *.json.backup
 *.json.backup*
 

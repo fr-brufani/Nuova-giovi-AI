@@ -30,6 +30,7 @@ class ReservationsRepository:
         status: str = "confirmed",
         total_price: Optional[float] = None,
         adults: Optional[int] = None,
+        children: Optional[int] = None,
         voucher_id: Optional[str] = None,
         source_channel: Optional[str] = None,  # "booking" o "airbnb"
         thread_id: Optional[str] = None,  # Thread ID per Airbnb (per matchare messaggi)
@@ -91,6 +92,8 @@ class ReservationsRepository:
             reservation_data["totalPrice"] = total_price
         if adults is not None:
             reservation_data["adults"] = adults
+        if children is not None:
+            reservation_data["children"] = children
         if voucher_id:
             reservation_data["voucherId"] = voucher_id  # ID Voucher da Booking/Scidoo
         if source_channel:
@@ -272,6 +275,35 @@ class ReservationsRepository:
             updated += 1
         return updated
 
+    def delete_by_reservation_id(
+        self,
+        reservation_id: str,
+        host_id: str,
+    ) -> bool:
+        """Elimina una prenotazione cercandola per reservationId.
+        
+        Returns:
+            True se la prenotazione è stata trovata e eliminata, False altrimenti
+        """
+        reservations_ref = self._client.collection("reservations")
+        
+        # Cerca prenotazione per reservationId e hostId
+        query = (
+            reservations_ref
+            .where("reservationId", "==", reservation_id)
+            .where("hostId", "==", host_id)
+            .limit(1)
+        )
+        docs = list(query.get())
+        
+        if not docs:
+            return False
+        
+        # Elimina il documento
+        doc = docs[0]
+        doc.reference.delete()
+        return True
+
     def delete_by_property(
         self,
         host_id: str,
@@ -293,4 +325,70 @@ class ReservationsRepository:
             doc.reference.delete()
             deleted += 1
         return deleted
+
+    def delete_by_imported_from(
+        self,
+        host_id: str,
+        imported_from: str,
+    ) -> int:
+        """Elimina tutte le prenotazioni importate da una specifica fonte per un host.
+        
+        Args:
+            host_id: ID dell'host
+            imported_from: Fonte di import (es. "scidoo_api", "smoobu_api")
+        
+        Returns:
+            Numero di prenotazioni eliminate.
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        reservations_ref = self._client.collection("reservations")
+        
+        # Query con entrambi i filtri
+        query = (
+            reservations_ref.where("hostId", "==", host_id)
+            .where("importedFrom", "==", imported_from)
+        )
+        
+        try:
+            docs = list(query.get())
+            logger.info(
+                f"[ReservationsRepository] Query per hostId={host_id}, importedFrom={imported_from}: "
+                f"trovati {len(docs)} documenti"
+            )
+            
+            deleted = 0
+            for doc in docs:
+                try:
+                    doc.reference.delete()
+                    deleted += 1
+                except Exception as e:
+                    logger.error(f"[ReservationsRepository] Errore eliminazione documento {doc.id}: {e}")
+            
+            return deleted
+        except Exception as e:
+            logger.error(
+                f"[ReservationsRepository] Errore query per hostId={host_id}, importedFrom={imported_from}: {e}",
+                exc_info=True
+            )
+            # Fallback: query solo per hostId e filtrare in memoria
+            logger.info(f"[ReservationsRepository] Tentativo fallback: query solo per hostId")
+            query_fallback = reservations_ref.where("hostId", "==", host_id)
+            docs_fallback = list(query_fallback.get())
+            logger.info(f"[ReservationsRepository] Fallback: trovati {len(docs_fallback)} documenti totali per host")
+            
+            deleted = 0
+            for doc in docs_fallback:
+                data = doc.to_dict() or {}
+                doc_imported_from = data.get("importedFrom")
+                if doc_imported_from == imported_from:
+                    try:
+                        doc.reference.delete()
+                        deleted += 1
+                    except Exception as e:
+                        logger.error(f"[ReservationsRepository] Errore eliminazione documento {doc.id}: {e}")
+            
+            logger.info(f"[ReservationsRepository] Fallback: eliminati {deleted} documenti")
+            return deleted
 
