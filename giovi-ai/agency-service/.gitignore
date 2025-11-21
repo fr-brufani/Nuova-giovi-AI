@@ -1,13 +1,17 @@
-# Compiled JavaScript files
-lib/**/*.js
-lib/**/*.js.map
-
-# TypeScript v1 declaration files
-typings/
-
-# Node.js dependency directory
-node_modules/
-*.local
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+*.egg
+dist/
+build/
 
 # Environment files
 .env
@@ -26,7 +30,20 @@ Firebase*sdk*
 *.p12
 *.pfx
 
-# Credentials files
+# Credentials and secrets
 credentials.json
 secrets.json
 *secret*.json
+GOOGLE_APPLICATION_CREDENTIALS
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+

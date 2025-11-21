@@ -43,3 +43,25 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment files
+.env
+.env.*
+.env.local
+
+# Firebase credentials and service accounts (NON COMMITTARE MAI)
+*firebase*credentials*.json
+*serviceAccount*.json
+*service-account*.json
+Firebase*sdk*
+
+# Certificates and keys
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Credentials files
+credentials.json
+secrets.json
+*secret*.json
